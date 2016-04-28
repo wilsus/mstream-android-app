@@ -1,11 +1,9 @@
 package io.mstream.mstream;
 
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.ServiceConnection;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.IBinder;
+import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,8 +11,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.TextView;
-
 
 
 import com.android.volley.Request;
@@ -31,9 +27,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
@@ -57,7 +51,8 @@ public class FileBrowserFragment extends Fragment {
     private OnFragmentInteractionListener mListener;
 
     public LinkedList<aListItem> serverFileList;
-    public LinkedList<String> directoryMap = new LinkedList<>();
+    private LinkedList<String> directoryMap = new LinkedList<>();
+    private LinkedList<Parcelable>  scrollPosition = new LinkedList<>();
 
     // TODO: Pull this in from elsewhere
     public String currentServerAddress =  "http://209.6.75.121:3030/";
@@ -109,7 +104,7 @@ public class FileBrowserFragment extends Fragment {
 
             @Override
             public void onClick(View v) {
-                goBack();
+                    goBack();
             }
         });
 
@@ -175,14 +170,14 @@ public class FileBrowserFragment extends Fragment {
 
     public void addTrackToPlaylist(aListItem selectedItem){
 
-        ((FileBrowser)getActivity()).addTrack(selectedItem);
+        ((BaseActivity)getActivity()).addTrack(selectedItem);
 
     }
 
 
 
 
-    public void writeToList(String response){
+    public void writeToList(String response, Boolean goBack){
 
         final ListView listView  = (ListView) getView().findViewById(R.id.listViewX);
         listView.setAdapter(null);
@@ -227,7 +222,6 @@ public class FileBrowserFragment extends Fragment {
                         link = ""; // TODO: Better exception handling
                     }catch(URISyntaxException e){
                         link = "";
-
                     }
 
 
@@ -245,6 +239,13 @@ public class FileBrowserFragment extends Fragment {
             listView.setAdapter(adapter);
 
 
+            if(!scrollPosition.isEmpty() && goBack.equals(true)) {
+
+                Parcelable thisPos = scrollPosition.removeLast();
+                listView.onRestoreInstanceState(thisPos);
+            }
+
+
             // On Click
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -260,10 +261,15 @@ public class FileBrowserFragment extends Fragment {
 
 
                     // TODO: Create a new Activity
-                    //Intent intent = new Intent(this, FileBrowser.class);
+                    //Intent intent = new Intent(this, BaseActivity.class);
                     // intent.putExtra("path", filename);
                     //startActivity(intent);
                     if(type.equals("directory")){
+
+                        final ListView listView  = (ListView) getView().findViewById(R.id.listViewX);
+                        Parcelable state = listView.onSaveInstanceState();
+                        scrollPosition.addLast(state);
+
                         goToDirectory(link);
                     }
                     else{
@@ -285,19 +291,20 @@ public class FileBrowserFragment extends Fragment {
     public void goToDirectory(final String directory){
         directoryMap.addLast(directory);
 
-        callServer(directory);
+        callServer(directory, false);
     }
 
     public void goBack(){
 
         if(!directoryMap.getLast().equals("")){
             directoryMap.removeLast();
-            callServer(directoryMap.getLast());
+            callServer(directoryMap.getLast(), true);
+
         }
 
     }
 
-    public void callServer(final String directory){
+    public void callServer(final String directory, final Boolean goBack){
         // Server URL
          String url = getCurrentServerString() + "dirparser";
 
@@ -307,7 +314,7 @@ public class FileBrowserFragment extends Fragment {
             @Override
             public void onResponse(String  response) {
 
-                writeToList(response);
+                writeToList(response, goBack);
             }
         },
             new Response.ErrorListener() {

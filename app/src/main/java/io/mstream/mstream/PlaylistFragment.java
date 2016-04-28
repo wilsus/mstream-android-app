@@ -1,14 +1,11 @@
 package io.mstream.mstream;
 
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
@@ -64,7 +61,7 @@ public class PlaylistFragment extends Fragment {
         View view =  inflater.inflate(R.layout.fragment_playlist, container, false);
         ListView listView  = (ListView) view.findViewById(R.id.playlistView);
 
-        LinkedList<aListItem> playlist =  ((FileBrowser)getActivity()).getPlaylist();
+        LinkedList<aListItem> playlist =  ((BaseActivity)getActivity()).getPlaylist();
 
         this.adapter = new PlaylistBaseAdapter(playlist);
         listView.setAdapter(this.adapter);
@@ -83,7 +80,7 @@ public class PlaylistFragment extends Fragment {
 
 
                 // Change to clicked song
-                ((FileBrowser) getActivity()).goToSelectedTrack(itemX);
+                ((BaseActivity) getActivity()).goToSelectedTrack(itemX);
                 // TODO: Refresh View
 
             }

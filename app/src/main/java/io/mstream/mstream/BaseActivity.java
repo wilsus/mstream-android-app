@@ -20,11 +20,9 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.Spinner;
-import android.widget.ToggleButton;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,7 +35,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 
-public class FileBrowser extends FragmentActivity  {
+public class BaseActivity extends FragmentActivity  {
     JukeboxService mJukebox;
     boolean mBounded;
 
@@ -85,8 +83,6 @@ public class FileBrowser extends FragmentActivity  {
         SharedPreferences.Editor editor = getSharedPreferences("mstream-settings", MODE_PRIVATE).edit();
         editor.putString("servers", jsonStr);
         editor.commit();
-
-        getServerList();
     }
 
     public void getServerList(){
@@ -128,17 +124,6 @@ public class FileBrowser extends FragmentActivity  {
             // TODO:
         }
 
-
-
-
-
-        // json decode it
-
-        // loop through json array
-            // generate serverItem
-            // Add server item to listOfServers
-            // ifthere is no selectedServer value set
-                // Add the defaultServerItem or the first serverItem to the selectedServer variable
     }
 
     public void addItemToServerList(ServerItem serverItem){
@@ -261,10 +246,14 @@ public class FileBrowser extends FragmentActivity  {
 // Spinner for selecting servers
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
+        getServerList();
+
         // TODO: Remove this
         mapOfServers.put("Server 1", new ServerItem("Server 1", "http://209.6.75.121:3030/", null, null));
 
         populateSpinner();
+
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -325,12 +314,13 @@ public class FileBrowser extends FragmentActivity  {
 
 
             // Add the ManageServersFragment is there are no servers
-//            if(listOfServers.isEmpty()){
-//                getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, new ManageServersFragment()).commit();
-//            }else{
-//                getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, new FileBrowserFragment()).commit();
-//            }
-            getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, new FileBrowserFragment()).commit();
+            if(mapOfServers.isEmpty()){
+                // getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, new ManageServersFragment()).commit();
+                changeToManageServers();
+            }else{
+                // getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, new FileBrowserFragment()).commit();
+                changeToBrowser();
+            }
 
 
             // TODO: Mashing the switch button crashes the app

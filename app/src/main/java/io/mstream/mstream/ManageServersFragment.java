@@ -4,7 +4,6 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -151,7 +150,7 @@ public class ManageServersFragment extends Fragment {
 
         // Send serverItem to the main activity to be added the list of servers
         // TODO: Check if this function returns an error?
-        ((FileBrowser) getActivity()).addItemToServerList(newServerItem);
+        ((BaseActivity) getActivity()).addItemToServerList(newServerItem);
 
         // Clear form
         _nameText.setText("");
