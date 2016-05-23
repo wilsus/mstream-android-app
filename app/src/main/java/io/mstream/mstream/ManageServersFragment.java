@@ -145,6 +145,7 @@ public class ManageServersFragment extends Fragment {
         Toast.makeText(getActivity(), "Server Item Generated", Toast.LENGTH_LONG).show();
 
 
+
         // TODO: Test connection to server.  Return an error if it can't connect
 
 

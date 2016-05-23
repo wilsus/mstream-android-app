@@ -51,11 +51,11 @@ public class FileBrowserFragment extends Fragment {
     private OnFragmentInteractionListener mListener;
 
     public LinkedList<aListItem> serverFileList;
+
     private LinkedList<String> directoryMap = new LinkedList<>();
     private LinkedList<Parcelable>  scrollPosition = new LinkedList<>();
 
-    // TODO: Pull this in from elsewhere
-    public String currentServerAddress =  "http://209.6.75.121:3030/";
+    public String currentServerAddress = "";
 
     public FileBrowserFragment() {
         // Required empty public constructor
@@ -80,7 +80,10 @@ public class FileBrowserFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
+        System.out.println(this.getArguments().getString("server"));
+//
+//        // Get Server
+        this.currentServerAddress = this.getArguments().getString("server");
 
         // Call the server
         goToDirectory("");
@@ -95,6 +98,10 @@ public class FileBrowserFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
+
+
+
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_file_browser, container, false);
 

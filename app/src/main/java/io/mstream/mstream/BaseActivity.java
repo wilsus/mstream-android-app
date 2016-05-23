@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 import android.support.v4.content.LocalBroadcastManager;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -50,7 +51,7 @@ public class BaseActivity extends FragmentActivity  {
 
 
     // Server Options
-    public ServerItem selectedServer;
+    public ServerItem selectedServer = null;
     // public ArrayList<String> listOfServers =  new ArrayList<String>();
     HashMap <String,ServerItem> mapOfServers = new HashMap<String, ServerItem>();
 
@@ -96,7 +97,7 @@ public class BaseActivity extends FragmentActivity  {
 
         // if there is nothing in SharedPreferences, direct user to the ManageServersFragment
         if (restoredText == null) {
-            // TODO
+            return;
         }
 
 
@@ -116,12 +117,17 @@ public class BaseActivity extends FragmentActivity  {
                 Boolean isDefault = objectInArray.getBoolean("isDefault");
 
                 ServerItem newServerItem = new ServerItem(name, url, username, password);
-                // TODO: Handle default value
+
+                // If it's the default server, set it here
+                if(isDefault.equals(true)){
+                    selectedServer = newServerItem;
+                }
 
                 mapOfServers.put(name, newServerItem);
             }
         }catch( JSONException e){
             // TODO:
+
         }
 
     }
@@ -249,7 +255,7 @@ public class BaseActivity extends FragmentActivity  {
         getServerList();
 
         // TODO: Remove this
-        mapOfServers.put("Server 1", new ServerItem("Server 1", "http://209.6.75.121:3030/", null, null));
+        // mapOfServers.put("Server 1", new ServerItem("Server 1", "http://209.6.75.121:3030/", null, null));
 
         populateSpinner();
 
@@ -291,6 +297,9 @@ public class BaseActivity extends FragmentActivity  {
 
 
 
+
+
+
         // Check that the activity is using the layout version with
         // the fragment_container FrameLayout
         if (findViewById(R.id.fragment_container) != null) {
@@ -302,9 +311,11 @@ public class BaseActivity extends FragmentActivity  {
                 return;
             }
 
+
             // Create a new Fragment to be placed in the activity layout
 //            final FileBrowserFragment fileBrowserFragment = new FileBrowserFragment();
 //            final PlaylistFragment playlistFragment = new PlaylistFragment();
+
 
             // In case this activity was started with special instructions from an
             // Intent, pass the Intent's extras to the fragment as arguments
@@ -315,10 +326,8 @@ public class BaseActivity extends FragmentActivity  {
 
             // Add the ManageServersFragment is there are no servers
             if(mapOfServers.isEmpty()){
-                // getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, new ManageServersFragment()).commit();
                 changeToManageServers();
             }else{
-                // getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, new FileBrowserFragment()).commit();
                 changeToBrowser();
             }
 
@@ -327,8 +336,7 @@ public class BaseActivity extends FragmentActivity  {
             // TODO: Fragments don't hold their state
 
 
-            // On pressing the toggle button
-            //ToggleButton toggle = (ToggleButton) findViewById(R.id.toggleView);
+            // File Browser Button
             ImageButton fileBrowserButton = (ImageButton) findViewById(R.id.file_browser);
             fileBrowserButton.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
@@ -336,6 +344,7 @@ public class BaseActivity extends FragmentActivity  {
                 }
             });
 
+            // Playlist Button
             ImageButton playlistButton = (ImageButton) findViewById(R.id.playlist_button);
             playlistButton.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
@@ -343,6 +352,7 @@ public class BaseActivity extends FragmentActivity  {
                 }
             });
 
+            // Add Server Button
             Button addServerButton = (Button) findViewById(R.id.add_server_button);
             addServerButton.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
@@ -361,7 +371,18 @@ public class BaseActivity extends FragmentActivity  {
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container ,new PlaylistFragment()).commit();
     }
     public void changeToBrowser(){
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new FileBrowserFragment()).commit();
+        if(selectedServer == null){
+            Toast.makeText(getApplicationContext(), "You need to select a server", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        Bundle bundle = new Bundle();
+        String server = selectedServer.getServerLink();
+        bundle.putString("server", server );
+        FileBrowserFragment fileBrowserFrag = new FileBrowserFragment();
+        fileBrowserFrag.setArguments(bundle);
+
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fileBrowserFrag ).commit();
     }
     public void changeToManageServers(){
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new ManageServersFragment()).commit();
