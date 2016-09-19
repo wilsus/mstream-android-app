@@ -81,8 +81,8 @@ public class FileBrowserFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         System.out.println(this.getArguments().getString("server"));
-//
-//        // Get Server
+
+        // Get Server
         this.currentServerAddress = this.getArguments().getString("server");
 
         // Call the server
@@ -245,7 +245,7 @@ public class FileBrowserFragment extends Fragment {
             FileBrowserBaseAdapter adapter = new FileBrowserBaseAdapter(serverFileList);
             listView.setAdapter(adapter);
 
-
+            // Save scroll position
             if(!scrollPosition.isEmpty() && goBack.equals(true)) {
 
                 Parcelable thisPos = scrollPosition.removeLast();
@@ -313,7 +313,7 @@ public class FileBrowserFragment extends Fragment {
 
     public void callServer(final String directory, final Boolean goBack){
         // Server URL
-         String url = getCurrentServerString() + "dirparser";
+        String url = getCurrentServerString() + "dirparser";
 
         // Send POST request to server
         StringRequest postRequest = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
