@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -34,6 +35,7 @@ public class ManageServersFragment extends Fragment {
     EditText _usernameText;
     EditText _passwordText;
     Button _addServerButton;
+    CheckBox _makeDefault;
 
     /**
      * Use this factory method to create a new instance of
@@ -64,7 +66,7 @@ public class ManageServersFragment extends Fragment {
         _passwordText =  (EditText) view.findViewById(R.id.input_password);
         _urlText =  (EditText) view.findViewById(R.id.input_url);
         _addServerButton = (Button) view.findViewById(R.id.button_addServer);
-
+        _makeDefault = (CheckBox) view.findViewById(R.id.make_default);
 
         _addServerButton.setOnClickListener( new View.OnClickListener() {
 
@@ -139,10 +141,11 @@ public class ManageServersFragment extends Fragment {
         String url = _urlText.getText().toString();
         String password = _passwordText.getText().toString();
         String username = _usernameText.getText().toString();
+        Boolean isDefault = _makeDefault.isChecked();
 
         // Create new server Item
         ServerItem newServerItem = new ServerItem(name, url, username, password);
-        Toast.makeText(getActivity(), "Server Item Generated", Toast.LENGTH_LONG).show();
+        newServerItem.setDefault( isDefault );
 
 
 
@@ -151,13 +154,11 @@ public class ManageServersFragment extends Fragment {
 
         // Send serverItem to the main activity to be added the list of servers
         // TODO: Check if this function returns an error?
-        ((BaseActivity) getActivity()).addItemToServerList(newServerItem);
+        Boolean status = ((BaseActivity) getActivity()).addItemToServerList(newServerItem);
 
-        // Clear form
-        _nameText.setText("");
-        _urlText.setText("");
-        _passwordText.setText("");
-        _usernameText.setText("");
+        if(!status){
+            Toast.makeText(getActivity(), "Server Name Already Exists", Toast.LENGTH_LONG).show();
+        }
     }
 
     public void onSignupFailed() {

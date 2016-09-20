@@ -21,6 +21,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v7.app.ActionBar;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -30,7 +31,10 @@ import android.widget.Spinner;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Map;
+import java.util.Set;
 
 import android.support.v4.content.LocalBroadcastManager;
 import android.widget.Toast;
@@ -56,7 +60,9 @@ public class BaseActivity extends AppCompatActivity  {
     private Handler myHandler = new Handler();
 
 
-
+    // Server Options
+    public ServerItem selectedServer = null;
+    HashMap <String,ServerItem> mapOfServers = new HashMap<String, ServerItem>();
     Spinner serverSpinner;
 
 
@@ -81,10 +87,7 @@ public class BaseActivity extends AppCompatActivity  {
     }
 
 
-    // Server Options
-    public ServerItem selectedServer = null;
-    // public ArrayList<String> listOfServers =  new ArrayList<String>();
-    HashMap <String,ServerItem> mapOfServers = new HashMap<String, ServerItem>();
+
 
     public void saveServerList(){
 
@@ -163,18 +166,56 @@ public class BaseActivity extends AppCompatActivity  {
 
     }
 
-    public void addItemToServerList(ServerItem serverItem){
-        // TODO: Check to see if server name is already being used
+    // TODO: Test This!!!!
+    // I think the default server status is still showing some bugs
+    public Boolean addItemToServerList(ServerItem serverItem){
+        String newServerName = serverItem.getServerName();
 
+        //  Check to see if server name is already being used
+        if( mapOfServers.get( newServerName)  != null || mapOfServers.containsKey(newServerName) ){
+            return false;
+        }
+
+        // If this is marked to be the default server
+        if( serverItem.getDefaultVal() ){
+
+            // Loop through
+            for (HashMap.Entry<String, ServerItem> entry : mapOfServers.entrySet()) {
+                // Change all default statuses to fault
+                ServerItem thisItem =  entry.getValue();
+                thisItem.setDefault(false);
+            }
+        }
+
+        // Is this is the first server to be added, make it the default
+        if(mapOfServers.isEmpty()){
+            serverItem.setDefault(true);
+        }
 
         // Add item
-        mapOfServers.put(serverItem.getServerName(), serverItem);
+        mapOfServers.put(newServerName, serverItem);
+
+        // Save
+        this.saveServerList();
+        Toast.makeText(getApplicationContext(), "Server Added", Toast.LENGTH_LONG).show();
 
         // repopulate spinner
         populateSpinner();
 
-        // Save
-        this.saveServerList();
+        // Make this new server the current server
+        selectedServer = serverItem;
+
+        // Go to file explorer (or whatever the default view is
+        changeToBrowser();
+
+        // Check if no view has focus:
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+
+        return true;
     }
 
     public void removeServerItemFromList(){
@@ -244,26 +285,34 @@ public class BaseActivity extends AppCompatActivity  {
 
 
 
-
+        // Toolbar
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar actionBar = getSupportActionBar();
         actionBar.setHomeAsUpIndicator(R.drawable.ic_menu);
         actionBar.setDisplayHomeAsUpEnabled(true);
 //
-
+        // Navigation Menu
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-
         NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(MenuItem menuItem) {
-                menuItem.setChecked(true);
+                // TODO: Put Add Server Button here
+
+//                menuItem.setChecked(true);
                 mDrawerLayout.closeDrawers();
-                Toast.makeText(BaseActivity.this, menuItem.getTitle(), Toast.LENGTH_LONG).show();
+
+                if(menuItem.getItemId() == R.id.navigation_item_add_server){
+                    changeToManageServers();
+                }
+
                 return true;
             }
         });
+
+
+
 
 
         // setContentView(R.layout.fragment_file_browser);
@@ -309,8 +358,9 @@ public class BaseActivity extends AppCompatActivity  {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
         getServerList();
 
-        // TODO: Remove this
-        // mapOfServers.put("Server 1", new ServerItem("Server 1", "http://209.6.75.121:3030/", null, null));
+        // ??? TODO: Handle no selected server
+        // Might not be nexessary since the first server added is always set to default
+
 
         populateSpinner();
 
@@ -407,17 +457,7 @@ public class BaseActivity extends AppCompatActivity  {
                 }
             });
 
-            // Add Server Button
-            Button addServerButton = (Button) findViewById(R.id.add_server_button);
-            addServerButton.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v) {
-                    changeToManageServers();
-                }
-            });
-
-
         }
-
     }
 
 

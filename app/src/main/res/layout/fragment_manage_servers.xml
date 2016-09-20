@@ -9,7 +9,7 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingTop="56dp"
+        android:paddingTop="12dp"
         android:paddingLeft="24dp"
         android:paddingRight="24dp">
 
@@ -49,6 +49,12 @@
                 android:hint="Password"/>
 
         <!-- Signup Button -->
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Make Default"
+            android:id="@+id/make_default" />
+
         <android.support.v7.widget.AppCompatButton
             android:id="@+id/button_addServer"
             android:layout_width="fill_parent"

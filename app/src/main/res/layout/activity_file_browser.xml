@@ -69,13 +69,6 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true" />
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Add Server"
-        android:id="@+id/add_server_button"
-        android:visibility="gone"/>
-
     <Spinner
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
