@@ -1,26 +1,22 @@
 package io.mstream.mstream;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
-import android.os.Handler;
-import android.os.Bundle;
-
-import android.os.IBinder;
-import android.content.ComponentName;
 import android.content.ServiceConnection;
-
-import io.mstream.mstream.JukeboxService.LocalBinder;
-
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
 import android.support.design.widget.NavigationView;
-import android.support.v4.app.FragmentActivity;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
-import android.support.v4.view.MenuItemCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
-import android.view.Menu;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -30,27 +26,15 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.Spinner;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Set;
-
-import android.support.v4.content.LocalBroadcastManager;
 import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.support.v7.app.ActionBarActivity;
-
-import android.support.v4.widget.DrawerLayout;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
 
 
 
@@ -314,7 +298,7 @@ public class BaseActivity extends AppCompatActivity  {
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar actionBar = getSupportActionBar();
-        actionBar.setHomeAsUpIndicator(R.drawable.ic_menu);
+        actionBar.setHomeAsUpIndicator(android.R.drawable.ic_menu_manage);
         actionBar.setDisplayHomeAsUpEnabled(true);
 //
         // Navigation Menu
