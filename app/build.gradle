@@ -25,6 +25,5 @@ dependencies {
     final supportLibVersion = "24.2.1"
     compile 'com.android.support:appcompat-v7:' + supportLibVersion
     compile 'com.android.support:recyclerview-v7:' + supportLibVersion
-    compile 'com.android.support:mediarouter-v7:' + supportLibVersion
     compile 'com.android.support:design:' + supportLibVersion
 }
