@@ -1,36 +1,32 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:tools="http://schemas.android.com/tools"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                tools:context="io.mstream.mstream.FileBrowserFragment">
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="io.mstream.mstream.FileBrowserFragment">
 
     <!-- TODO: Update blank fragment layout -->
 
     <Button
+        android:id="@+id/backButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Back"
-        android:id="@+id/backButton"
-        android:layout_gravity="center_horizontal|top"/>
-
+        android:layout_gravity="center_horizontal|top"
+        android:text="Back"/>
 
     <ListView
+        android:id="@+id/listViewX"
         android:layout_width="match_parent"
         android:layout_height="fill_parent"
-        android:id="@+id/listViewX"
-
         android:layout_below="@id/backButton"
-
         android:layout_gravity="center_horizontal|bottom"/>
 
     <Button
+        android:id="@+id/addAllButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="All"
-        android:id="@+id/addAllButton"
-        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"/>
-
-
+        android:layout_alignParentTop="true"
+        android:text="All"/>
 </RelativeLayout>

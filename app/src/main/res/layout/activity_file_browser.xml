@@ -2,16 +2,16 @@
 <android.support.v4.widget.DrawerLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true">
 
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                    xmlns:tools="http://schemas.android.com/tools"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    tools:context=".BaseActivity">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".BaseActivity">
 
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
@@ -20,32 +20,32 @@
             android:background="?attr/colorPrimary"
             android:theme="@style/ThemeOverlay.AppCompat.Dark"/>
 
-        <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                     android:id="@+id/fragment_container"
-                     android:layout_width="match_parent"
-                     android:layout_height="match_parent"
-                     android:layout_above="@+id/playButton"
-                     android:layout_below="@+id/toolbar"/>
+        <FrameLayout
+            android:id="@+id/fragment_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@+id/playButton"
+            android:layout_below="@+id/toolbar"/>
 
         <SeekBar
+            android:id="@+id/seekBar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/seekBar"
+            android:layout_alignEnd="@+id/fragment_container"
             android:layout_alignParentBottom="true"
             android:layout_alignRight="@+id/fragment_container"
-            android:layout_alignEnd="@+id/fragment_container"
-            android:layout_toRightOf="@+id/playButton"
+            android:layout_below="@+id/fragment_container"
             android:layout_toEndOf="@+id/playButton"
-            android:layout_below="@+id/fragment_container"/>
+            android:layout_toRightOf="@+id/playButton"/>
 
         <Button
+            android:id="@+id/playButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="▶/❚❚"
-            android:id="@+id/playButton"
             android:layout_alignParentBottom="true"
             android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"/>
+            android:layout_alignParentStart="true"
+            android:text="▶/❚❚"/>
 
     </RelativeLayout>
 
