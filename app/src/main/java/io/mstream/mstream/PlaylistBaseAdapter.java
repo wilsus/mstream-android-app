@@ -10,12 +10,11 @@ import java.util.LinkedList;
 
 
 public class PlaylistBaseAdapter extends BaseAdapter {
-    private final LinkedList<aListItem> mData;
+    private final LinkedList<ListItem> mData;
 
-    public PlaylistBaseAdapter(LinkedList<aListItem> playlist) {
+    public PlaylistBaseAdapter(LinkedList<ListItem> playlist) {
         this.mData = playlist;
     }
-
 
     @Override
     public int getCount() {
@@ -29,7 +28,7 @@ public class PlaylistBaseAdapter extends BaseAdapter {
     }
 
     @Override
-    public aListItem getItem(int position) {
+    public ListItem getItem(int position) {
         return mData.get(position);
     }
 
@@ -45,7 +44,7 @@ public class PlaylistBaseAdapter extends BaseAdapter {
 //            mViewHolder = (MyViewHolder) convertView.getTag();
 //        }
 //
-//        aListItem currentListData = getItem(position);
+//        ListItem currentListData = getItem(position);
 //
 //        mViewHolder.tvTitle.setText(currentListData.getItemName());
 //        mViewHolder.tvDesc.setText(currentListData.getItemName());
@@ -77,7 +76,7 @@ public class PlaylistBaseAdapter extends BaseAdapter {
             result = convertView;
         }
 
-        aListItem item = getItem(position);
+        ListItem item = getItem(position);
 
         // TODO replace findViewById by ViewHolder
         // ((TextView) result.findViewById(android.R.id.text1)).setText(item.getItemName());
@@ -90,10 +89,6 @@ public class PlaylistBaseAdapter extends BaseAdapter {
 //        if(item.getCurrentlyPlayingStatus()){
 //            result.setBackgroundColor(Color.YELLOW);
 //        }
-
-
         return result;
     }
-
-
 }

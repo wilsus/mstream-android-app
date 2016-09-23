@@ -12,9 +12,9 @@ import java.util.LinkedList;
 
 public class FileBrowserBaseAdapter extends BaseAdapter {
 
-    private final LinkedList<aListItem> mData;
+    private final LinkedList<ListItem> mData;
 
-    public FileBrowserBaseAdapter(LinkedList<aListItem> fileList) {
+    public FileBrowserBaseAdapter(LinkedList<ListItem> fileList) {
         this.mData = fileList;
     }
 
@@ -30,7 +30,7 @@ public class FileBrowserBaseAdapter extends BaseAdapter {
     }
 
     @Override
-    public aListItem getItem(int position) {
+    public ListItem getItem(int position) {
         return mData.get(position);
     }
 
@@ -44,7 +44,7 @@ public class FileBrowserBaseAdapter extends BaseAdapter {
             result = convertView;
         }
 
-        aListItem item = getItem(position);
+        ListItem item = getItem(position);
 
 
         final String tempName = item.getItemName();
@@ -61,5 +61,4 @@ public class FileBrowserBaseAdapter extends BaseAdapter {
 
         return result;
     }
-
 }

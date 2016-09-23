@@ -1,14 +1,14 @@
 package io.mstream.mstream;
 
 
-public class aListItem {
+public class ListItem {
 
-    public String type;
-    public String name;
-    public String link;
-    public boolean currrentlyPlaying;
+    private String type;
+    private String name;
+    private String link;
+    private boolean currrentlyPlaying;
 
-    public aListItem(String name, String type, String link) {
+    public ListItem(String name, String type, String link) {
         this.name = name;
         this.type = type;
         this.link = link;

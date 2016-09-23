@@ -4,11 +4,11 @@ package io.mstream.mstream;
  * Created by paul on 2/22/2016.
  */
 public class ServerItem {
-    public String name;
-    public String link;
-    public String username;
-    public String password;
-    public boolean isDefault = false;
+    private String name;
+    private String link;
+    private String username;
+    private String password;
+    private boolean isDefault = false;
 
     public ServerItem(String name, String link, String username, String password) {
         this.name = name;

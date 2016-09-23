@@ -60,7 +60,7 @@ public class PlaylistFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_playlist, container, false);
         ListView listView = (ListView) view.findViewById(R.id.playlistView);
 
-        LinkedList<aListItem> playlist = ((BaseActivity) getActivity()).getPlaylist();
+        LinkedList<ListItem> playlist = ((BaseActivity) getActivity()).getPlaylist();
 
         this.adapter = new PlaylistBaseAdapter(playlist);
         listView.setAdapter(this.adapter);
@@ -69,9 +69,9 @@ public class PlaylistFragment extends Fragment {
         // On Click
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                aListItem itemX = (aListItem) parent.getItemAtPosition(position);
+                ListItem itemX = (ListItem) parent.getItemAtPosition(position);
 
-//                final aListItem thisItem = itemX.getValue();
+//                final ListItem thisItem = itemX.getValue();
 //                final String link = thisItem.getItemLink();
 //                String type = thisItem.getItemType();
 
@@ -82,8 +82,6 @@ public class PlaylistFragment extends Fragment {
 
             }
         });
-
-
         return view;
     }
 
@@ -133,6 +131,4 @@ public class PlaylistFragment extends Fragment {
             adapter.notifyDataSetChanged();
         }
     };
-
-
 }

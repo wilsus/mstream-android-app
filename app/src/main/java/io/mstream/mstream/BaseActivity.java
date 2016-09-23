@@ -44,12 +44,10 @@ public class BaseActivity extends AppCompatActivity {
     public SeekBar seekBar;
     private Handler myHandler = new Handler();
 
-
     // Server Options
     public ServerItem selectedServer = null;
     HashMap<String, ServerItem> mapOfServers = new HashMap<String, ServerItem>();
     Spinner serverSpinner;
-
 
     Toolbar toolbar;
     private DrawerLayout mDrawerLayout;
@@ -80,9 +78,7 @@ public class BaseActivity extends AppCompatActivity {
 
 
     public void saveServerList() {
-
         String jsonStr = "[";
-
         for (HashMap.Entry<String, ServerItem> entry : mapOfServers.entrySet()) {
             ServerItem thisItem = entry.getValue();
 
@@ -100,13 +96,11 @@ public class BaseActivity extends AppCompatActivity {
 
         jsonStr += "]";
 
-
         // Save it
         System.out.println(jsonStr);
-
         SharedPreferences.Editor editor = getSharedPreferences("mstream-settings", MODE_PRIVATE).edit();
         editor.putString("servers", jsonStr);
-        editor.commit();
+        editor.apply();
     }
 
     public void getServerList() {
@@ -117,12 +111,10 @@ public class BaseActivity extends AppCompatActivity {
         System.out.println("PULLING LIST:");
         System.out.println(restoredText);
 
-
         // if there is nothing in SharedPreferences, direct user to the ManageServersFragment
         if (restoredText == null) {
             return;
         }
-
 
         try {
             // "I want to iterate though the objects in the array..."
@@ -151,9 +143,7 @@ public class BaseActivity extends AppCompatActivity {
 
         } catch (JSONException e) {
             // TODO:
-
         }
-
     }
 
     // TODO: Test This!!!!
@@ -230,10 +220,8 @@ public class BaseActivity extends AppCompatActivity {
             }
         }
 
-
         NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
         serverSpinner = (Spinner) navigationView.getMenu().findItem(R.id.navigation_drawer_item3).getActionView();
-
 
         // serverSpinner = (Spinner) findViewById(R.id.serverSpinner);
         ArrayAdapter<String> serverSpinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, listOfServerNames);
@@ -269,7 +257,6 @@ public class BaseActivity extends AppCompatActivity {
 
 
     ServiceConnection mConnection = new ServiceConnection() {
-
         public void onServiceDisconnected(ComponentName name) {
             mBounded = false;
             mJukebox = null;
@@ -320,7 +307,6 @@ public class BaseActivity extends AppCompatActivity {
             }
         });
 
-
         // setContentView(R.layout.fragment_file_browser);
 
         this.seekBar = (SeekBar) findViewById(R.id.seek_bar);
@@ -336,7 +322,6 @@ public class BaseActivity extends AppCompatActivity {
         Intent mIntent = new Intent(this, JukeboxService.class);
         bindService(mIntent, mConnection, Context.BIND_AUTO_CREATE);
 
-
         // On play/pause button click
         Button playButton = (Button) findViewById(R.id.play_button);
         playButton.setOnClickListener(new View.OnClickListener() {
@@ -346,7 +331,6 @@ public class BaseActivity extends AppCompatActivity {
                 playPause();
             }
         });
-
 
         //Broadcast Manager
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, new IntentFilter("new-track"));
@@ -402,7 +386,6 @@ public class BaseActivity extends AppCompatActivity {
                 return;
             }
 
-
             // Create a new Fragment to be placed in the activity layout
 //            final FileBrowserFragment fileBrowserFragment = new FileBrowserFragment();
 //            final PlaylistFragment playlistFragment = new PlaylistFragment();
@@ -421,10 +404,8 @@ public class BaseActivity extends AppCompatActivity {
                 changeToBrowser();
             }
 
-
             // TODO: Mashing the switch button crashes the app
             // TODO: Fragments don't hold their state
-
         }
     }
 
@@ -458,7 +439,6 @@ public class BaseActivity extends AppCompatActivity {
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-
             seekBar.setMax(mJukebox.getDur());
             seekBar.setProgress(mJukebox.getPos());
             myHandler.postDelayed(UpdateSongTime, 100); // TODO: Should we call this again
@@ -476,7 +456,7 @@ public class BaseActivity extends AppCompatActivity {
     };
 
 
-    public void addTrack(aListItem selectedItem) {
+    public void addTrack(ListItem selectedItem) {
         mJukebox.addTrackToPlaylist(selectedItem);
     }
 
@@ -484,7 +464,7 @@ public class BaseActivity extends AppCompatActivity {
         return mJukebox.getPlaylist();
     }
 
-    public void goToSelectedTrack(aListItem item) {
+    public void goToSelectedTrack(ListItem item) {
         mJukebox.goToSelectedTrack(item);
     }
 

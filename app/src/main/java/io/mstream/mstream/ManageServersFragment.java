@@ -29,7 +29,6 @@ public class ManageServersFragment extends Fragment {
         // Required empty public constructor
     }
 
-
     EditText _nameText;
     EditText _urlText;
     EditText _usernameText;
@@ -160,10 +159,8 @@ public class ManageServersFragment extends Fragment {
 
     public boolean validate() {
         boolean valid = true;
-
         String name = _nameText.getText().toString();
         String url = _urlText.getText().toString();
-
 
         if (name.isEmpty() || name.length() < 3) {
             _nameText.setError("at least 3 characters");
@@ -179,10 +176,6 @@ public class ManageServersFragment extends Fragment {
 //        } else {
 //            _urlText.setError(null);
 //        }
-
-
         return valid;
     }
-
-
 }
