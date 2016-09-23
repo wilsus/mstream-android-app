@@ -64,7 +64,7 @@ public class ManageServersFragment extends Fragment {
         _usernameText = (EditText) view.findViewById(R.id.input_username);
         _passwordText = (EditText) view.findViewById(R.id.input_password);
         _urlText = (EditText) view.findViewById(R.id.input_url);
-        _addServerButton = (Button) view.findViewById(R.id.button_addServer);
+        _addServerButton = (Button) view.findViewById(R.id.add_server);
         _makeDefault = (CheckBox) view.findViewById(R.id.make_default);
 
         _addServerButton.setOnClickListener(new View.OnClickListener() {

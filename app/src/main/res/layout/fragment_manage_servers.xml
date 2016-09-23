@@ -1,69 +1,63 @@
-<FrameLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:fitsSystemWindows="true">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingLeft="24dp"
+    android:paddingRight="24dp"
+    android:paddingTop="12dp">
 
-    <LinearLayout
+    <!--<ImageView android:src="@drawable/logo"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="72dp"-->
+    <!--android:layout_marginBottom="24dp"-->
+    <!--android:layout_gravity="center_horizontal" />-->
+
+    <!--  Name Label -->
+    <EditText
+        android:id="@+id/input_name"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:paddingLeft="24dp"
-        android:paddingRight="24dp"
-        android:paddingTop="12dp">
+        android:layout_height="wrap_content"
+        android:hint="@string/name"
+        android:inputType="textCapWords"/>
 
-        <!--<ImageView android:src="@drawable/logo"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="72dp"-->
-        <!--android:layout_marginBottom="24dp"-->
-        <!--android:layout_gravity="center_horizontal" />-->
+    <!--  URL Label -->
+    <EditText
+        android:id="@+id/input_url"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/url"
+        android:inputType="textUri"/>
 
-        <!--  Name Label -->
-        <EditText
-            android:id="@+id/input_name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Name"
-            android:inputType="textCapWords"/>
+    <!-- Email -->
+    <EditText
+        android:id="@+id/input_username"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/username"
+        android:inputType="text"/>
 
-        <!--  URL Label -->
-        <EditText
-            android:id="@+id/input_url"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="URL"
-            android:inputType="textUri"/>
+    <!-- Password Label -->
+    <EditText
+        android:id="@+id/input_password"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/password"
+        android:inputType="textPassword"/>
 
-        <!-- Email -->
-        <EditText
-            android:id="@+id/input_username"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Username"
-            android:inputType="text"/>
+    <!-- Signup Button -->
+    <CheckBox
+        android:id="@+id/make_default"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/make_default"/>
 
-        <!-- Password Label -->
-        <EditText
-            android:id="@+id/input_password"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Password"
-            android:inputType="textPassword"/>
-
-        <!-- Signup Button -->
-        <CheckBox
-            android:id="@+id/make_default"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Make Default"/>
-
-        <android.support.v7.widget.AppCompatButton
-            android:id="@+id/button_addServer"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
-            android:layout_marginTop="24dp"
-            android:padding="12dp"
-            android:text="Add Server"/>
-    </LinearLayout>
-</FrameLayout>
+    <Button
+        android:id="@+id/add_server"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:layout_marginTop="24dp"
+        android:padding="12dp"
+        android:text="@string/add_server"/>
+</LinearLayout>

@@ -11,12 +11,10 @@
 
     <item android:title="@string/nav_server_menu">
         <menu>
-
             <item
                 android:id="@+id/navigation_drawer_item3"
                 android:title=""
                 app:actionLayout="@layout/spinner"/>
-
         </menu>
     </item>
 </menu>

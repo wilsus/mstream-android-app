@@ -38,7 +38,7 @@ public class PlaylistBaseAdapter extends BaseAdapter {
 //        MyViewHolder mViewHolder;
 //
 //        if (convertView == null) {
-//            convertView = inflater.inflate(R.layout.rowlayout, parent, false);
+//            convertView = inflater.inflate(R.layout.row_layout, parent, false);
 //            mViewHolder = new MyViewHolder(convertView);
 //            convertView.setTag(mViewHolder);
 //        } else {
@@ -72,7 +72,7 @@ public class PlaylistBaseAdapter extends BaseAdapter {
         final View result;
 
         if (convertView == null) {
-            result = LayoutInflater.from(parent.getContext()).inflate(R.layout.playlistrowlayout, parent, false);
+            result = LayoutInflater.from(parent.getContext()).inflate(R.layout.playlist_row_layout, parent, false);
         } else {
             result = convertView;
         }

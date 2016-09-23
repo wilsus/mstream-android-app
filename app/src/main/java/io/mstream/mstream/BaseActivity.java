@@ -323,7 +323,7 @@ public class BaseActivity extends AppCompatActivity {
 
         // setContentView(R.layout.fragment_file_browser);
 
-        this.seekBar = (SeekBar) findViewById(R.id.seekBar);
+        this.seekBar = (SeekBar) findViewById(R.id.seek_bar);
         // this.seekBar.setClickable(false);
 
         // seekBar.setOnSeekBarChangeListener(this);
@@ -338,7 +338,7 @@ public class BaseActivity extends AppCompatActivity {
 
 
         // On play/pause button click
-        Button playButton = (Button) findViewById(R.id.playButton);
+        Button playButton = (Button) findViewById(R.id.play_button);
         playButton.setOnClickListener(new View.OnClickListener() {
 
             @Override

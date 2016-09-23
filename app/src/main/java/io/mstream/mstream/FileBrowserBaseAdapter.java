@@ -39,7 +39,7 @@ public class FileBrowserBaseAdapter extends BaseAdapter {
         final View result;
 
         if (convertView == null) {
-            result = LayoutInflater.from(parent.getContext()).inflate(R.layout.rowlayout, parent, false);
+            result = LayoutInflater.from(parent.getContext()).inflate(R.layout.row_layout, parent, false);
         } else {
             result = convertView;
         }

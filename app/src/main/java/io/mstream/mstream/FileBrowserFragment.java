@@ -101,7 +101,8 @@ public class FileBrowserFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_file_browser, container, false);
 
         // Back Button click
-        Button backButton = (Button) view.findViewById(R.id.backButton);
+        // TODO: should use device's back button
+        Button backButton = (Button) view.findViewById(R.id.back_button);
         backButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -112,7 +113,7 @@ public class FileBrowserFragment extends Fragment {
 
 
         // Add All Button Click
-        Button addAllButton = (Button) view.findViewById(R.id.addAllButton);
+        Button addAllButton = (Button) view.findViewById(R.id.add_all);
         addAllButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -285,7 +286,6 @@ public class FileBrowserFragment extends Fragment {
     }
 
     public void goBack() {
-
         if (!directoryMap.getLast().equals("")) {
             directoryMap.removeLast();
             callServer(directoryMap.getLast(), true);

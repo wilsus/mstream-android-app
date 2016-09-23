@@ -3,30 +3,29 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context="io.mstream.mstream.FileBrowserFragment">
 
     <!-- TODO: Update blank fragment layout -->
 
     <Button
-        android:id="@+id/backButton"
+        android:id="@+id/back_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal|top"
-        android:text="Back"/>
+        android:layout_alignParentStart="true"
+        android:text="@string/back"/>
+
+    <Button
+        android:id="@+id/add_all"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:text="@string/all"/>
 
     <ListView
         android:id="@+id/listViewX"
         android:layout_width="match_parent"
-        android:layout_height="fill_parent"
-        android:layout_below="@id/backButton"
-        android:layout_gravity="center_horizontal|bottom"/>
-
-    <Button
-        android:id="@+id/addAllButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:text="All"/>
+        android:layout_height="match_parent"
+        android:layout_alignParentBottom="true"
+        android:layout_below="@id/add_all"/>
 </RelativeLayout>
