@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 23
-    buildToolsVersion "23.0.1"
+    buildToolsVersion "23.0.3"
 
     defaultConfig {
         applicationId "io.mstream.mstream"
@@ -20,11 +20,11 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    testCompile 'junit:junit:4.12'
     compile project(":volley")
-    compile 'com.android.support:appcompat-v7:23.1.1'
-    compile 'com.android.support:support-v4:23.1.1'
-    compile 'com.android.support:recyclerview-v7:23.1.1'
-    compile 'com.android.support:design:23.2.0'
+    // Google support libraries
+    final supportLibVersion = "24.2.1"
+    compile 'com.android.support:appcompat-v7:' + supportLibVersion
+    compile 'com.android.support:recyclerview-v7:' + supportLibVersion
+    compile 'com.android.support:mediarouter-v7:' + supportLibVersion
+    compile 'com.android.support:design:' + supportLibVersion
 }
