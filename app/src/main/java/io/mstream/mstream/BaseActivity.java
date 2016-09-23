@@ -24,7 +24,6 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -305,7 +304,7 @@ public class BaseActivity extends AppCompatActivity  {
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar actionBar = getSupportActionBar();
-        actionBar.setHomeAsUpIndicator(android.R.drawable.ic_menu_manage);
+        actionBar.setHomeAsUpIndicator(R.drawable.ic_settings_white_24dp);
         actionBar.setDisplayHomeAsUpEnabled(true);
 //
         // Navigation Menu
