@@ -18,7 +18,9 @@ import io.mstream.mstream.JukeboxService.LocalBinder;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBar;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -155,10 +157,12 @@ public class BaseActivity extends AppCompatActivity  {
                 // If it's the default server, set it here
                 if(isDefault.equals(true)){
                     selectedServer = newServerItem;
+
                 }
 
                 mapOfServers.put(name, newServerItem);
             }
+
         }catch( JSONException e){
             // TODO:
 
@@ -229,23 +233,44 @@ public class BaseActivity extends AppCompatActivity  {
 
     public void populateSpinner(){
         // TODO: Handle an empty list of servers
+        String selectdeKey = null;
 
         ArrayList<String> listOfServerNames =  new ArrayList<>();
         for(String key : mapOfServers.keySet() ){
             listOfServerNames.add(key);
+
+            if( selectedServer != null &&  key.equals(selectedServer.getServerName())){
+                selectdeKey = key;
+            }
         }
 
-        serverSpinner = (Spinner) findViewById(R.id.serverSpinner);
+
+        NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
+        serverSpinner = (Spinner) navigationView.getMenu().findItem(R.id.navigation_drawer_item3).getActionView();
+
+
+        // serverSpinner = (Spinner) findViewById(R.id.serverSpinner);
         ArrayAdapter<String> serverSpinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, listOfServerNames);
         serverSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         serverSpinner.setAdapter(serverSpinnerAdapter);
         // serverSpinner.setSelection(0);
+
+        if(selectdeKey != null){
+            serverSpinner.setSelection(serverSpinnerAdapter.getPosition(selectdeKey));
+        }
+
         serverSpinner.setOnItemSelectedListener( new AdapterView.OnItemSelectedListener() {
 
             @Override
             public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
                 String serverName = serverSpinner.getSelectedItem().toString();
                 selectedServer = mapOfServers.get(serverName);
+
+                // TODO: Reload current fragment
+                changeToBrowser();
+
+                // close drawer
+                mDrawerLayout.closeDrawers();
             }
 
             @Override
@@ -298,7 +323,6 @@ public class BaseActivity extends AppCompatActivity  {
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(MenuItem menuItem) {
-                // TODO: Put Add Server Button here
 
 //                menuItem.setChecked(true);
                 mDrawerLayout.closeDrawers();

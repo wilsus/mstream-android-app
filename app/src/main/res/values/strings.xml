@@ -11,7 +11,7 @@
         <string name="nav_item_attachment">Attachment</string>
         <string name="nav_item_images">Images</string>
         <string name="nav_item_location">My Location</string>
-        <string name="nav_sub_menu">Sub Menu</string>
+        <string name="nav_server_menu">Servers</string>
         <string name="nav_sub_menu_item01">Sub Menu Item 1</string>
         <string name="nav_sub_menu_item02">Sub Menu Item 2</string>
         <string name="drawer_header_text">Drawer Header</string>

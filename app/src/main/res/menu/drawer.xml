@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <group android:checkableBehavior="single">
         <item
@@ -8,21 +9,13 @@
             android:title="@string/nav_item_server" />
     </group>
 
-    <item android:title="@string/nav_sub_menu">
+    <item android:title="@string/nav_server_menu">
         <menu>
-            <item
-                android:icon="@drawable/ic_emoticon"
-                android:title="@string/nav_sub_menu_item01" />
-            <item
-                android:icon="@drawable/ic_emoticon"
-                android:title="@string/nav_sub_menu_item02" />
 
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Add Server"
-                android:id="@+id/add_server_button"
-                android:visibility="gone"/>
+            <item
+                android:id="@+id/navigation_drawer_item3"
+                android:title=""
+                app:actionLayout="@layout/spinner"/>
 
         </menu>
     </item>
