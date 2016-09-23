@@ -18,4 +18,6 @@
         <string name="second_activity_text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin consectetur diam id aliquam scelerisque. Donec ultrices lacus vel dignissim pharetra. Vivamus pharetra augue quis rhoncus placerat. Sed ultricies at risus non cursus. Nam rutrum leo nec placerat consectetur. Vestibulum feugiat eleifend diam, nec interdum augue tincidunt sit amet. Praesent feugiat est auctor lacus consectetur, vitae pellentesque dolor laoreet.</string>
         <string name="title_activity_second">SecondActivity</string>
         <string name="nav_item_server" >Add Server</string>
+    <string name="action_browser">Open Browser</string>
+    <string name="action_playlist">Playlist View</string>
 </resources>

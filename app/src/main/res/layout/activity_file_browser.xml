@@ -18,8 +18,7 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="?attr/colorPrimary"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark" />
-
+        android:theme="@style/ThemeOverlay.AppCompat.Dark"/>
 
     <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/fragment_container"
@@ -47,26 +46,6 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
-
-    <ImageButton
-        android:layout_width="50dip"
-        android:layout_height="45dip"
-        android:background="@drawable/file"
-        android:id="@+id/file_browser"
-        android:layout_toLeftOf="@+id/playlist_button"
-        android:layout_toStartOf="@+id/playlist_button" />
-
-    <ImageButton
-        android:layout_width="50dip"
-        android:layout_height="45dip"
-        android:background="@drawable/playlist"
-        android:id="@+id/playlist_button"
-        android:layout_alignBottom="@+id/toolbar"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
-
-
-
 
 </RelativeLayout>
     <android.support.design.widget.NavigationView
