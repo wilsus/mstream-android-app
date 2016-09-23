@@ -1,26 +1,20 @@
 package io.mstream.mstream;
 
-import android.graphics.Color;
-import android.widget.BaseAdapter;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
+import android.widget.BaseAdapter;
 import android.widget.TextView;
-
 
 import java.util.LinkedList;
 
 
-public class PlaylistBaseAdapter extends BaseAdapter{
+public class PlaylistBaseAdapter extends BaseAdapter {
     private final LinkedList<aListItem> mData;
 
     public PlaylistBaseAdapter(LinkedList<aListItem> playlist) {
         this.mData = playlist;
     }
-
-
 
 
     @Override
@@ -73,8 +67,6 @@ public class PlaylistBaseAdapter extends BaseAdapter{
 //    }
 
 
-
-
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         final View result;
@@ -102,9 +94,6 @@ public class PlaylistBaseAdapter extends BaseAdapter{
 
         return result;
     }
-
-
-
 
 
 }

@@ -15,24 +15,24 @@ public class aListItem {
         this.currrentlyPlaying = false;
     }
 
-    public String getItemName(){
+    public String getItemName() {
         return this.name;
     }
 
-    public String getItemType(){
+    public String getItemType() {
         return this.type;
     }
 
-    public String getItemLink(){
+    public String getItemLink() {
         return this.link;
 
     }
 
-    public void setCurrrentlyPlaying(boolean bool){
+    public void setCurrrentlyPlaying(boolean bool) {
         this.currrentlyPlaying = bool;
     }
 
-    public boolean getCurrentlyPlayingStatus(){
+    public boolean getCurrentlyPlayingStatus() {
         return this.currrentlyPlaying;
 
     }

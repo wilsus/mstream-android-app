@@ -37,7 +37,6 @@ public class PlaylistFragment extends Fragment {
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
-     *
      * @return A new instance of fragment PlaylistFragment.
      */
     // TODO: Rename and change types and number of parameters
@@ -58,15 +57,13 @@ public class PlaylistFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view =  inflater.inflate(R.layout.fragment_playlist, container, false);
-        ListView listView  = (ListView) view.findViewById(R.id.playlistView);
+        View view = inflater.inflate(R.layout.fragment_playlist, container, false);
+        ListView listView = (ListView) view.findViewById(R.id.playlistView);
 
-        LinkedList<aListItem> playlist =  ((BaseActivity)getActivity()).getPlaylist();
+        LinkedList<aListItem> playlist = ((BaseActivity) getActivity()).getPlaylist();
 
         this.adapter = new PlaylistBaseAdapter(playlist);
         listView.setAdapter(this.adapter);
-
-
 
 
         // On Click
@@ -87,11 +84,8 @@ public class PlaylistFragment extends Fragment {
         });
 
 
-
-
         return view;
     }
-
 
 
     @Override
@@ -103,7 +97,7 @@ public class PlaylistFragment extends Fragment {
 
         }
         //else {
-            // throw new RuntimeException(context.toString() + " must implement OnFragmentInteractionListener");
+        // throw new RuntimeException(context.toString() + " must implement OnFragmentInteractionListener");
         //}
     }
 
@@ -127,7 +121,6 @@ public class PlaylistFragment extends Fragment {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
     }
-
 
 
     // Listen for new song calls

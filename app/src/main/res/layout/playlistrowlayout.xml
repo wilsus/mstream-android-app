@@ -13,20 +13,20 @@
         android:layout_height="wrap_content"
 
         android:layout_gravity="center"
-        android:layout_centerVertical="true" />
+        android:layout_centerVertical="true"/>
 
     <!--<Button-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="match_parent"-->
-        <!--android:textAppearance="?android:attr/textAppearanceLarge"-->
-        <!--android:text="X"-->
-        <!--android:id="@+id/button9"-->
-        <!--android:layout_gravity="center_vertical|end"-->
-        <!--android:background="#f2545e"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:textAppearance="?android:attr/textAppearanceLarge"-->
+    <!--android:text="X"-->
+    <!--android:id="@+id/button9"-->
+    <!--android:layout_gravity="center_vertical|end"-->
+    <!--android:background="#f2545e"-->
 
 
-        <!--android:layout_alignParentRight="true"-->
-        <!--android:layout_alignParentEnd="true" />-->
+    <!--android:layout_alignParentRight="true"-->
+    <!--android:layout_alignParentEnd="true" />-->
 
 
-</RelativeLayout >
+</RelativeLayout>

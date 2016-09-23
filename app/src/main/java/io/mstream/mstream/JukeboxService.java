@@ -1,26 +1,21 @@
 package io.mstream.mstream;
 
 import android.app.Service;
-
-
 import android.content.Intent;
-import android.net.Uri;
-import android.os.IBinder;
-import android.os.Binder;
-
-
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
+import android.net.Uri;
+import android.os.Binder;
+import android.os.IBinder;
+import android.support.v4.content.LocalBroadcastManager;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
-import android.support.v4.content.LocalBroadcastManager;
-
 
 public class JukeboxService extends Service {
-    MediaPlayer jukebox =  new MediaPlayer();
+    MediaPlayer jukebox = new MediaPlayer();
 
     // We need to track the status
     boolean isSongLoaded = false;
@@ -36,10 +31,9 @@ public class JukeboxService extends Service {
     // Store the server list here
     ArrayList serverList = new ArrayList();
 
-    public void addServer(ServerItem server){
+    public void addServer(ServerItem server) {
 
     }
-
 
 
     // TODO Is this needed anymore ?
@@ -47,15 +41,15 @@ public class JukeboxService extends Service {
 
     }
 
-    public LinkedList<aListItem> getPlaylist(){
+    public LinkedList<aListItem> getPlaylist() {
         return this.playlist;
     }
 
 
     // Add a track to playlist
-    public void addTrackToPlaylist(aListItem trackItem){
+    public void addTrackToPlaylist(aListItem trackItem) {
         // If the linked list is empty, set the currently playing status
-        if(this.playlist.isEmpty()){
+        if (this.playlist.isEmpty()) {
             trackItem.setCurrrentlyPlaying(true);
 
             // Set the cache to 1, because there will only be one item on the list
@@ -71,19 +65,20 @@ public class JukeboxService extends Service {
     }
 
 
-
-    public int getPos(){
+    public int getPos() {
         return this.jukebox.getCurrentPosition();
     }
-    public boolean isPlaying(){
+
+    public boolean isPlaying() {
         return this.jukebox.isPlaying();
     }
-    public int getDur(){
+
+    public int getDur() {
         return this.jukebox.getDuration();
     }
 
     //
-    public void playTrack(String url){
+    public void playTrack(String url) {
         try {
 
             this.isSongLoaded = false;
@@ -93,8 +88,7 @@ public class JukeboxService extends Service {
 
 
             //url = url.replace(" ", "%20");
-            jukebox.setDataSource(getApplicationContext(), Uri.parse( url));
-
+            jukebox.setDataSource(getApplicationContext(), Uri.parse(url));
 
 
             // Old way of doing things
@@ -117,8 +111,7 @@ public class JukeboxService extends Service {
                 }
             });
 
-        }
-        catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
 
             e.getCause();
             //Toast.makeText(getApplicationContext(), "You might not set the URI correctly!", Toast.LENGTH_LONG).show();
@@ -126,30 +119,30 @@ public class JukeboxService extends Service {
             //Toast.makeText(getApplicationContext(), "You might not set the URI correctly!", Toast.LENGTH_LONG).show();
             e.getCause();
 
-        }catch(IOException e){
+        } catch (IOException e) {
             e.getCause();
 
         }
     }
 
 
-    public void removeTrackFromPlaylist(/*???*/){
+    public void removeTrackFromPlaylist(/*???*/) {
 
     }
 
-    public void seek(int time){
+    public void seek(int time) {
         this.jukebox.seekTo(time);
     }
 
 
-    public void goToNextTrack(){
+    public void goToNextTrack() {
         Integer currentTrackIndex = findCurrentlyPlaying();
         Integer nextTrackIndex = currentTrackIndex;
         nextTrackIndex++;
-        aListItem currentTrackItem =  this.playlist.get(currentTrackIndex);
+        aListItem currentTrackItem = this.playlist.get(currentTrackIndex);
 
         // Check if it's the last element in the list
-        if(currentTrackItem == this.playlist.getLast()){
+        if (currentTrackItem == this.playlist.getLast()) {
             return;
         }
 
@@ -159,27 +152,29 @@ public class JukeboxService extends Service {
 
         playTrack(nextTrackItem.getItemLink());
     }
-    public void goToPreviousTrack(){
+
+    public void goToPreviousTrack() {
 
     }
-    public void goToSelectedTrack(aListItem item){
+
+    public void goToSelectedTrack(aListItem item) {
         // TODO: make this more efficient
-            // Check the playlsit cache
-                // Remove currently playing status if true
-            // Loop through playlist
-                // Break if we find the item
+        // Check the playlsit cache
+        // Remove currently playing status if true
+        // Loop through playlist
+        // Break if we find the item
 
         // Loop through playlist
         for (int i = 0; i < this.playlist.size(); i++) {
             // If we find the currently playing item
-            if(checkIfCurrentlyPlaying(i)){
+            if (checkIfCurrentlyPlaying(i)) {
                 // Remove currently playing status
                 this.playlist.get(i).setCurrrentlyPlaying(false);
 
             }
 
             // if the items match
-            if(item == this.playlist.get(i) ){
+            if (item == this.playlist.get(i)) {
                 // Reset the playlist cache, and set the item to currntlyPlaying = true
                 this.playlist.get(i).setCurrrentlyPlaying(true);
                 this.playlistCache = i;
@@ -191,35 +186,39 @@ public class JukeboxService extends Service {
         }
 
     }
-    public void goToRandomTrack(){
+
+    public void goToRandomTrack() {
 
     }
-    public void changeTrackPosition(){
+
+    public void changeTrackPosition() {
 
     }
 
 
-    public void playPause(){
-        try{
-            if(isPlaying()){
+    public void playPause() {
+        try {
+            if (isPlaying()) {
                 jukebox.pause();
-            }else if(this.isSongLoaded) {
+            } else if (this.isSongLoaded) {
                 jukebox.start();
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.println("Exception thrown  :" + e);
         }
 
     }
 
-    public void startPlaying(){
+    public void startPlaying() {
 
     }
-    public void stopPlaying(){
+
+    public void stopPlaying() {
 
     }
+
     // Delete entire playlist
-    public void blowAwayPlaylist(){
+    public void blowAwayPlaylist() {
 
     }
     // Todo: This var will be a cache of what song is currently playling
@@ -240,10 +239,6 @@ public class JukeboxService extends Service {
     }
 
 
-
-
-
-
 //    @Override
 //    public IBinder onBind(Intent intent) {
 //        // TODO: Return the communication channel to the service.
@@ -251,12 +246,11 @@ public class JukeboxService extends Service {
 //    }
 
 
-
     /**
      * Initialize the media player
      */
     @Override
-    public void onCreate(){
+    public void onCreate() {
 
         // Set an on song completion listener
         this.jukebox.setOnCompletionListener(new OnCompletionListener() {
@@ -271,25 +265,25 @@ public class JukeboxService extends Service {
 
     // Find Global
     // TODO: Should this return the integer, or actual song item
-    public Integer findCurrentlyPlaying(){
+    public Integer findCurrentlyPlaying() {
         // TODO: If playlist is empty, return -1
-        if(this.playlist.isEmpty()){
+        if (this.playlist.isEmpty()) {
             return -1;
         }
 
         // Check Playlist Cache
-        if(checkIfCurrentlyPlaying(this.playlistCache)){
+        if (checkIfCurrentlyPlaying(this.playlistCache)) {
             return this.playlistCache;
-        }else{
+        } else {
             // TODO: Log an error.  The playlist cache should theoretically never be off
 
             // Loop through the linked list
             for (int i = 0; i < this.playlist.size(); i++) {
 
-               if(checkIfCurrentlyPlaying(i)){
-                   this.playlistCache = i;
-                   return i;
-               }
+                if (checkIfCurrentlyPlaying(i)) {
+                    this.playlistCache = i;
+                    return i;
+                }
             }
         }
 
@@ -300,17 +294,12 @@ public class JukeboxService extends Service {
     }
 
 
-
     // TODO: Function that checks if linked linked list item is currently playing
-    public boolean checkIfCurrentlyPlaying(int index){
+    public boolean checkIfCurrentlyPlaying(int index) {
         aListItem testThisItem = this.playlist.get(index);
 
         return testThisItem.getCurrentlyPlayingStatus();
     }
-
-
-
-
 
 
     private void sendMessage(String message) {
@@ -319,7 +308,6 @@ public class JukeboxService extends Service {
         intent.putExtra("message", message);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
-
 
 
 }

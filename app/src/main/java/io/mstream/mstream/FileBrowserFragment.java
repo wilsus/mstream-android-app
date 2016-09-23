@@ -12,7 +12,6 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 
-
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -30,7 +29,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
-
 
 
 /**
@@ -53,7 +51,7 @@ public class FileBrowserFragment extends Fragment {
     public LinkedList<aListItem> serverFileList;
 
     private LinkedList<String> directoryMap = new LinkedList<>();
-    private LinkedList<Parcelable>  scrollPosition = new LinkedList<>();
+    private LinkedList<Parcelable> scrollPosition = new LinkedList<>();
 
     public String currentServerAddress = "";
 
@@ -64,7 +62,6 @@ public class FileBrowserFragment extends Fragment {
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
-     *
      * @return A new instance of fragment FileBrowserFragment.
      */
     // TODO: Rename and change types and number of parameters
@@ -91,7 +88,7 @@ public class FileBrowserFragment extends Fragment {
 
 
     // TODO: Make multiple server select
-    public String getCurrentServerString(){
+    public String getCurrentServerString() {
         return this.currentServerAddress;
     }
 
@@ -100,24 +97,22 @@ public class FileBrowserFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
 
-
-
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_file_browser, container, false);
 
         // Back Button click
-        Button backButton = (Button)view.findViewById(R.id.backButton);
+        Button backButton = (Button) view.findViewById(R.id.backButton);
         backButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
-                    goBack();
+                goBack();
             }
         });
 
 
         // Add All Button Click
-        Button addAllButton = (Button)view.findViewById(R.id.addAllButton);
+        Button addAllButton = (Button) view.findViewById(R.id.addAllButton);
         addAllButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -155,7 +150,6 @@ public class FileBrowserFragment extends Fragment {
     }
 
 
-
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -172,28 +166,21 @@ public class FileBrowserFragment extends Fragment {
     }
 
 
+    public void addTrackToPlaylist(aListItem selectedItem) {
 
-
-
-    public void addTrackToPlaylist(aListItem selectedItem){
-
-        ((BaseActivity)getActivity()).addTrack(selectedItem);
+        ((BaseActivity) getActivity()).addTrack(selectedItem);
 
     }
 
 
+    public void writeToList(String response, Boolean goBack) {
 
-
-    public void writeToList(String response, Boolean goBack){
-
-        final ListView listView  = (ListView) getView().findViewById(R.id.listViewX);
+        final ListView listView = (ListView) getView().findViewById(R.id.listViewX);
         listView.setAdapter(null);
 
 
-
-
         // Parse JSON and build objects from there
-        try{
+        try {
             JSONObject decodedServerObject = new JSONObject(response);
             JSONArray jObj = decodedServerObject.getJSONArray("contents");
             serverFileList = new LinkedList<>();
@@ -209,28 +196,27 @@ public class FileBrowserFragment extends Fragment {
                 String type = newObj.getString("type");
 
 
-                String link ;
-                if(type.equals("directory")){
+                String link;
+                if (type.equals("directory")) {
                     // For directories use the relative directory path
-                    link = currentPath + newObj.getString("name") +  "/";
-                }else{
+                    link = currentPath + newObj.getString("name") + "/";
+                } else {
                     // For music we provide the whole URL
                     // This way the playlist can handle files from multiple servers
                     String urlStr = serverAddress + currentPath + newObj.getString("name");
 
-                    try{
+                    try {
                         // We need to encode the URL to handle files with special characters
                         // Thank You stack overflow
                         URL url = new URL(urlStr);
                         URI uri = new URI(url.getProtocol(), url.getUserInfo(), url.getHost(), url.getPort(), url.getPath(), url.getQuery(), url.getRef());
                         link = uri.toASCIIString();
 
-                    }catch(MalformedURLException e){
+                    } catch (MalformedURLException e) {
                         link = ""; // TODO: Better exception handling
-                    }catch(URISyntaxException e){
+                    } catch (URISyntaxException e) {
                         link = "";
                     }
-
 
 
                 }
@@ -246,7 +232,7 @@ public class FileBrowserFragment extends Fragment {
             listView.setAdapter(adapter);
 
             // Save scroll position
-            if(!scrollPosition.isEmpty() && goBack.equals(true)) {
+            if (!scrollPosition.isEmpty() && goBack.equals(true)) {
 
                 Parcelable thisPos = scrollPosition.removeLast();
                 listView.onRestoreInstanceState(thisPos);
@@ -258,28 +244,25 @@ public class FileBrowserFragment extends Fragment {
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     // final Map.Entry<String, aListItem> itemX = (Map.Entry<String, aListItem>) parent.getItemAtPosition(position);
 
-                    final aListItem thisItem = (aListItem)  parent.getItemAtPosition(position);
+                    final aListItem thisItem = (aListItem) parent.getItemAtPosition(position);
 
                     // final aListItem thisItem = itemX.getValue();
                     final String link = thisItem.getItemLink();
                     String type = thisItem.getItemType();
 
 
-
-
                     // TODO: Create a new Activity
                     //Intent intent = new Intent(this, BaseActivity.class);
                     // intent.putExtra("path", filename);
                     //startActivity(intent);
-                    if(type.equals("directory")){
+                    if (type.equals("directory")) {
 
-                        final ListView listView  = (ListView) getView().findViewById(R.id.listViewX);
+                        final ListView listView = (ListView) getView().findViewById(R.id.listViewX);
                         Parcelable state = listView.onSaveInstanceState();
                         scrollPosition.addLast(state);
 
                         goToDirectory(link);
-                    }
-                    else{
+                    } else {
 
                         addTrackToPlaylist(thisItem);
                     }
@@ -288,22 +271,22 @@ public class FileBrowserFragment extends Fragment {
                 }
             });
 
-        }catch (JSONException e){
+        } catch (JSONException e) {
             JSONObject decodedServerObject = new JSONObject();
             // TODO: Do Something
         }
     }
 
 
-    public void goToDirectory(final String directory){
+    public void goToDirectory(final String directory) {
         directoryMap.addLast(directory);
 
         callServer(directory, false);
     }
 
-    public void goBack(){
+    public void goBack() {
 
-        if(!directoryMap.getLast().equals("")){
+        if (!directoryMap.getLast().equals("")) {
             directoryMap.removeLast();
             callServer(directoryMap.getLast(), true);
 
@@ -311,7 +294,7 @@ public class FileBrowserFragment extends Fragment {
 
     }
 
-    public void callServer(final String directory, final Boolean goBack){
+    public void callServer(final String directory, final Boolean goBack) {
         // Server URL
         String url = getCurrentServerString() + "dirparser";
 
@@ -319,24 +302,24 @@ public class FileBrowserFragment extends Fragment {
         StringRequest postRequest = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             // JsonObjectRequest postRequest = new JsonObjectRequest(Request.Method.POST, url, null, new Response.Listener<JSONObject>() {
             @Override
-            public void onResponse(String  response) {
+            public void onResponse(String response) {
 
                 writeToList(response, goBack);
             }
         },
-            new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    error.printStackTrace();
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        error.printStackTrace();
+                    }
                 }
-            }
         ) {
             @Override
             protected Map<String, String> getParams() {  // Hash Map of POST params
-                Map<String, String>  params = new HashMap<>();
+                Map<String, String> params = new HashMap<>();
                 // the POST parameters:
-                params.put("dir", directory );
-                params.put("filetypes", "[\"mp3\",\"flac\",\"wav\",\"ogg\"]" );
+                params.put("dir", directory);
+                params.put("filetypes", "[\"mp3\",\"flac\",\"wav\",\"ogg\"]");
 
                 return params;
             }

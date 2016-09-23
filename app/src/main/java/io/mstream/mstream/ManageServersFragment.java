@@ -40,7 +40,6 @@ public class ManageServersFragment extends Fragment {
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
-     *
      * @return A new instance of fragment ManageServersFragment.
      */
     // TODO: Rename and change types and number of parameters
@@ -60,15 +59,15 @@ public class ManageServersFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view =  inflater.inflate(R.layout.fragment_manage_servers, container, false);
+        View view = inflater.inflate(R.layout.fragment_manage_servers, container, false);
         _nameText = (EditText) view.findViewById(R.id.input_name);
-        _usernameText =  (EditText) view.findViewById(R.id.input_username);
-        _passwordText =  (EditText) view.findViewById(R.id.input_password);
-        _urlText =  (EditText) view.findViewById(R.id.input_url);
+        _usernameText = (EditText) view.findViewById(R.id.input_username);
+        _passwordText = (EditText) view.findViewById(R.id.input_password);
+        _urlText = (EditText) view.findViewById(R.id.input_url);
         _addServerButton = (Button) view.findViewById(R.id.button_addServer);
         _makeDefault = (CheckBox) view.findViewById(R.id.make_default);
 
-        _addServerButton.setOnClickListener( new View.OnClickListener() {
+        _addServerButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
@@ -120,14 +119,6 @@ public class ManageServersFragment extends Fragment {
     }
 
 
-
-
-
-
-
-
-
-
     public void addServer() {
         // Validate
         if (!validate()) {
@@ -145,8 +136,7 @@ public class ManageServersFragment extends Fragment {
 
         // Create new server Item
         ServerItem newServerItem = new ServerItem(name, url, username, password);
-        newServerItem.setDefault( isDefault );
-
+        newServerItem.setDefault(isDefault);
 
 
         // TODO: Test connection to server.  Return an error if it can't connect
@@ -156,7 +146,7 @@ public class ManageServersFragment extends Fragment {
         // TODO: Check if this function returns an error?
         Boolean status = ((BaseActivity) getActivity()).addItemToServerList(newServerItem);
 
-        if(!status){
+        if (!status) {
             Toast.makeText(getActivity(), "Server Name Already Exists", Toast.LENGTH_LONG).show();
         }
     }
@@ -175,7 +165,6 @@ public class ManageServersFragment extends Fragment {
         String url = _urlText.getText().toString();
 
 
-
         if (name.isEmpty() || name.length() < 3) {
             _nameText.setError("at least 3 characters");
             valid = false;
@@ -190,7 +179,6 @@ public class ManageServersFragment extends Fragment {
 //        } else {
 //            _urlText.setError(null);
 //        }
-
 
 
         return valid;
