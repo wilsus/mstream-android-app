@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Binder;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,6 +16,8 @@ import java.util.LinkedList;
 
 
 public class JukeboxService extends Service {
+    private static final String TAG = "JukeboxService";
+
     MediaPlayer jukebox = new MediaPlayer();
 
     // We need to track the status
@@ -184,7 +187,7 @@ public class JukeboxService extends Service {
                 jukebox.start();
             }
         } catch (Exception e) {
-            System.out.println("Exception thrown  :" + e);
+            Log.d(TAG, "Exception thrown  :" + e);
         }
 
     }

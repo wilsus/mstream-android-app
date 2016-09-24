@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,6 +45,7 @@ import java.util.Map;
 // TODO: Replace the map Object with an Array
 
 public class FileBrowserFragment extends Fragment {
+    private static final String TAG = "FileBrowserFragment";
 
     private OnFragmentInteractionListener mListener;
 
@@ -76,7 +78,7 @@ public class FileBrowserFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        System.out.println(this.getArguments().getString("server"));
+        Log.d(TAG, this.getArguments().getString("server"));
 
         // Get Server
         this.currentServerAddress = this.getArguments().getString("server");

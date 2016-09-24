@@ -17,6 +17,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -38,6 +39,8 @@ import java.util.LinkedList;
 
 
 public class BaseActivity extends AppCompatActivity {
+    private static final String TAG = "BaseActivity";
+
     JukeboxService mJukebox;
     boolean mBounded;
 
@@ -97,7 +100,7 @@ public class BaseActivity extends AppCompatActivity {
         jsonStr += "]";
 
         // Save it
-        System.out.println(jsonStr);
+        Log.d(TAG, jsonStr);
         SharedPreferences.Editor editor = getSharedPreferences("mstream-settings", MODE_PRIVATE).edit();
         editor.putString("servers", jsonStr);
         editor.apply();
@@ -108,8 +111,8 @@ public class BaseActivity extends AppCompatActivity {
         SharedPreferences prefs = getSharedPreferences("mstream-settings", MODE_PRIVATE);
         String restoredText = prefs.getString("servers", null);
 
-        System.out.println("PULLING LIST:");
-        System.out.println(restoredText);
+        Log.d(TAG, "PULLING LIST:");
+        Log.d(TAG, restoredText);
 
         // if there is nothing in SharedPreferences, direct user to the ManageServersFragment
         if (restoredText == null) {
