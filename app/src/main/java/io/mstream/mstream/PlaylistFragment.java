@@ -37,7 +37,6 @@ public class PlaylistFragment extends Fragment {
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
-     *
      * @return A new instance of fragment PlaylistFragment.
      */
     // TODO: Rename and change types and number of parameters
@@ -58,23 +57,21 @@ public class PlaylistFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view =  inflater.inflate(R.layout.fragment_playlist, container, false);
-        ListView listView  = (ListView) view.findViewById(R.id.playlistView);
+        View view = inflater.inflate(R.layout.fragment_playlist, container, false);
+        ListView listView = (ListView) view.findViewById(R.id.playlistView);
 
-        LinkedList<aListItem> playlist =  ((BaseActivity)getActivity()).getPlaylist();
+        LinkedList<ListItem> playlist = ((BaseActivity) getActivity()).getPlaylist();
 
         this.adapter = new PlaylistBaseAdapter(playlist);
         listView.setAdapter(this.adapter);
 
 
-
-
         // On Click
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                aListItem itemX = (aListItem) parent.getItemAtPosition(position);
+                ListItem itemX = (ListItem) parent.getItemAtPosition(position);
 
-//                final aListItem thisItem = itemX.getValue();
+//                final ListItem thisItem = itemX.getValue();
 //                final String link = thisItem.getItemLink();
 //                String type = thisItem.getItemType();
 
@@ -85,13 +82,8 @@ public class PlaylistFragment extends Fragment {
 
             }
         });
-
-
-
-
         return view;
     }
-
 
 
     @Override
@@ -103,7 +95,7 @@ public class PlaylistFragment extends Fragment {
 
         }
         //else {
-            // throw new RuntimeException(context.toString() + " must implement OnFragmentInteractionListener");
+        // throw new RuntimeException(context.toString() + " must implement OnFragmentInteractionListener");
         //}
     }
 
@@ -129,7 +121,6 @@ public class PlaylistFragment extends Fragment {
     }
 
 
-
     // Listen for new song calls
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
@@ -140,6 +131,4 @@ public class PlaylistFragment extends Fragment {
             adapter.notifyDataSetChanged();
         }
     };
-
-
 }

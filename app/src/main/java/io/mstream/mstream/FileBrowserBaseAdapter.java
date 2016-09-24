@@ -4,19 +4,17 @@ package io.mstream.mstream;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import java.util.LinkedList;
 
 
-
 public class FileBrowserBaseAdapter extends BaseAdapter {
 
-    private final LinkedList<aListItem> mData;
+    private final LinkedList<ListItem> mData;
 
-    public FileBrowserBaseAdapter(LinkedList<aListItem> fileList) {
+    public FileBrowserBaseAdapter(LinkedList<ListItem> fileList) {
         this.mData = fileList;
     }
 
@@ -32,7 +30,7 @@ public class FileBrowserBaseAdapter extends BaseAdapter {
     }
 
     @Override
-    public aListItem getItem(int position) {
+    public ListItem getItem(int position) {
         return mData.get(position);
     }
 
@@ -41,21 +39,21 @@ public class FileBrowserBaseAdapter extends BaseAdapter {
         final View result;
 
         if (convertView == null) {
-            result = LayoutInflater.from(parent.getContext()).inflate(R.layout.rowlayout, parent, false);
+            result = LayoutInflater.from(parent.getContext()).inflate(R.layout.row_layout, parent, false);
         } else {
             result = convertView;
         }
 
-        aListItem item = getItem(position);
+        ListItem item = getItem(position);
 
 
         final String tempName = item.getItemName();
 
         String displayThis;
 
-        if(item.getItemType().equals("directory")){
+        if (item.getItemType().equals("directory")) {
             displayThis = "\uD83D\uDCC1 " + tempName;
-        }else{
+        } else {
             displayThis = "\uD83C\uDFB5 " + tempName;
         }
 
@@ -63,5 +61,4 @@ public class FileBrowserBaseAdapter extends BaseAdapter {
 
         return result;
     }
-
 }

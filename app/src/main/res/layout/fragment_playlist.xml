@@ -1,13 +1,9 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- TODO: make this a recyclerview-->
+<ListView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/playlistView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="io.mstream.mstream.PlaylistFragment">
-
-
-    <ListView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/playlistView"
-        android:layout_gravity="center_horizontal|top" />
-</FrameLayout>
+    android:layout_gravity="center_horizontal|top"
+    tools:context="io.mstream.mstream.PlaylistFragment"/>

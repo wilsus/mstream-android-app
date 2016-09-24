@@ -1,25 +1,23 @@
 package io.mstream.mstream;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
-import android.os.Handler;
-import android.os.Bundle;
-
-import android.os.IBinder;
-import android.content.ComponentName;
 import android.content.ServiceConnection;
-
-import io.mstream.mstream.JukeboxService.LocalBinder;
-
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
 import android.support.design.widget.NavigationView;
-import android.support.v4.app.FragmentActivity;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
-import android.support.v4.view.MenuItemCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -27,118 +25,101 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.Spinner;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Set;
-
-import android.support.v4.content.LocalBroadcastManager;
 import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.support.v7.app.ActionBarActivity;
-
-import android.support.v4.widget.DrawerLayout;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
 
 
+public class BaseActivity extends AppCompatActivity {
+    private static final String TAG = "BaseActivity";
 
-public class BaseActivity extends AppCompatActivity  {
     JukeboxService mJukebox;
     boolean mBounded;
 
     public SeekBar seekBar;
     private Handler myHandler = new Handler();
 
-
     // Server Options
     public ServerItem selectedServer = null;
-    HashMap <String,ServerItem> mapOfServers = new HashMap<String, ServerItem>();
+    HashMap<String, ServerItem> mapOfServers = new HashMap<String, ServerItem>();
     Spinner serverSpinner;
-
 
     Toolbar toolbar;
     private DrawerLayout mDrawerLayout;
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        switch (id) {
+        switch (item.getItemId()) {
             case android.R.id.home:
                 mDrawerLayout.openDrawer(GravityCompat.START);
                 return true;
-//            case R.id.action_settings:
-//                return true;
-        }
+            case R.id.action_browser:
+                changeToBrowser();
+                return true;
 
-        return super.onOptionsItemSelected(item);
+            case R.id.action_playlist:
+                changeToPlaylist();
+                return true;
+
+            default:
+                // If we got here, the user's action was not recognized.
+                // Invoke the superclass to handle it.
+                return super.onOptionsItemSelected(item);
+        }
     }
 
 
-
-
-    public void saveServerList(){
-
+    public void saveServerList() {
         String jsonStr = "[";
-
         for (HashMap.Entry<String, ServerItem> entry : mapOfServers.entrySet()) {
-            ServerItem thisItem =  entry.getValue();
+            ServerItem thisItem = entry.getValue();
 
-             jsonStr +=
+            jsonStr +=
                     "{" +
-                        "\"name\": \"" + thisItem.getServerName() + "\"," +
-                        "\"link\": \"" + thisItem.getServerLink() + "\"," +
-                        "\"username\": \""+ thisItem.getServerUsername() +"\"," +
-                        "\"password\": \""+ thisItem.getServerPassword() +"\"," +
-                        "\"isDefault\": " + Boolean.toString(thisItem.getDefaultVal()) +
-                    "},";
+                            "\"name\": \"" + thisItem.getServerName() + "\"," +
+                            "\"link\": \"" + thisItem.getServerLink() + "\"," +
+                            "\"username\": \"" + thisItem.getServerUsername() + "\"," +
+                            "\"password\": \"" + thisItem.getServerPassword() + "\"," +
+                            "\"isDefault\": " + Boolean.toString(thisItem.getDefaultVal()) +
+                            "},";
         }
         // Remove trailing comma
-        jsonStr =  jsonStr.substring(0, jsonStr.length() - 1);
+        jsonStr = jsonStr.substring(0, jsonStr.length() - 1);
 
         jsonStr += "]";
 
-
-
         // Save it
-        System.out.println( jsonStr );
-
+        Log.d(TAG, jsonStr);
         SharedPreferences.Editor editor = getSharedPreferences("mstream-settings", MODE_PRIVATE).edit();
         editor.putString("servers", jsonStr);
-        editor.commit();
+        editor.apply();
     }
 
-    public void getServerList(){
+    public void getServerList() {
         // get server list from SharedPreferences
         SharedPreferences prefs = getSharedPreferences("mstream-settings", MODE_PRIVATE);
         String restoredText = prefs.getString("servers", null);
 
-        System.out.println( "PULLING LIST:" );
-        System.out.println( restoredText );
-
+        Log.d(TAG, "PULLING LIST:");
+        Log.d(TAG, restoredText);
 
         // if there is nothing in SharedPreferences, direct user to the ManageServersFragment
         if (restoredText == null) {
             return;
         }
 
-
-
-        try{
+        try {
             // "I want to iterate though the objects in the array..."
             JSONArray jsonArray = new JSONArray(restoredText);
 //            JSONObject innerObject = outerObject.getJSONObject("JObjects");
@@ -155,7 +136,7 @@ public class BaseActivity extends AppCompatActivity  {
                 ServerItem newServerItem = new ServerItem(name, url, username, password);
 
                 // If it's the default server, set it here
-                if(isDefault.equals(true)){
+                if (isDefault.equals(true)) {
                     selectedServer = newServerItem;
 
                 }
@@ -163,36 +144,34 @@ public class BaseActivity extends AppCompatActivity  {
                 mapOfServers.put(name, newServerItem);
             }
 
-        }catch( JSONException e){
+        } catch (JSONException e) {
             // TODO:
-
         }
-
     }
 
     // TODO: Test This!!!!
     // I think the default server status is still showing some bugs
-    public Boolean addItemToServerList(ServerItem serverItem){
+    public Boolean addItemToServerList(ServerItem serverItem) {
         String newServerName = serverItem.getServerName();
 
         //  Check to see if server name is already being used
-        if( mapOfServers.get( newServerName)  != null || mapOfServers.containsKey(newServerName) ){
+        if (mapOfServers.get(newServerName) != null || mapOfServers.containsKey(newServerName)) {
             return false;
         }
 
         // If this is marked to be the default server
-        if( serverItem.getDefaultVal() ){
+        if (serverItem.getDefaultVal()) {
 
             // Loop through
             for (HashMap.Entry<String, ServerItem> entry : mapOfServers.entrySet()) {
                 // Change all default statuses to fault
-                ServerItem thisItem =  entry.getValue();
+                ServerItem thisItem = entry.getValue();
                 thisItem.setDefault(false);
             }
         }
 
         // Is this is the first server to be added, make it the default
-        if(mapOfServers.isEmpty()){
+        if (mapOfServers.isEmpty()) {
             serverItem.setDefault(true);
         }
 
@@ -215,14 +194,14 @@ public class BaseActivity extends AppCompatActivity  {
         // Check if no view has focus:
         View view = this.getCurrentFocus();
         if (view != null) {
-            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
 
         return true;
     }
 
-    public void removeServerItemFromList(){
+    public void removeServerItemFromList() {
         // TODO: Find and remove item
 
         populateSpinner();
@@ -231,23 +210,21 @@ public class BaseActivity extends AppCompatActivity  {
         this.saveServerList();
     }
 
-    public void populateSpinner(){
+    public void populateSpinner() {
         // TODO: Handle an empty list of servers
         String selectdeKey = null;
 
-        ArrayList<String> listOfServerNames =  new ArrayList<>();
-        for(String key : mapOfServers.keySet() ){
+        ArrayList<String> listOfServerNames = new ArrayList<>();
+        for (String key : mapOfServers.keySet()) {
             listOfServerNames.add(key);
 
-            if( selectedServer != null &&  key.equals(selectedServer.getServerName())){
+            if (selectedServer != null && key.equals(selectedServer.getServerName())) {
                 selectdeKey = key;
             }
         }
 
-
         NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
         serverSpinner = (Spinner) navigationView.getMenu().findItem(R.id.navigation_drawer_item3).getActionView();
-
 
         // serverSpinner = (Spinner) findViewById(R.id.serverSpinner);
         ArrayAdapter<String> serverSpinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, listOfServerNames);
@@ -255,11 +232,11 @@ public class BaseActivity extends AppCompatActivity  {
         serverSpinner.setAdapter(serverSpinnerAdapter);
         // serverSpinner.setSelection(0);
 
-        if(selectdeKey != null){
+        if (selectdeKey != null) {
             serverSpinner.setSelection(serverSpinnerAdapter.getPosition(selectdeKey));
         }
 
-        serverSpinner.setOnItemSelectedListener( new AdapterView.OnItemSelectedListener() {
+        serverSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
             @Override
             public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
@@ -278,13 +255,11 @@ public class BaseActivity extends AppCompatActivity  {
                 // TODO Auto-generated method stub
 
             }
-        } );
+        });
     }
 
 
-
     ServiceConnection mConnection = new ServiceConnection() {
-
         public void onServiceDisconnected(ComponentName name) {
             mBounded = false;
             mJukebox = null;
@@ -292,29 +267,29 @@ public class BaseActivity extends AppCompatActivity  {
 
         public void onServiceConnected(ComponentName name, IBinder service) {
             mBounded = true;
-            JukeboxService.LocalBinder mLocalBinder = (JukeboxService.LocalBinder)service;
+            JukeboxService.LocalBinder mLocalBinder = (JukeboxService.LocalBinder) service;
             mJukebox = mLocalBinder.getServerInstance();
         }
     };
 
 
-
-
-
-
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_file_browser);
 
-
-
         // Toolbar
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar actionBar = getSupportActionBar();
-        actionBar.setHomeAsUpIndicator(R.drawable.ic_menu);
+        actionBar.setHomeAsUpIndicator(R.drawable.ic_settings_white_24dp);
         actionBar.setDisplayHomeAsUpEnabled(true);
 //
         // Navigation Menu
@@ -327,7 +302,7 @@ public class BaseActivity extends AppCompatActivity  {
 //                menuItem.setChecked(true);
                 mDrawerLayout.closeDrawers();
 
-                if(menuItem.getItemId() == R.id.navigation_item_add_server){
+                if (menuItem.getItemId() == R.id.navigation_item_add_server) {
                     changeToManageServers();
                 }
 
@@ -335,13 +310,9 @@ public class BaseActivity extends AppCompatActivity  {
             }
         });
 
-
-
-
-
         // setContentView(R.layout.fragment_file_browser);
 
-        this.seekBar = (SeekBar) findViewById(R.id.seekBar);
+        this.seekBar = (SeekBar) findViewById(R.id.seek_bar);
         // this.seekBar.setClickable(false);
 
         // seekBar.setOnSeekBarChangeListener(this);
@@ -354,10 +325,9 @@ public class BaseActivity extends AppCompatActivity  {
         Intent mIntent = new Intent(this, JukeboxService.class);
         bindService(mIntent, mConnection, Context.BIND_AUTO_CREATE);
 
-
         // On play/pause button click
-        Button playButton = (Button) findViewById(R.id.playButton);
-        playButton.setOnClickListener( new View.OnClickListener() {
+        Button playButton = (Button) findViewById(R.id.play_button);
+        playButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
@@ -365,16 +335,8 @@ public class BaseActivity extends AppCompatActivity  {
             }
         });
 
-
-
         //Broadcast Manager
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, new IntentFilter("new-track"));
-
-
-
-
-
-
 
 
 // Spinner for selecting servers
@@ -389,17 +351,8 @@ public class BaseActivity extends AppCompatActivity  {
         populateSpinner();
 
 
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
-
-
 
 
         // TODO: Seekbar Change
@@ -425,10 +378,6 @@ public class BaseActivity extends AppCompatActivity  {
 //       });
 
 
-
-
-
-
         // Check that the activity is using the layout version with
         // the fragment_container FrameLayout
         if (findViewById(R.id.fragment_container) != null) {
@@ -439,7 +388,6 @@ public class BaseActivity extends AppCompatActivity  {
             if (savedInstanceState != null) {
                 return;
             }
-
 
             // Create a new Fragment to be placed in the activity layout
 //            final FileBrowserFragment fileBrowserFragment = new FileBrowserFragment();
@@ -452,58 +400,40 @@ public class BaseActivity extends AppCompatActivity  {
 //            this.playlistFragment.setArguments(getIntent().getExtras());
 
 
-
             // Add the ManageServersFragment is there are no servers
-            if(mapOfServers.isEmpty()){
+            if (mapOfServers.isEmpty()) {
                 changeToManageServers();
-            }else{
+            } else {
                 changeToBrowser();
             }
 
-
             // TODO: Mashing the switch button crashes the app
             // TODO: Fragments don't hold their state
-
-
-            // File Browser Button
-            ImageButton fileBrowserButton = (ImageButton) findViewById(R.id.file_browser);
-            fileBrowserButton.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v) {
-                    changeToBrowser();
-                }
-            });
-
-            // Playlist Button
-            ImageButton playlistButton = (ImageButton) findViewById(R.id.playlist_button);
-            playlistButton.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v) {
-                    changeToPlaylist();
-                }
-            });
-
         }
     }
 
 
     // Functions to switch between fragments
-    public void changeToPlaylist(){
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container ,new PlaylistFragment()).commit();
+    public void changeToPlaylist() {
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new PlaylistFragment()).commit();
     }
-    public void changeToBrowser(){
-        if(selectedServer == null){
+
+    public void changeToBrowser() {
+        if (selectedServer == null) {
             Toast.makeText(getApplicationContext(), "You need to select a server", Toast.LENGTH_LONG).show();
             return;
         }
 
         Bundle bundle = new Bundle();
         String server = selectedServer.getServerLink();
-        bundle.putString("server", server );
+        bundle.putString("server", server);
         FileBrowserFragment fileBrowserFrag = new FileBrowserFragment();
         fileBrowserFrag.setArguments(bundle);
 
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fileBrowserFrag ).commit();
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fileBrowserFrag).commit();
     }
-    public void changeToManageServers(){
+
+    public void changeToManageServers() {
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new ManageServersFragment()).commit();
     }
 
@@ -512,8 +442,7 @@ public class BaseActivity extends AppCompatActivity  {
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-
-            seekBar.setMax( mJukebox.getDur());
+            seekBar.setMax(mJukebox.getDur());
             seekBar.setProgress(mJukebox.getPos());
             myHandler.postDelayed(UpdateSongTime, 100); // TODO: Should we call this again
         }
@@ -530,27 +459,21 @@ public class BaseActivity extends AppCompatActivity  {
     };
 
 
-
-
-    public void addTrack(aListItem selectedItem) {
+    public void addTrack(ListItem selectedItem) {
         mJukebox.addTrackToPlaylist(selectedItem);
     }
 
-    public LinkedList getPlaylist(){
+    public LinkedList getPlaylist() {
         return mJukebox.getPlaylist();
     }
 
-    public void goToSelectedTrack(aListItem item){
+    public void goToSelectedTrack(ListItem item) {
         mJukebox.goToSelectedTrack(item);
     }
 
-    public void playPause(){
+    public void playPause() {
         mJukebox.playPause();
     }
-
-
-
-
 
 
 //    public int getDur(){
