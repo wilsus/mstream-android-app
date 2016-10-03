@@ -37,6 +37,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+import io.mstream.mstream.serverlist.ServerItem;
+
 
 public class BaseActivity extends AppCompatActivity {
     private static final String TAG = "BaseActivity";
@@ -79,7 +81,6 @@ public class BaseActivity extends AppCompatActivity {
         }
     }
 
-
     public void saveServerList() {
         String jsonStr = "[";
         for (HashMap.Entry<String, ServerItem> entry : mapOfServers.entrySet()) {
@@ -113,9 +114,9 @@ public class BaseActivity extends AppCompatActivity {
 
         Log.d(TAG, "PULLING LIST: " + restoredText);
 
-        // if there is nothing in SharedPreferences, direct user to the ManageServersFragment
+        // if there is nothing in SharedPreferences, direct user to add a server
         if (restoredText == null) {
-            return;
+            launchAddServerActivity();
         }
 
         try {
@@ -302,7 +303,7 @@ public class BaseActivity extends AppCompatActivity {
                 mDrawerLayout.closeDrawers();
 
                 if (menuItem.getItemId() == R.id.navigation_item_add_server) {
-                    changeToManageServers();
+                    launchAddServerActivity();
                 }
 
                 return true;
@@ -399,9 +400,9 @@ public class BaseActivity extends AppCompatActivity {
 //            this.playlistFragment.setArguments(getIntent().getExtras());
 
 
-            // Add the ManageServersFragment is there are no servers
+            // If there are no servers, direct the user to add a server
             if (mapOfServers.isEmpty()) {
-                changeToManageServers();
+                launchAddServerActivity();
             } else {
                 changeToBrowser();
             }
@@ -432,8 +433,8 @@ public class BaseActivity extends AppCompatActivity {
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fileBrowserFrag).commit();
     }
 
-    public void changeToManageServers() {
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new ManageServersFragment()).commit();
+    public void launchAddServerActivity() {
+        startActivity(new Intent(this, AddServerActivity.class));
     }
 
 

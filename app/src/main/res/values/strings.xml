@@ -1,20 +1,7 @@
 <resources>
     <string name="app_name">mStream</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-
-    <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
-    <string name="nav_item_attachment">Attachment</string>
-    <string name="nav_item_images">Images</string>
-    <string name="nav_item_location">My Location</string>
     <string name="nav_server_menu">Servers</string>
-    <string name="nav_sub_menu_item01">Sub Menu Item 1</string>
-    <string name="nav_sub_menu_item02">Sub Menu Item 2</string>
-    <string name="drawer_header_text">Drawer Header</string>
-    <string name="second_activity_text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin consectetur diam id aliquam scelerisque. Donec ultrices lacus vel dignissim pharetra. Vivamus pharetra augue quis rhoncus placerat. Sed ultricies at risus non cursus. Nam rutrum leo nec placerat consectetur. Vestibulum feugiat eleifend diam, nec interdum augue tincidunt sit amet. Praesent feugiat est auctor lacus consectetur, vitae pellentesque dolor laoreet.</string>
-    <string name="title_activity_second">SecondActivity</string>
     <string name="nav_item_server">Add Server</string>
     <string name="action_browser">Open Browser</string>
     <string name="action_playlist">Playlist View</string>
@@ -27,4 +14,6 @@
     <string name="password">Password</string>
     <string name="make_default">Make Default</string>
     <string name="add_server">Add Server</string>
+    <string name="server_url_valid">Enter a valid URL.</string>
+    <string name="server_name_valid">Server name must have at least 3 characters.</string>
 </resources>

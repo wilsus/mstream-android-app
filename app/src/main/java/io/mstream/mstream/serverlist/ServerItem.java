@@ -1,7 +1,7 @@
-package io.mstream.mstream;
+package io.mstream.mstream.serverlist;
 
 /**
- * Created by paul on 2/22/2016.
+ * POJO representing an mStream server
  */
 public class ServerItem {
     private String name;
