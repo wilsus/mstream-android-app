@@ -17,4 +17,9 @@
         <item name="android:paddingRight">8dp</item>
     </style>
 
+    <style name="AppTheme.Button" parent="Widget.AppCompat.Button">
+        <item name="android:textColor">@color/almost_white</item>
+        <item name="colorButtonNormal">@color/dark_blue</item>
+    </style>
+
 </resources>
