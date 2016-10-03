@@ -111,8 +111,7 @@ public class BaseActivity extends AppCompatActivity {
         SharedPreferences prefs = getSharedPreferences("mstream-settings", MODE_PRIVATE);
         String restoredText = prefs.getString("servers", null);
 
-        Log.d(TAG, "PULLING LIST:");
-        Log.d(TAG, restoredText);
+        Log.d(TAG, "PULLING LIST: " + restoredText);
 
         // if there is nothing in SharedPreferences, direct user to the ManageServersFragment
         if (restoredText == null) {
