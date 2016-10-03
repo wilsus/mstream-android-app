@@ -8,6 +8,7 @@
     <color name="dark_grey">#333</color>
     <!-- Used for icon coloration on white backgrounds on the website-->
     <color name="medium_grey">#808080</color>
+    <color name="almost_white">#eaeaea</color>
     <!-- The info button background on the website -->
     <color name="medium_blue">#6684B2</color>
     <!-- The dark blue in the logo on the website -->

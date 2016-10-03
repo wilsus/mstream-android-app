@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
+import io.mstream.mstream.serverlist.ServerItem;
+
 
 public class JukeboxService extends Service {
     private static final String TAG = "JukeboxService";
