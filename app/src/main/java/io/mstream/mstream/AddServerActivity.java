@@ -6,7 +6,6 @@ import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Patterns;
 import android.view.View;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 
@@ -23,7 +22,6 @@ public class AddServerActivity extends AppCompatActivity {
     private TextInputLayout urlTextLayout;
     private EditText usernameText;
     private EditText passwordText;
-    private Button addServerButton;
     private CheckBox makeDefault;
 
     @Override
@@ -37,21 +35,12 @@ public class AddServerActivity extends AppCompatActivity {
         passwordText = (EditText) findViewById(R.id.input_password);
         urlText = (EditText) findViewById(R.id.input_url);
         urlTextLayout = (TextInputLayout) findViewById(R.id.input_url_layout);
-        addServerButton = (Button) findViewById(R.id.add_server);
         makeDefault = (CheckBox) findViewById(R.id.make_default);
-
-        addServerButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                addServer();
-            }
-        });
     }
 
-
-    private void addServer() {
+    public void addServer(View button) {
         if (validate()) {
-            addServerButton.setEnabled(false);
+            button.setEnabled(false);
 
             String name = nameText.getText().toString();
             String url = urlText.getText().toString();
