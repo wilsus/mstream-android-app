@@ -29,10 +29,6 @@ import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -107,43 +103,24 @@ public class BaseActivity extends AppCompatActivity {
         editor.apply();
     }
 
-    public void getServerList() {
-        // get server list from SharedPreferences
-        SharedPreferences prefs = getSharedPreferences("mstream-settings", MODE_PRIVATE);
-        String restoredText = prefs.getString("servers", null);
+    private void getServerList() {
+        // Only one server for now, set via LocalPreferences.
+        // Can expand this later using the server URL as a key since it's unique
+        if (LocalPreferences.getInstance().getServerUrl() != null) {
+            String name = LocalPreferences.getInstance().getServerNickname();
+            String url = LocalPreferences.getInstance().getServerUrl();
+            String username = LocalPreferences.getInstance().getUsername();
+            String password = LocalPreferences.getInstance().getPassword();
+            Boolean isDefault = LocalPreferences.getInstance().getIsDefault();
 
-        Log.d(TAG, "PULLING LIST: " + restoredText);
+            ServerItem currentServerItem = new ServerItem(name, url, username, password);
 
-        // if there is nothing in SharedPreferences, direct user to add a server
-        if (restoredText != null) {
-            try {
-                // "I want to iterate though the objects in the array..."
-                JSONArray jsonArray = new JSONArray(restoredText);
-//            JSONObject innerObject = outerObject.getJSONObject("JObjects");
-//            JSONArray jsonArray = innerObject.getJSONArray("JArray1");
-                for (int i = 0, size = jsonArray.length(); i < size; i++) {
-                    JSONObject objectInArray = jsonArray.getJSONObject(i);
-
-                    String name = objectInArray.getString("name");
-                    String url = objectInArray.getString("link");
-                    String username = objectInArray.getString("username");
-                    String password = objectInArray.getString("password");
-                    Boolean isDefault = objectInArray.getBoolean("isDefault");
-
-                    ServerItem newServerItem = new ServerItem(name, url, username, password);
-
-                    // If it's the default server, set it here
-                    if (isDefault.equals(true)) {
-                        selectedServer = newServerItem;
-
-                    }
-
-                    mapOfServers.put(name, newServerItem);
-                }
-
-            } catch (JSONException e) {
-                // TODO:
+            // If it's the default server, set it here
+            if (isDefault.equals(true)) {
+                selectedServer = currentServerItem;
             }
+
+            mapOfServers.put(name, currentServerItem);
         }
     }
 
@@ -210,14 +187,14 @@ public class BaseActivity extends AppCompatActivity {
 
     public void populateSpinner() {
         // TODO: Handle an empty list of servers
-        String selectdeKey = null;
+        String selectedKey = null;
 
         ArrayList<String> listOfServerNames = new ArrayList<>();
         for (String key : mapOfServers.keySet()) {
             listOfServerNames.add(key);
 
             if (selectedServer != null && key.equals(selectedServer.getServerName())) {
-                selectdeKey = key;
+                selectedKey = key;
             }
         }
 
@@ -230,8 +207,8 @@ public class BaseActivity extends AppCompatActivity {
         serverSpinner.setAdapter(serverSpinnerAdapter);
         // serverSpinner.setSelection(0);
 
-        if (selectdeKey != null) {
-            serverSpinner.setSelection(serverSpinnerAdapter.getPosition(selectdeKey));
+        if (selectedKey != null) {
+            serverSpinner.setSelection(serverSpinnerAdapter.getPosition(selectedKey));
         }
 
         serverSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
