@@ -115,37 +115,35 @@ public class BaseActivity extends AppCompatActivity {
         Log.d(TAG, "PULLING LIST: " + restoredText);
 
         // if there is nothing in SharedPreferences, direct user to add a server
-        if (restoredText == null) {
-            launchAddServerActivity();
-        }
-
-        try {
-            // "I want to iterate though the objects in the array..."
-            JSONArray jsonArray = new JSONArray(restoredText);
+        if (restoredText != null) {
+            try {
+                // "I want to iterate though the objects in the array..."
+                JSONArray jsonArray = new JSONArray(restoredText);
 //            JSONObject innerObject = outerObject.getJSONObject("JObjects");
 //            JSONArray jsonArray = innerObject.getJSONArray("JArray1");
-            for (int i = 0, size = jsonArray.length(); i < size; i++) {
-                JSONObject objectInArray = jsonArray.getJSONObject(i);
+                for (int i = 0, size = jsonArray.length(); i < size; i++) {
+                    JSONObject objectInArray = jsonArray.getJSONObject(i);
 
-                String name = objectInArray.getString("name");
-                String url = objectInArray.getString("link");
-                String username = objectInArray.getString("username");
-                String password = objectInArray.getString("password");
-                Boolean isDefault = objectInArray.getBoolean("isDefault");
+                    String name = objectInArray.getString("name");
+                    String url = objectInArray.getString("link");
+                    String username = objectInArray.getString("username");
+                    String password = objectInArray.getString("password");
+                    Boolean isDefault = objectInArray.getBoolean("isDefault");
 
-                ServerItem newServerItem = new ServerItem(name, url, username, password);
+                    ServerItem newServerItem = new ServerItem(name, url, username, password);
 
-                // If it's the default server, set it here
-                if (isDefault.equals(true)) {
-                    selectedServer = newServerItem;
+                    // If it's the default server, set it here
+                    if (isDefault.equals(true)) {
+                        selectedServer = newServerItem;
 
+                    }
+
+                    mapOfServers.put(name, newServerItem);
                 }
 
-                mapOfServers.put(name, newServerItem);
+            } catch (JSONException e) {
+                // TODO:
             }
-
-        } catch (JSONException e) {
-            // TODO:
         }
     }
 
@@ -435,6 +433,7 @@ public class BaseActivity extends AppCompatActivity {
 
     public void launchAddServerActivity() {
         startActivity(new Intent(this, AddServerActivity.class));
+        finish();
     }
 
 
