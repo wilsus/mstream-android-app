@@ -4,22 +4,18 @@ package io.mstream.mstream.serverlist;
  * POJO representing an mStream server
  */
 public class ServerItem {
-    private String name;
-    private String link;
-    private String username;
-    private String password;
-    private boolean isDefault = false;
+    private final String name;
+    private final String url;
+    private final String username;
+    private final String password;
+    private final boolean isDefault;
 
-    public ServerItem(String name, String link, String username, String password) {
-        new ServerItem(name, link, username, password, false);
-    }
-
-    public ServerItem(String name, String link, String username, String password, boolean isDefault) {
-        this.name = name;
-        this.link = link;
-        this.username = username;
-        this.password = password;
-        this.isDefault = isDefault;
+    private ServerItem(Builder builder) {
+        this.name = builder.name;
+        this.url = builder.url;
+        this.username = builder.username;
+        this.password = builder.password;
+        this.isDefault = builder.isDefault;
     }
 
     public String getServerName() {
@@ -27,7 +23,7 @@ public class ServerItem {
     }
 
     public String getServerUrl() {
-        return this.link;
+        return this.url;
     }
 
     public String getServerUsername() {
@@ -42,7 +38,35 @@ public class ServerItem {
         return this.isDefault;
     }
 
-    public void setIsDefault(boolean isDefault) {
-        this.isDefault = isDefault;
+    public static class Builder {
+        private final String name;
+        private final String url;
+        private String username;
+        private String password;
+        private boolean isDefault;
+
+        public Builder(String name, String url) {
+            this.name = name;
+            this.url = url;
+        }
+
+        public Builder username(String username) {
+            this.username = username;
+            return this;
+        }
+
+        public Builder password(String password) {
+            this.password = password;
+            return this;
+        }
+
+        public Builder isDefault(boolean isDefault) {
+            this.isDefault = isDefault;
+            return this;
+        }
+
+        public ServerItem build() {
+            return new ServerItem(this);
+        }
     }
 }

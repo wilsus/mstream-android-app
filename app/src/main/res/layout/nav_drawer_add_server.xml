@@ -3,37 +3,27 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="48dp"
-    android:paddingEnd="24dp"
-    android:paddingStart="24dp"
+    android:layout_marginBottom="32dp"
+    android:layout_marginTop="16dp"
     android:background="?attr/selectableItemBackground"
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    android:paddingEnd="24dp"
+    android:paddingStart="24dp">
 
     <ImageView
-        android:id="@+id/icon_not_default"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:layout_marginEnd="32dp"
         android:contentDescription="@null"
-        android:src="@drawable/ic_cloud_queue_black_24dp"
+        android:src="@drawable/ic_add_circle_black_24dp"
         android:tint="@color/medium_grey"/>
 
-    <ImageView
-        android:id="@+id/icon_is_default"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:layout_marginEnd="32dp"
-        android:contentDescription="@null"
-        android:src="@drawable/ic_cloud_done_black_24dp"
-        android:tint="@color/dark_blue"
-        android:visibility="gone"/>
-
     <TextView
-        android:id="@+id/item_text"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:gravity="center_vertical"
+        android:text="@string/add_server"
         android:textColor="@android:color/black"
         android:textSize="16sp"/>
 </LinearLayout>

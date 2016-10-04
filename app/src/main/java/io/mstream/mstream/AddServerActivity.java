@@ -50,7 +50,11 @@ public class AddServerActivity extends AppCompatActivity {
             boolean isDefault = makeDefault.isChecked();
 
             // Create new server Item
-            ServerItem newServerItem = new ServerItem(name, url, username, password, isDefault);
+            ServerItem newServerItem = new ServerItem.Builder(name, url)
+                    .username(username)
+                    .password(password)
+                    .isDefault(isDefault)
+                    .build();
 
             ServerStore.setServer(newServerItem);
 

@@ -20,7 +20,10 @@ public final class ServerStore {
         String password = LocalPreferences.getInstance().getPassword();
         boolean isDefault = LocalPreferences.getInstance().getIsDefault();
 
-        return new ServerItem(name, url, username, password, isDefault);
+        return new ServerItem.Builder(name, url)
+                .username(username)
+                .password(password)
+                .isDefault(isDefault).build();
     }
 
     public static void setServer(ServerItem serverItem) {
