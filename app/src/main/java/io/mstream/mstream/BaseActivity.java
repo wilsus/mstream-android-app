@@ -37,7 +37,6 @@ public class BaseActivity extends AppCompatActivity {
 
     // Server Options
     public ServerItem selectedServer = null;
-    private List<ServerItem> serverItems;
 
     private DrawerLayout mDrawerLayout;
     private RecyclerView navigationMenu;
@@ -57,32 +56,9 @@ public class BaseActivity extends AppCompatActivity {
         // Navigation Menu
         navigationMenu = (RecyclerView) findViewById(R.id.navigation_view);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-//        NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_view);
-//        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-//            @Override
-//            public boolean onNavigationItemSelected(MenuItem menuItem) {
-//
-////                menuItem.setChecked(true);
-//                mDrawerLayout.closeDrawers();
-//
-//                if (menuItem.getItemId() == R.id.navigation_item_add_server) {
-//                    launchAddServerActivity();
-//                }
-//
-//                return true;
-//            }
-//        });
 
+        // Player controls
         seekBar = (SeekBar) findViewById(R.id.seek_bar);
-
-        // Start the Jukebox Service
-//        startService(new Intent(getBaseContext(), JukeboxService.class));
-
-        // Bind the jukebox
-//        Intent mIntent = new Intent(this, JukeboxService.class);
-//        bindService(mIntent, mConnection, Context.BIND_AUTO_CREATE);
-
-        // On play/pause button click
         Button playButton = (Button) findViewById(R.id.play_button);
         playButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -90,6 +66,13 @@ public class BaseActivity extends AppCompatActivity {
                 playPause();
             }
         });
+
+        // Start the Jukebox Service
+//        startService(new Intent(getBaseContext(), JukeboxService.class));
+
+        // Bind the jukebox
+//        Intent mIntent = new Intent(this, JukeboxService.class);
+//        bindService(mIntent, mConnection, Context.BIND_AUTO_CREATE);
 
         //Broadcast Manager
 //        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, new IntentFilter("new-track"));
@@ -124,7 +107,7 @@ public class BaseActivity extends AppCompatActivity {
         super.onStart();
 
         // Get the active server, if it's been changed outside this Activity
-        serverItems = ServerStore.getServers();
+        List<ServerItem> serverItems = ServerStore.getServers();
         // If there are no servers, direct the user to add a server
         if (serverItems.isEmpty()) {
             startActivity(new Intent(this, AddServerActivity.class));
