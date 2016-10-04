@@ -11,17 +11,22 @@ public class ServerItem {
     private boolean isDefault = false;
 
     public ServerItem(String name, String link, String username, String password) {
+        new ServerItem(name, link, username, password, false);
+    }
+
+    public ServerItem(String name, String link, String username, String password, boolean isDefault) {
         this.name = name;
         this.link = link;
         this.username = username;
         this.password = password;
+        this.isDefault = isDefault;
     }
 
     public String getServerName() {
         return this.name;
     }
 
-    public String getServerLink() {
+    public String getServerUrl() {
         return this.link;
     }
 
@@ -33,11 +38,11 @@ public class ServerItem {
         return this.password;
     }
 
-    public boolean getDefaultVal() {
+    public boolean isDefault() {
         return this.isDefault;
     }
 
-    public void setDefault(boolean defaultVal) {
-        this.isDefault = defaultVal;
+    public void setIsDefault(boolean isDefault) {
+        this.isDefault = isDefault;
     }
 }
