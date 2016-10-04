@@ -20,7 +20,9 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".AddServerActivity"/>
+        <activity
+            android:name=".AddServerActivity"
+            android:windowSoftInputMode="stateHidden"/>
 
         <service
             android:name=".JukeboxService"

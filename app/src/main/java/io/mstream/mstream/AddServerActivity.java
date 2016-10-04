@@ -10,6 +10,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 
 import io.mstream.mstream.serverlist.ServerItem;
+import io.mstream.mstream.serverlist.ServerStore;
 
 /**
  * An activity dedicated to adding a server to the app.
@@ -36,6 +37,12 @@ public class AddServerActivity extends AppCompatActivity {
         urlText = (EditText) findViewById(R.id.input_url);
         urlTextLayout = (TextInputLayout) findViewById(R.id.input_url_layout);
         makeDefault = (CheckBox) findViewById(R.id.make_default);
+
+        // If there are no servers yet, ensure the Make Default box is checked
+        if (ServerStore.getServers().isEmpty()) {
+            makeDefault.setChecked(true);
+            makeDefault.setEnabled(false);
+        }
     }
 
     public void addServer(View button) {
@@ -46,11 +53,17 @@ public class AddServerActivity extends AppCompatActivity {
             String url = urlText.getText().toString();
             String password = passwordText.getText().toString();
             String username = usernameText.getText().toString();
-            boolean isDefault = makeDefault.isChecked();
 
             // Create new server Item
-            ServerItem newServerItem = new ServerItem(name, url, username, password);
-            newServerItem.setDefault(isDefault);
+            ServerItem newServerItem = new ServerItem.Builder(name, url)
+                    .username(username)
+                    .password(password)
+                    .build();
+
+            ServerStore.addServer(newServerItem);
+            if (makeDefault.isChecked()) {
+                ServerStore.setDefaultServer(newServerItem);
+            }
 
             // TODO: Test connection to server.  Return an error if it can't connect
 
@@ -60,6 +73,7 @@ public class AddServerActivity extends AppCompatActivity {
 //            if (!status) {
 //                Toast.makeText(this, "Server Name Already Exists", Toast.LENGTH_LONG).show();
 //            }
+            finish();
         }
     }
 

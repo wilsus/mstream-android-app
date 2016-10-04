@@ -5,7 +5,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,6 +29,8 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+
+import io.mstream.mstream.serverlist.ServerStore;
 
 
 /**
@@ -78,10 +79,10 @@ public class FileBrowserFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Log.d(TAG, this.getArguments().getString("server"));
+//        Log.d(TAG, ServerStore.getDefaultServer().getServerName());
 
         // Get Server
-        this.currentServerAddress = this.getArguments().getString("server");
+        this.currentServerAddress = ServerStore.getDefaultServer().getServerUrl();
 
         // Call the server
         goToDirectory("");
