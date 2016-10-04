@@ -37,6 +37,12 @@ public class AddServerActivity extends AppCompatActivity {
         urlText = (EditText) findViewById(R.id.input_url);
         urlTextLayout = (TextInputLayout) findViewById(R.id.input_url_layout);
         makeDefault = (CheckBox) findViewById(R.id.make_default);
+
+        // If there are no servers yet, ensure the Make Default box is checked
+        if (ServerStore.getServers().isEmpty()) {
+            makeDefault.setChecked(true);
+            makeDefault.setEnabled(false);
+        }
     }
 
     public void addServer(View button) {
