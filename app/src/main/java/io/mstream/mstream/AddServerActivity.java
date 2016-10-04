@@ -47,7 +47,6 @@ public class AddServerActivity extends AppCompatActivity {
             String url = urlText.getText().toString();
             String password = passwordText.getText().toString();
             String username = usernameText.getText().toString();
-            boolean isDefault = makeDefault.isChecked();
 
             // Create new server Item
             ServerItem newServerItem = new ServerItem.Builder(name, url)
@@ -56,6 +55,9 @@ public class AddServerActivity extends AppCompatActivity {
                     .build();
 
             ServerStore.addServer(newServerItem);
+            if (makeDefault.isChecked()) {
+                ServerStore.setDefaultServer(newServerItem);
+            }
 
             // TODO: Test connection to server.  Return an error if it can't connect
 
