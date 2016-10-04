@@ -79,10 +79,10 @@ public class FileBrowserFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-//        Log.d(TAG, ServerStore.getServer().getServerName());
+//        Log.d(TAG, ServerStore.getDefaultServer().getServerName());
 
         // Get Server
-        this.currentServerAddress = ServerStore.getServer().getServerUrl();
+        this.currentServerAddress = ServerStore.getDefaultServer().getServerUrl();
 
         // Call the server
         goToDirectory("");

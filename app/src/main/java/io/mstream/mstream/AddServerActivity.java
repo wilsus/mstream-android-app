@@ -53,10 +53,9 @@ public class AddServerActivity extends AppCompatActivity {
             ServerItem newServerItem = new ServerItem.Builder(name, url)
                     .username(username)
                     .password(password)
-                    .isDefault(isDefault)
                     .build();
 
-            ServerStore.setServer(newServerItem);
+            ServerStore.addServer(newServerItem);
 
             // TODO: Test connection to server.  Return an error if it can't connect
 

@@ -12,6 +12,7 @@ import android.widget.TextView;
 import java.util.List;
 
 import io.mstream.mstream.AddServerActivity;
+import io.mstream.mstream.LocalPreferences;
 import io.mstream.mstream.R;
 import io.mstream.mstream.ui.ArrayAdapter;
 
@@ -24,14 +25,7 @@ public class ServerListAdapter extends ArrayAdapter<ServerItem, ServerListAdapte
     public ServerListAdapter(List<ServerItem> items) {
         super(items);
         // Add a dummy so we can offset the Add Server item
-        items.add(new ServerItem.Builder(null, null).build());
-
-        // TODO: remove when multiple servers are working
-        // Add a few more dummies to show the isDefault checking
-        ServerItem tempItem = new ServerItem.Builder("test", "test").build();
-        items.add(0, tempItem);
-        items.add(tempItem);
-        items.add(tempItem);
+        items.add(new ServerItem.Builder("", "").build());
     }
 
     @Override
@@ -52,7 +46,7 @@ public class ServerListAdapter extends ArrayAdapter<ServerItem, ServerListAdapte
         } else {
             ServerItem item = getItem(position - 1);
             holder.serverName.setText(item.getServerName());
-            if (item.isDefault()) {
+            if (item.getServerUrl().equals(LocalPreferences.getInstance().getDefaultServerUrl())) {
                 holder.isDefaultIcon.setVisibility(View.VISIBLE);
                 holder.notDefaultIcon.setVisibility(View.GONE);
             } else {
@@ -65,7 +59,9 @@ public class ServerListAdapter extends ArrayAdapter<ServerItem, ServerListAdapte
     private void handleClick(int position, View v) {
         if (position > 0) {
             // This is a "select server" click
-            ServerStore.setServer(getItem(position));
+            ServerStore.setDefaultServer(getItem(position - 1));
+            // By using notifyItemRangeChanged instead of notifyDataSetChanged, we get animation!
+            notifyItemRangeChanged(1, getItemCount() - 1);
         } else {
             // This is an "add server" click
             v.getContext().startActivity(new Intent(v.getContext(), AddServerActivity.class));

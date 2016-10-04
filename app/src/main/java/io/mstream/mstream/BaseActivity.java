@@ -19,9 +19,8 @@ import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 
 import io.mstream.mstream.serverlist.ServerItem;
 import io.mstream.mstream.serverlist.ServerListAdapter;
@@ -38,7 +37,7 @@ public class BaseActivity extends AppCompatActivity {
 
     // Server Options
     public ServerItem selectedServer = null;
-    private HashMap<String, ServerItem> mapOfServers = new HashMap<>();
+    private List<ServerItem> serverItems;
 
     private DrawerLayout mDrawerLayout;
     private RecyclerView navigationMenu;
@@ -125,23 +124,19 @@ public class BaseActivity extends AppCompatActivity {
         super.onStart();
 
         // Get the active server, if it's been changed outside this Activity
-        // Only one server for now, set via LocalPreferences.
-        // Can expand this later using the server URL as a key since it's unique
-        if (ServerStore.getServer().getServerUrl() != null) {
-            ServerItem currentServerItem = ServerStore.getServer();
-            // If it's the default server, set it here
-            if (currentServerItem.isDefault()) {
-                selectedServer = currentServerItem;
-            }
-            mapOfServers.put(currentServerItem.getServerName(), currentServerItem);
-        }
+        serverItems = ServerStore.getServers();
         // If there are no servers, direct the user to add a server
-        if (mapOfServers.isEmpty()) {
+        if (serverItems.isEmpty()) {
             startActivity(new Intent(this, AddServerActivity.class));
         } else {
+            // Set the selected server
+            ServerItem defaultServer = ServerStore.getDefaultServer();
+            if (defaultServer != null && defaultServer.getServerUrl() != null) {
+                selectedServer = defaultServer;
+            }
             // Add the servers to the navigation menu
             navigationMenu.setLayoutManager(new LinearLayoutManager(this));
-            ServerListAdapter adapter = new ServerListAdapter(new ArrayList<>(mapOfServers.values()));
+            ServerListAdapter adapter = new ServerListAdapter(serverItems);
             navigationMenu.setAdapter(adapter);
 //                changeToBrowser();
         }

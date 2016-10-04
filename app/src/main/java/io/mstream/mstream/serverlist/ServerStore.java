@@ -1,5 +1,9 @@
 package io.mstream.mstream.serverlist;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 import io.mstream.mstream.LocalPreferences;
 
 /**
@@ -11,28 +15,44 @@ public final class ServerStore {
     private ServerStore() {
     }
 
-    // TODO: extend this for multiple stored servers, keyed from URL
-
-    public static ServerItem getServer() {
-        String name = LocalPreferences.getInstance().getServerNickname();
-        String url = LocalPreferences.getInstance().getServerUrl();
-        String username = LocalPreferences.getInstance().getUsername();
-        String password = LocalPreferences.getInstance().getPassword();
-        boolean isDefault = LocalPreferences.getInstance().getIsDefault();
-
-        return new ServerItem.Builder(name, url)
-                .username(username)
-                .password(password)
-                .isDefault(isDefault).build();
+    public static ServerItem getDefaultServer() {
+        // TODO: improve perf here, cache the default?
+        Set<String> servers = LocalPreferences.getInstance().getServers();
+        String defaultServerUrl = LocalPreferences.getInstance().getDefaultServerUrl();
+        for (String serverJson : servers) {
+            ServerItem item = ServerItem.fromJsonString(serverJson);
+            if (item != null && item.getServerUrl().equals(defaultServerUrl)) {
+                return item;
+            }
+        }
+        return null;
     }
 
-    public static void setServer(ServerItem serverItem) {
-        LocalPreferences.getInstance().setServerNickname(serverItem.getServerName());
-        LocalPreferences.getInstance().setServerUrl(serverItem.getServerUrl());
-        LocalPreferences.getInstance().setUsername(serverItem.getServerUsername());
-        LocalPreferences.getInstance().setPassword(serverItem.getServerPassword());
-//        LocalPreferences.getInstance().setIsDefault(serverItem.isDefault());
-        // TODO: for now, since there's only one server, it's always the default
-        LocalPreferences.getInstance().setIsDefault(true);
+    public static List<ServerItem> getServers() {
+        Set<String> servers = LocalPreferences.getInstance().getServers();
+        List<ServerItem> list = new ArrayList<>(servers.size());
+        for (String serverJson : servers) {
+            ServerItem item = ServerItem.fromJsonString(serverJson);
+            if (item != null) {
+                list.add(item);
+            }
+        }
+        return list;
+    }
+
+    public static void addServer(ServerItem serverItem) {
+        Set<String> servers = LocalPreferences.getInstance().getServers();
+
+        if (servers.isEmpty()) {
+            // This is the first server we're adding. Set it as the default.
+            setDefaultServer(serverItem);
+        }
+
+        servers.add(serverItem.toJsonString());
+        LocalPreferences.getInstance().setServers(servers);
+    }
+
+    public static void setDefaultServer(ServerItem item) {
+        LocalPreferences.getInstance().setDefaultServerUrl(item.getServerUrl());
     }
 }

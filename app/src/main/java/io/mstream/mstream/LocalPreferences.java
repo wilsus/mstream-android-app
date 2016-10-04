@@ -2,7 +2,9 @@ package io.mstream.mstream;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.support.annotation.Nullable;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A wrapper for SharedPrefs that makes it easy to get/set items.
@@ -14,11 +16,8 @@ public final class LocalPreferences {
     private static final String FILE_NAME = LocalPreferences.class.getPackage().getName();
 
     // Preference names
-    private static final String SERVER_NICKNAME = FILE_NAME + ".a";
-    private static final String SERVER_URL = FILE_NAME + ".b";
-    private static final String USERNAME = FILE_NAME + ".c";
-    private static final String PASSWORD = FILE_NAME + ".d";
-    private static final String IS_DEFAULT = FILE_NAME + ".e";
+    private static final String DEFAULT_SERVER_URL = FILE_NAME + ".a";
+    private static final String SERVER_JSON_STRINGS = FILE_NAME + ".b";
 
     // Singleton instance of this class
     private static LocalPreferences instance;
@@ -50,49 +49,22 @@ public final class LocalPreferences {
         return instance;
     }
 
-    public void setServerNickname(String serverNickname) {
-        prefs.edit().putString(SERVER_NICKNAME, serverNickname).apply();
+    public void setServers(Set<String> json) {
+        prefs.edit().putStringSet(SERVER_JSON_STRINGS, json).apply();
     }
 
-    @Nullable
-    public String getServerNickname() {
-        return prefs.getString(SERVER_NICKNAME, null);
+    public Set<String> getServers() {
+        return prefs.getStringSet(SERVER_JSON_STRINGS, new HashSet<String>());
     }
 
-    public void setServerUrl(String serverUrl) {
-        prefs.edit().putString(SERVER_URL, serverUrl).apply();
+    /**
+     * The default server URL
+     */
+    public void setDefaultServerUrl(String defaultServerUrl) {
+        prefs.edit().putString(DEFAULT_SERVER_URL, defaultServerUrl).apply();
     }
 
-    @Nullable
-    public String getServerUrl() {
-        return prefs.getString(SERVER_URL, null);
-    }
-
-    public void setUsername(String username) {
-        prefs.edit().putString(USERNAME, username).apply();
-    }
-
-    @Nullable
-    public String getUsername() {
-        return prefs.getString(USERNAME, null);
-    }
-
-    // TODO: probably shouldn't be storing this?
-    public void setPassword(String password) {
-        prefs.edit().putString(PASSWORD, password).apply();
-    }
-
-    @Nullable
-    public String getPassword() {
-        return prefs.getString(PASSWORD, null);
-    }
-
-    public void setIsDefault(boolean isDefault) {
-        prefs.edit().putBoolean(IS_DEFAULT, isDefault).apply();
-    }
-
-    @Nullable
-    public boolean getIsDefault() {
-        return prefs.getBoolean(IS_DEFAULT, false);
+    public String getDefaultServerUrl() {
+        return prefs.getString(DEFAULT_SERVER_URL, null);
     }
 }
