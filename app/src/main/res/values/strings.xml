@@ -18,4 +18,6 @@
     <string name="server_name_valid">Server name must have at least 3 characters.</string>
     <string name="active_server">Active Server</string>
     <string name="inactive_server">Inactive Server</string>
+    <string name="folder">Folder</string>
+    <string name="track">Track</string>
 </resources>

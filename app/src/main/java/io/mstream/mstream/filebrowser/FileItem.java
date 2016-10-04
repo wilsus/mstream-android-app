@@ -2,6 +2,8 @@ package io.mstream.mstream.filebrowser;
 
 public class FileItem {
 
+    public static final String DIRECTORY = "directory";
+
     private String type;
     private String name;
     private String url;

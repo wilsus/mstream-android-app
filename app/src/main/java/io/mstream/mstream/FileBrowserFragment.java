@@ -5,12 +5,12 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.ListView;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
+import io.mstream.mstream.filebrowser.FileBrowserAdapter;
 import io.mstream.mstream.filebrowser.FileItem;
 import io.mstream.mstream.serverlist.ServerStore;
 
@@ -120,19 +121,16 @@ public class FileBrowserFragment extends Fragment {
             public void onClick(View v) {
                 for (int i = 0; i < serverFileList.size(); i++) {
                     FileItem item = serverFileList.get(i);
-
                     // Don't add directories
-                    if (!item.getItemType().equals("directory")) {
+                    if (!item.getItemType().equals(FileItem.DIRECTORY)) {
                         addTrackToPlaylist(item);
                     }
-
                 }
             }
         });
 
         return view;
     }
-
 
     @Override
     public void onAttach(Context context) {
@@ -173,9 +171,6 @@ public class FileBrowserFragment extends Fragment {
 
 
     public void writeToList(String response, Boolean goBack) {
-        final ListView listView = (ListView) getView().findViewById(R.id.listViewX);
-        listView.setAdapter(null);
-
         // Parse JSON and build objects from there
         try {
             JSONObject decodedServerObject = new JSONObject(response);
@@ -183,18 +178,12 @@ public class FileBrowserFragment extends Fragment {
             serverFileList = new LinkedList<>();
             String currentPath = decodedServerObject.getString("path");
 
-
             for (int i = 0; i < jObj.length(); i++) {
                 JSONObject newObj = jObj.getJSONObject(i);
-
                 String serverAddress = getCurrentServerString();
-
-
                 String type = newObj.getString("type");
-
-
                 String link;
-                if (type.equals("directory")) {
+                if (type.equals(FileItem.DIRECTORY)) {
                     // For directories use the relative directory path
                     link = currentPath + newObj.getString("name") + "/";
                 } else {
@@ -209,10 +198,8 @@ public class FileBrowserFragment extends Fragment {
                         URI uri = new URI(url.getProtocol(), url.getUserInfo(), url.getHost(), url.getPort(), url.getPath(), url.getQuery(), url.getRef());
                         link = uri.toASCIIString();
 
-                    } catch (MalformedURLException e) {
+                    } catch (MalformedURLException | URISyntaxException e) {
                         link = ""; // TODO: Better exception handling
-                    } catch (URISyntaxException e) {
-                        link = "";
                     }
                 }
                 String name = newObj.getString("name");
@@ -220,42 +207,40 @@ public class FileBrowserFragment extends Fragment {
             }
 
             // Set the Adapter
-            FileBrowserBaseAdapter adapter = new FileBrowserBaseAdapter(serverFileList);
-            listView.setAdapter(adapter);
+            RecyclerView recyclerView = (RecyclerView) getView().findViewById(R.id.browse_recycler_view);
+            recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+            FileBrowserAdapter browserAdapter = new FileBrowserAdapter(serverFileList);
+            recyclerView.setAdapter(browserAdapter);
 
-            // Save scroll position
-            if (!scrollPosition.isEmpty() && goBack.equals(true)) {
+            // TODO: ensure scroll position is saved
 
-                Parcelable thisPos = scrollPosition.removeLast();
-                listView.onRestoreInstanceState(thisPos);
-            }
             // On Click
-            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    // final Map.Entry<String, FileItem> itemX = (Map.Entry<String, FileItem>) parent.getItemAtPosition(position);
-
-                    final FileItem thisItem = (FileItem) parent.getItemAtPosition(position);
-
-                    // final FileItem thisItem = itemX.getValue();
-                    final String link = thisItem.getItemUrl();
-                    String type = thisItem.getItemType();
-
-                    // TODO: Create a new Activity
-                    //Intent intent = new Intent(this, BaseActivity.class);
-                    // intent.putExtra("path", filename);
-                    //startActivity(intent);
-                    if (type.equals("directory")) {
-                        final ListView listView = (ListView) getView().findViewById(R.id.listViewX);
-                        Parcelable state = listView.onSaveInstanceState();
-                        scrollPosition.addLast(state);
-
-                        goToDirectory(link);
-                    } else {
-
-                        addTrackToPlaylist(thisItem);
-                    }
-                }
-            });
+//            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//                    // final Map.Entry<String, FileItem> itemX = (Map.Entry<String, FileItem>) parent.getItemAtPosition(position);
+//
+//                    final FileItem thisItem = (FileItem) parent.getItemAtPosition(position);
+//
+//                    // final FileItem thisItem = itemX.getValue();
+//                    final String link = thisItem.getItemUrl();
+//                    String type = thisItem.getItemType();
+//
+//                    // TODO: Create a new Activity
+//                    //Intent intent = new Intent(this, BaseActivity.class);
+//                    // intent.putExtra("path", filename);
+//                    //startActivity(intent);
+//                    if (type.equals("directory")) {
+//                        final ListView listView = (ListView) getView().findViewById(R.id.listViewX);
+//                        Parcelable state = listView.onSaveInstanceState();
+//                        scrollPosition.addLast(state);
+//
+//                        goToDirectory(link);
+//                    } else {
+//
+//                        addTrackToPlaylist(thisItem);
+//                    }
+//                }
+//            });
 
         } catch (JSONException e) {
             JSONObject decodedServerObject = new JSONObject();
