@@ -5,4 +5,6 @@
     <dimen name="text_margin">16dp</dimen>
 
     <dimen name="add_server_width">288dp</dimen>
+
+    <dimen name="nav_drawer_width">280dp</dimen>
 </resources>

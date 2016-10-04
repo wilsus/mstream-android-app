@@ -1,6 +1,5 @@
 package io.mstream.mstream;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputLayout;
@@ -51,8 +50,7 @@ public class AddServerActivity extends AppCompatActivity {
             boolean isDefault = makeDefault.isChecked();
 
             // Create new server Item
-            ServerItem newServerItem = new ServerItem(name, url, username, password);
-            newServerItem.setIsDefault(isDefault);
+            ServerItem newServerItem = new ServerItem(name, url, username, password, isDefault);
 
             ServerStore.setServer(newServerItem);
 
@@ -64,7 +62,6 @@ public class AddServerActivity extends AppCompatActivity {
 //            if (!status) {
 //                Toast.makeText(this, "Server Name Already Exists", Toast.LENGTH_LONG).show();
 //            }
-            startActivity(new Intent(this, BaseActivity.class));
             finish();
         }
     }
