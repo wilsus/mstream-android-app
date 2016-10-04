@@ -1,5 +1,6 @@
 package io.mstream.mstream;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputLayout;
@@ -10,6 +11,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 
 import io.mstream.mstream.serverlist.ServerItem;
+import io.mstream.mstream.serverlist.ServerStore;
 
 /**
  * An activity dedicated to adding a server to the app.
@@ -50,7 +52,9 @@ public class AddServerActivity extends AppCompatActivity {
 
             // Create new server Item
             ServerItem newServerItem = new ServerItem(name, url, username, password);
-            newServerItem.setDefault(isDefault);
+            newServerItem.setIsDefault(isDefault);
+
+            ServerStore.setServer(newServerItem);
 
             // TODO: Test connection to server.  Return an error if it can't connect
 
@@ -60,6 +64,8 @@ public class AddServerActivity extends AppCompatActivity {
 //            if (!status) {
 //                Toast.makeText(this, "Server Name Already Exists", Toast.LENGTH_LONG).show();
 //            }
+            startActivity(new Intent(this, BaseActivity.class));
+            finish();
         }
     }
 
