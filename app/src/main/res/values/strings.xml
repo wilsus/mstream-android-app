@@ -16,4 +16,6 @@
     <string name="add_server">Add Server</string>
     <string name="server_url_valid">Enter a valid URL.</string>
     <string name="server_name_valid">Server name must have at least 3 characters.</string>
+    <string name="active_server">Active Server</string>
+    <string name="inactive_server">Inactive Server</string>
 </resources>

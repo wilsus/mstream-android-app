@@ -3,10 +3,10 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="48dp"
-    android:paddingEnd="24dp"
-    android:paddingStart="24dp"
     android:background="?attr/selectableItemBackground"
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    android:paddingEnd="24dp"
+    android:paddingStart="24dp">
 
     <ImageView
         android:id="@+id/icon_not_default"
@@ -14,7 +14,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:layout_marginEnd="32dp"
-        android:contentDescription="@null"
+        android:contentDescription="@string/inactive_server"
         android:src="@drawable/ic_cloud_queue_black_24dp"
         android:tint="@color/medium_grey"/>
 
@@ -24,7 +24,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:layout_marginEnd="32dp"
-        android:contentDescription="@null"
+        android:contentDescription="@string/active_server"
         android:src="@drawable/ic_cloud_done_black_24dp"
         android:tint="@color/dark_blue"
         android:visibility="gone"/>
