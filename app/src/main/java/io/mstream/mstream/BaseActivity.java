@@ -22,6 +22,7 @@ import android.widget.Toast;
 import java.util.LinkedList;
 import java.util.List;
 
+import io.mstream.mstream.filebrowser.FileItem;
 import io.mstream.mstream.serverlist.ServerItem;
 import io.mstream.mstream.serverlist.ServerListAdapter;
 import io.mstream.mstream.serverlist.ServerStore;
@@ -210,7 +211,7 @@ public class BaseActivity extends AppCompatActivity {
     };
 
 
-    public void addTrack(ListItem selectedItem) {
+    public void addTrack(FileItem selectedItem) {
         mJukebox.addTrackToPlaylist(selectedItem);
     }
 
@@ -218,7 +219,7 @@ public class BaseActivity extends AppCompatActivity {
         return mJukebox.getPlaylist();
     }
 
-    public void goToSelectedTrack(ListItem item) {
+    public void goToSelectedTrack(FileItem item) {
         mJukebox.goToSelectedTrack(item);
     }
 

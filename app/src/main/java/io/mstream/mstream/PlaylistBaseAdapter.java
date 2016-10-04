@@ -8,11 +8,13 @@ import android.widget.TextView;
 
 import java.util.LinkedList;
 
+import io.mstream.mstream.filebrowser.FileItem;
+
 
 public class PlaylistBaseAdapter extends BaseAdapter {
-    private final LinkedList<ListItem> mData;
+    private final LinkedList<FileItem> mData;
 
-    public PlaylistBaseAdapter(LinkedList<ListItem> playlist) {
+    public PlaylistBaseAdapter(LinkedList<FileItem> playlist) {
         this.mData = playlist;
     }
 
@@ -28,7 +30,7 @@ public class PlaylistBaseAdapter extends BaseAdapter {
     }
 
     @Override
-    public ListItem getItem(int position) {
+    public FileItem getItem(int position) {
         return mData.get(position);
     }
 
@@ -44,7 +46,7 @@ public class PlaylistBaseAdapter extends BaseAdapter {
 //            mViewHolder = (MyViewHolder) convertView.getTag();
 //        }
 //
-//        ListItem currentListData = getItem(position);
+//        FileItem currentListData = getItem(position);
 //
 //        mViewHolder.tvTitle.setText(currentListData.getItemName());
 //        mViewHolder.tvDesc.setText(currentListData.getItemName());
@@ -76,7 +78,7 @@ public class PlaylistBaseAdapter extends BaseAdapter {
             result = convertView;
         }
 
-        ListItem item = getItem(position);
+        FileItem item = getItem(position);
 
         // TODO replace findViewById by ViewHolder
         // ((TextView) result.findViewById(android.R.id.text1)).setText(item.getItemName());
