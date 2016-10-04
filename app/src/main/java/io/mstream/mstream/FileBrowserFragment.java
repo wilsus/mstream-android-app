@@ -1,9 +1,6 @@
 package io.mstream.mstream;
 
-import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -12,11 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
-import com.android.volley.Request;
 import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -26,38 +19,23 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map;
 
 import io.mstream.mstream.filebrowser.FileBrowserAdapter;
 import io.mstream.mstream.filebrowser.FileItem;
+import io.mstream.mstream.filebrowser.FileStore;
 import io.mstream.mstream.serverlist.ServerStore;
-
-
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link FileBrowserFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link FileBrowserFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 
 // TODO: Replace Volley with OkHTTP
 // TODO: Replace the map Object with an Array
 
-public class FileBrowserFragment extends Fragment {
+public class FileBrowserFragment extends Fragment implements FileBrowserAdapter.OnClickFileItem {
     private static final String TAG = "FileBrowserFragment";
 
-    private OnFragmentInteractionListener mListener;
-
     public LinkedList<FileItem> serverFileList;
-
     private LinkedList<String> directoryMap = new LinkedList<>();
-    private LinkedList<Parcelable> scrollPosition = new LinkedList<>();
-
     public String currentServerAddress = "";
+    private RecyclerView filesListView;
 
     public FileBrowserFragment() {
         // Required empty public constructor
@@ -89,7 +67,6 @@ public class FileBrowserFragment extends Fragment {
         // Call the server
         goToDirectory("");
     }
-
 
     // TODO: Make multiple server select
     public String getCurrentServerString() {
@@ -129,48 +106,17 @@ public class FileBrowserFragment extends Fragment {
             }
         });
 
+        filesListView = (RecyclerView) view.findViewById(R.id.browse_recycler_view);
+        filesListView.setLayoutManager(new LinearLayoutManager(getActivity()));
+
         return view;
     }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-//             throw new RuntimeException(context.toString() + " must implement OnFragmentInteractionListener");  // TODO: This was causing errors
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
-    }
-
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
-    }
-
 
     public void addTrackToPlaylist(FileItem selectedItem) {
         ((BaseActivity) getActivity()).addTrack(selectedItem);
     }
 
-
-    public void writeToList(String response, Boolean goBack) {
+    public void writeToList(String response, boolean goBack) {
         // Parse JSON and build objects from there
         try {
             JSONObject decodedServerObject = new JSONObject(response);
@@ -204,44 +150,10 @@ public class FileBrowserFragment extends Fragment {
                 }
                 String name = newObj.getString("name");
                 serverFileList.addLast(new FileItem(name, type, link));
+                filesListView.setAdapter(new FileBrowserAdapter(serverFileList, this));
             }
 
-            // Set the Adapter
-            RecyclerView recyclerView = (RecyclerView) getView().findViewById(R.id.browse_recycler_view);
-            recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-            FileBrowserAdapter browserAdapter = new FileBrowserAdapter(serverFileList);
-            recyclerView.setAdapter(browserAdapter);
-
             // TODO: ensure scroll position is saved
-
-            // On Click
-//            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                    // final Map.Entry<String, FileItem> itemX = (Map.Entry<String, FileItem>) parent.getItemAtPosition(position);
-//
-//                    final FileItem thisItem = (FileItem) parent.getItemAtPosition(position);
-//
-//                    // final FileItem thisItem = itemX.getValue();
-//                    final String link = thisItem.getItemUrl();
-//                    String type = thisItem.getItemType();
-//
-//                    // TODO: Create a new Activity
-//                    //Intent intent = new Intent(this, BaseActivity.class);
-//                    // intent.putExtra("path", filename);
-//                    //startActivity(intent);
-//                    if (type.equals("directory")) {
-//                        final ListView listView = (ListView) getView().findViewById(R.id.listViewX);
-//                        Parcelable state = listView.onSaveInstanceState();
-//                        scrollPosition.addLast(state);
-//
-//                        goToDirectory(link);
-//                    } else {
-//
-//                        addTrackToPlaylist(thisItem);
-//                    }
-//                }
-//            });
-
         } catch (JSONException e) {
             JSONObject decodedServerObject = new JSONObject();
             // TODO: Do Something
@@ -250,48 +162,33 @@ public class FileBrowserFragment extends Fragment {
 
     public void goToDirectory(final String directory) {
         directoryMap.addLast(directory);
-        callServer(directory, false);
+        FileStore.callServer(getActivity().getApplicationContext(), directory, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                writeToList(response, false);
+            }
+        });
     }
 
     public void goBack() {
         if (!directoryMap.getLast().equals("")) {
             directoryMap.removeLast();
-            callServer(directoryMap.getLast(), true);
+            FileStore.callServer(getActivity().getApplicationContext(), directoryMap.getLast(), new Response.Listener<String>() {
+                @Override
+                public void onResponse(String response) {
+                    writeToList(response, true);
+                }
+            });
         }
     }
 
-    public void callServer(final String directory, final Boolean goBack) {
-        // Server URL
-        String url = getCurrentServerString() + "/dirparser";
+    @Override
+    public void onDirectoryClick(String directory) {
+        goToDirectory(directory);
+    }
 
-        // Send POST request to server
-        StringRequest postRequest = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
-            // JsonObjectRequest postRequest = new JsonObjectRequest(Request.Method.POST, url, null, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(String response) {
-
-                writeToList(response, goBack);
-            }
-        },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        error.printStackTrace();
-                    }
-                }
-        ) {
-            @Override
-            protected Map<String, String> getParams() {  // Hash Map of POST params
-                Map<String, String> params = new HashMap<>();
-                // the POST parameters:
-                params.put("dir", directory);
-                params.put("filetypes", "[\"mp3\",\"flac\",\"wav\",\"ogg\"]");
-
-                return params;
-            }
-        };
-
-        // Send request
-        Volley.newRequestQueue(getActivity().getApplicationContext()).add(postRequest);
+    @Override
+    public void onFileClick(FileItem item) {
+        addTrackToPlaylist(item);
     }
 }

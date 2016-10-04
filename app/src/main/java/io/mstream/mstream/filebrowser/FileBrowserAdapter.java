@@ -16,9 +16,11 @@ import io.mstream.mstream.ui.ArrayAdapter;
  * An adapter for the file browser recyclerview.
  */
 public class FileBrowserAdapter extends ArrayAdapter<FileItem, FileBrowserAdapter.FileBrowserViewHolder> {
+    private OnClickFileItem onClickHandler;
 
-    public FileBrowserAdapter(List<FileItem> items) {
+    public FileBrowserAdapter(List<FileItem> items, OnClickFileItem handler) {
         super(items);
+        onClickHandler = handler;
     }
 
     @Override
@@ -26,7 +28,6 @@ public class FileBrowserAdapter extends ArrayAdapter<FileItem, FileBrowserAdapte
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.file_browse_item_layout, parent, false);
         return new FileBrowserAdapter.FileBrowserViewHolder(view);
     }
-
 
     @Override
     public void onBindViewHolder(FileBrowserAdapter.FileBrowserViewHolder holder, int position) {
@@ -57,7 +58,18 @@ public class FileBrowserAdapter extends ArrayAdapter<FileItem, FileBrowserAdapte
 
         @Override
         public void onClick(View view) {
-         //   handleClick(getAdapterPosition(), view);
+            FileItem item = getItem(getAdapterPosition());
+            if (item.getItemType().equals(FileItem.DIRECTORY)) {
+                onClickHandler.onDirectoryClick(item.getItemUrl());
+            } else {
+                onClickHandler.onFileClick(item);
+            }
         }
+    }
+
+    public interface OnClickFileItem {
+        void onDirectoryClick(String directory);
+
+        void onFileClick(FileItem item);
     }
 }
