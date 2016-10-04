@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
+import io.mstream.mstream.filebrowser.FileItem;
 import io.mstream.mstream.serverlist.ServerStore;
 
 
@@ -50,7 +51,7 @@ public class FileBrowserFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
 
-    public LinkedList<ListItem> serverFileList;
+    public LinkedList<FileItem> serverFileList;
 
     private LinkedList<String> directoryMap = new LinkedList<>();
     private LinkedList<Parcelable> scrollPosition = new LinkedList<>();
@@ -101,7 +102,7 @@ public class FileBrowserFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_file_browser, container, false);
 
         // Back Button click
-        // TODO: should use device's back button
+        // TODO: should use device's back button or show a breadcrumb
         Button backButton = (Button) view.findViewById(R.id.back_button);
         backButton.setOnClickListener(new View.OnClickListener() {
 
@@ -118,7 +119,7 @@ public class FileBrowserFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 for (int i = 0; i < serverFileList.size(); i++) {
-                    ListItem item = serverFileList.get(i);
+                    FileItem item = serverFileList.get(i);
 
                     // Don't add directories
                     if (!item.getItemType().equals("directory")) {
@@ -166,7 +167,7 @@ public class FileBrowserFragment extends Fragment {
     }
 
 
-    public void addTrackToPlaylist(ListItem selectedItem) {
+    public void addTrackToPlaylist(FileItem selectedItem) {
         ((BaseActivity) getActivity()).addTrack(selectedItem);
     }
 
@@ -215,7 +216,7 @@ public class FileBrowserFragment extends Fragment {
                     }
                 }
                 String name = newObj.getString("name");
-                serverFileList.addLast(new ListItem(name, type, link));
+                serverFileList.addLast(new FileItem(name, type, link));
             }
 
             // Set the Adapter
@@ -231,12 +232,12 @@ public class FileBrowserFragment extends Fragment {
             // On Click
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    // final Map.Entry<String, ListItem> itemX = (Map.Entry<String, ListItem>) parent.getItemAtPosition(position);
+                    // final Map.Entry<String, FileItem> itemX = (Map.Entry<String, FileItem>) parent.getItemAtPosition(position);
 
-                    final ListItem thisItem = (ListItem) parent.getItemAtPosition(position);
+                    final FileItem thisItem = (FileItem) parent.getItemAtPosition(position);
 
-                    // final ListItem thisItem = itemX.getValue();
-                    final String link = thisItem.getItemLink();
+                    // final FileItem thisItem = itemX.getValue();
+                    final String link = thisItem.getItemUrl();
                     String type = thisItem.getItemType();
 
                     // TODO: Create a new Activity
@@ -276,7 +277,7 @@ public class FileBrowserFragment extends Fragment {
 
     public void callServer(final String directory, final Boolean goBack) {
         // Server URL
-        String url = getCurrentServerString() + "dirparser";
+        String url = getCurrentServerString() + "/dirparser";
 
         // Send POST request to server
         StringRequest postRequest = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {

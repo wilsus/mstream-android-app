@@ -9,12 +9,14 @@ import android.widget.TextView;
 
 import java.util.LinkedList;
 
+import io.mstream.mstream.filebrowser.FileItem;
+
 
 public class FileBrowserBaseAdapter extends BaseAdapter {
 
-    private final LinkedList<ListItem> mData;
+    private final LinkedList<FileItem> mData;
 
-    public FileBrowserBaseAdapter(LinkedList<ListItem> fileList) {
+    public FileBrowserBaseAdapter(LinkedList<FileItem> fileList) {
         this.mData = fileList;
     }
 
@@ -30,7 +32,7 @@ public class FileBrowserBaseAdapter extends BaseAdapter {
     }
 
     @Override
-    public ListItem getItem(int position) {
+    public FileItem getItem(int position) {
         return mData.get(position);
     }
 
@@ -39,12 +41,12 @@ public class FileBrowserBaseAdapter extends BaseAdapter {
         final View result;
 
         if (convertView == null) {
-            result = LayoutInflater.from(parent.getContext()).inflate(R.layout.row_layout, parent, false);
+            result = LayoutInflater.from(parent.getContext()).inflate(R.layout.file_browse_item_layout, parent, false);
         } else {
             result = convertView;
         }
 
-        ListItem item = getItem(position);
+        FileItem item = getItem(position);
 
 
         final String tempName = item.getItemName();

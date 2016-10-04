@@ -16,6 +16,8 @@ import android.widget.ListView;
 
 import java.util.LinkedList;
 
+import io.mstream.mstream.filebrowser.FileItem;
+
 
 /**
  * A simple {@link Fragment} subclass.
@@ -60,7 +62,7 @@ public class PlaylistFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_playlist, container, false);
         ListView listView = (ListView) view.findViewById(R.id.playlistView);
 
-        LinkedList<ListItem> playlist = ((BaseActivity) getActivity()).getPlaylist();
+        LinkedList<FileItem> playlist = ((BaseActivity) getActivity()).getPlaylist();
 
         this.adapter = new PlaylistBaseAdapter(playlist);
         listView.setAdapter(this.adapter);
@@ -69,10 +71,10 @@ public class PlaylistFragment extends Fragment {
         // On Click
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                ListItem itemX = (ListItem) parent.getItemAtPosition(position);
+                FileItem itemX = (FileItem) parent.getItemAtPosition(position);
 
-//                final ListItem thisItem = itemX.getValue();
-//                final String link = thisItem.getItemLink();
+//                final FileItem thisItem = itemX.getValue();
+//                final String link = thisItem.getItemUrl();
 //                String type = thisItem.getItemType();
 
 
