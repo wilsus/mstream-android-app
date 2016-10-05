@@ -3,19 +3,15 @@ package io.mstream.mstream.player;
 import android.app.Service;
 import android.content.Intent;
 import android.media.MediaPlayer;
-import android.media.MediaPlayer.OnCompletionListener;
 import android.net.Uri;
-import android.os.Binder;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.LinkedList;
 
 import io.mstream.mstream.filebrowser.FileItem;
-import io.mstream.mstream.serverlist.ServerItem;
 
 
 public class MStreamAudioService extends Service {
@@ -32,16 +28,16 @@ public class MStreamAudioService extends Service {
     // Keep a cache of the currently playing song position
     Integer playlistCache = 0;
 
-    // Store the server list here
-    ArrayList serverList = new ArrayList();
-
-    public void addServer(ServerItem server) {
-
-    }
-
-    // TODO Is this needed anymore ?
-    public MStreamAudioService() {
-
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        // Set an on song completion listener
+        this.jukebox.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                goToNextTrack();
+            }
+        });
+        return super.onStartCommand(intent, flags, startId);
     }
 
     public LinkedList<FileItem> getPlaylist() {
@@ -66,8 +62,7 @@ public class MStreamAudioService extends Service {
         this.playlist.addLast(trackItem);
     }
 
-
-    public int getPos() {
+    public int getPosition() {
         return this.jukebox.getCurrentPosition();
     }
 
@@ -75,15 +70,13 @@ public class MStreamAudioService extends Service {
         return this.jukebox.isPlaying();
     }
 
-    public int getDur() {
+    public int getDuration() {
         return this.jukebox.getDuration();
     }
 
-    //
     public void playTrack(String url) {
         try {
             this.isSongLoaded = false;
-
             jukebox.stop();
             jukebox.reset();
 
@@ -97,7 +90,6 @@ public class MStreamAudioService extends Service {
 //            sendMessage("new-track");
 
             jukebox.prepareAsync();
-
             jukebox.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 public void onPrepared(MediaPlayer mp) {
                     mp.start();
@@ -107,18 +99,13 @@ public class MStreamAudioService extends Service {
                     sendMessage("new-track");
                 }
             });
-
         } catch (IllegalArgumentException | IllegalStateException | IOException e) {
             e.getCause();
             //Toast.makeText(getApplicationContext(), "You might not set the URI correctly!", Toast.LENGTH_LONG).show();
         }
     }
 
-    public void removeTrackFromPlaylist(/*???*/) {
-
-    }
-
-    public void seek(int time) {
+    public void seekTo(int time) {
         this.jukebox.seekTo(time);
     }
 
@@ -157,7 +144,6 @@ public class MStreamAudioService extends Service {
             if (checkIfCurrentlyPlaying(i)) {
                 // Remove currently playing status
                 this.playlist.get(i).setCurrentlyPlaying(false);
-
             }
 
             // if the items match
@@ -168,18 +154,14 @@ public class MStreamAudioService extends Service {
 
                 // Start playing
                 playTrack(this.playlist.get(i).getItemUrl());
-
             }
         }
-
     }
 
     public void goToRandomTrack() {
-
     }
 
     public void changeTrackPosition() {
-
     }
 
     public void playPause() {
@@ -192,57 +174,21 @@ public class MStreamAudioService extends Service {
         } catch (Exception e) {
             Log.d(TAG, "Exception thrown  :" + e);
         }
-
     }
 
     public void startPlaying() {
-
     }
 
     public void stopPlaying() {
-
     }
 
     // Delete entire playlist
     public void blowAwayPlaylist() {
-
     }
-    // Todo: This var will be a cache of what song is currently playling
-
-    // Bind to a View
-    IBinder mBinder = new LocalBinder();
 
     @Override
     public IBinder onBind(Intent intent) {
-        return mBinder;
-    }
-
-    public class LocalBinder extends Binder {
-        public MStreamAudioService getServerInstance() {
-            return MStreamAudioService.this;
-        }
-    }
-
-//    @Override
-//    public IBinder onBind(Intent intent) {
-//        // TODO: Return the communication channel to the service.
-//        throw new UnsupportedOperationException("Not yet implemented");
-//    }
-
-    /**
-     * Initialize the media player
-     */
-    @Override
-    public void onCreate() {
-
-        // Set an on song completion listener
-        this.jukebox.setOnCompletionListener(new OnCompletionListener() {
-
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                goToNextTrack();
-            }
-        });
+        return null;
     }
 
     // Find Global
@@ -278,7 +224,6 @@ public class MStreamAudioService extends Service {
     // TODO: Function that checks if linked linked list item is currently playing
     public boolean checkIfCurrentlyPlaying(int index) {
         FileItem testThisItem = this.playlist.get(index);
-
         return testThisItem.getCurrentlyPlayingStatus();
     }
 

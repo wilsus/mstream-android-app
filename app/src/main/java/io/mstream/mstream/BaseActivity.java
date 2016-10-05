@@ -197,8 +197,8 @@ public class BaseActivity extends AppCompatActivity {
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            seekBar.setMax(mJukebox.getDur());
-            seekBar.setProgress(mJukebox.getPos());
+            seekBar.setMax(mJukebox.getDuration());
+            seekBar.setProgress(mJukebox.getPosition());
             myHandler.postDelayed(UpdateSongTime, 100); // TODO: Should we call this again
         }
     };
@@ -206,7 +206,7 @@ public class BaseActivity extends AppCompatActivity {
     //
     private Runnable UpdateSongTime = new Runnable() {
         public void run() {
-            int startTime = mJukebox.getPos();
+            int startTime = mJukebox.getPosition();
 
             seekBar.setProgress(startTime);
             myHandler.postDelayed(this, 100);
@@ -231,11 +231,11 @@ public class BaseActivity extends AppCompatActivity {
     }
 
 
-//    public int getDur(){
-//        return mJukebox.getDur();
+//    public int getDuration(){
+//        return mJukebox.getDuration();
 //    }
 //
-//    public int getPos(){
-//        return mJukebox.getPos();
+//    public int getPosition(){
+//        return mJukebox.getPosition();
 //    }
 }
