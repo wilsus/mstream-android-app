@@ -1,10 +1,13 @@
 package io.mstream.mstream;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.RemoteException;
+import android.support.v4.media.MediaBrowserCompat;
+import android.support.v4.media.session.MediaControllerCompat;
+import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -12,6 +15,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -19,7 +23,6 @@ import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
-import java.util.LinkedList;
 import java.util.List;
 
 import io.mstream.mstream.filebrowser.FileBrowserFragment;
@@ -34,8 +37,6 @@ import io.mstream.mstream.serverlist.ServerStore;
 public class BaseActivity extends AppCompatActivity {
     private static final String TAG = "BaseActivity";
 
-    private MStreamAudioService mJukebox;
-
     public SeekBar seekBar;
     private Handler myHandler = new Handler();
 
@@ -44,6 +45,9 @@ public class BaseActivity extends AppCompatActivity {
 
     private DrawerLayout mDrawerLayout;
     private RecyclerView navigationMenu;
+
+    // Media Controls!
+    private MediaBrowserCompat mediaBrowser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,15 +75,37 @@ public class BaseActivity extends AppCompatActivity {
             }
         });
 
-        // Start the Jukebox Service
-//        startService(new Intent(getBaseContext(), MStreamAudioService.class));
+        // Start the Audio Service
+        mediaBrowser = new MediaBrowserCompat(this, new ComponentName(this, MStreamAudioService.class),
+                new MediaBrowserCompat.ConnectionCallback() {
+                    @Override
+                    public void onConnected() {
+                        try {
+                            Log.d(TAG, "MediaBrowser onConnected");
+                            // Ah, here’s our Token again
+                            MediaSessionCompat.Token token = mediaBrowser.getSessionToken();
+                            // This is what gives us access to everything
+                            MediaControllerCompat controller = new MediaControllerCompat(BaseActivity.this, token);
+                            setSupportMediaController(controller);
+                        } catch (RemoteException e) {
+                            Log.e(BaseActivity.class.getSimpleName(), "Error creating controller", e);
+                        }
+                    }
 
-        // Bind the jukebox
-//        Intent mIntent = new Intent(this, MStreamAudioService.class);
-//        bindService(mIntent, mConnection, Context.BIND_AUTO_CREATE);
+                    @Override
+                    public void onConnectionSuspended() {
+                        // We were connected, but no longer :-(
+                        Log.d(TAG, "MediaBrowser connection suspended");
+                    }
 
-        //Broadcast Manager
-//        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, new IntentFilter("new-track"));
+                    @Override
+                    public void onConnectionFailed() {
+                        // The attempt to connect failed completely.
+                        // Check the ComponentName!
+                        Log.d(TAG, "MediaBrowser failed!!!");
+                    }
+                }, null);
+        mediaBrowser.connect();
 
         // Check that the activity is using the layout version with the fragment_container FrameLayout
         if (findViewById(R.id.fragment_container) != null) {
@@ -109,7 +135,6 @@ public class BaseActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-
         // Get the active server, if it's been changed outside this Activity
         List<ServerItem> serverItems = ServerStore.getServers();
         // If there are no servers, direct the user to add a server
@@ -127,6 +152,12 @@ public class BaseActivity extends AppCompatActivity {
             navigationMenu.setAdapter(adapter);
 //                changeToBrowser();
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mediaBrowser.disconnect();
     }
 
     @Override
@@ -152,18 +183,6 @@ public class BaseActivity extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
         }
     }
-
-//    ServiceConnection mConnection = new ServiceConnection() {
-//        public void onServiceDisconnected(ComponentName name) {
-//            mJukebox = null;
-//        }
-//
-//        public void onServiceConnected(ComponentName name, IBinder service) {
-//            MStreamAudioService.LocalBinder mLocalBinder = (MStreamAudioService.LocalBinder) service;
-//            mJukebox = mLocalBinder.getServerInstance();
-//        }
-//    };
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -193,49 +212,27 @@ public class BaseActivity extends AppCompatActivity {
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fileBrowserFrag).commit();
     }
 
-    // Listen for new song calls
-    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            seekBar.setMax(mJukebox.getDuration());
-            seekBar.setProgress(mJukebox.getPosition());
-            myHandler.postDelayed(UpdateSongTime, 100); // TODO: Should we call this again
-        }
-    };
-
-    //
-    private Runnable UpdateSongTime = new Runnable() {
-        public void run() {
-            int startTime = mJukebox.getPosition();
-
-            seekBar.setProgress(startTime);
-            myHandler.postDelayed(this, 100);
-        }
-    };
-
-
     public void addTrack(FileItem selectedItem) {
-        mJukebox.addTrackToPlaylist(selectedItem);
+//        audioService.addTrackToPlaylist(selectedItem);
     }
 
-    public LinkedList getPlaylist() {
-        return mJukebox.getPlaylist();
-    }
+//    public LinkedList getPlaylist() {
+//        return audioService.getPlaylist();
+//    }
 
     public void goToSelectedTrack(FileItem item) {
-        mJukebox.goToSelectedTrack(item);
+//        audioService.goToSelectedTrack(item);
     }
 
     public void playPause() {
-        mJukebox.playPause();
+        getSupportMediaController().getTransportControls().play();
     }
 
-
 //    public int getDuration(){
-//        return mJukebox.getDuration();
+//        return audioService.getDuration();
 //    }
 //
 //    public int getPosition(){
-//        return mJukebox.getPosition();
+//        return audioService.getPosition();
 //    }
 }

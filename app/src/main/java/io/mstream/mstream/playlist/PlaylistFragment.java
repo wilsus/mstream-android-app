@@ -63,7 +63,7 @@ public class PlaylistFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_playlist, container, false);
         ListView listView = (ListView) view.findViewById(R.id.playlistView);
 
-        LinkedList<FileItem> playlist = ((BaseActivity) getActivity()).getPlaylist();
+        LinkedList<FileItem> playlist = new LinkedList<>();//((BaseActivity) getActivity()).getPlaylist();
 
         this.adapter = new PlaylistBaseAdapter(playlist);
         listView.setAdapter(this.adapter);

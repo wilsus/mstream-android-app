@@ -1,43 +1,248 @@
 package io.mstream.mstream.player;
 
-import android.app.Service;
+import android.app.Notification;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.graphics.BitmapFactory;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.media.MediaBrowserCompat;
+import android.support.v4.media.MediaBrowserServiceCompat;
+import android.support.v4.media.MediaDescriptionCompat;
+import android.support.v4.media.MediaMetadataCompat;
+import android.support.v4.media.session.MediaButtonReceiver;
+import android.support.v4.media.session.MediaSessionCompat;
+import android.support.v4.media.session.PlaybackStateCompat;
+import android.support.v7.app.NotificationCompat;
 import android.util.Log;
+import android.view.KeyEvent;
 
 import java.io.IOException;
 import java.util.LinkedList;
+import java.util.List;
 
+import io.mstream.mstream.BaseActivity;
+import io.mstream.mstream.R;
 import io.mstream.mstream.filebrowser.FileItem;
 
-
-public class MStreamAudioService extends Service {
+public class MStreamAudioService extends MediaBrowserServiceCompat {
     private static final String TAG = "MStreamAudioService";
 
-    MediaPlayer jukebox = new MediaPlayer();
-
+    private MediaSessionCompat mediaSession;
+    private MediaPlayer mediaPlayer = new MediaPlayer();
     // We need to track the status
     boolean isSongLoaded = false;
-
     // Playlist is a linked list
     public LinkedList<FileItem> playlist = new LinkedList<>();
-
     // Keep a cache of the currently playing song position
-    Integer playlistCache = 0;
+    private Integer playlistCache = 0;
+    // Don't become noisy.
+    private final IntentFilter noisyFilter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
+    private final BroadcastReceiver noisyReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            pause();
+        }
+    };
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        Log.d(TAG, "Creating audio service!");
+        // Set up Media Session
+        mediaSession = new MediaSessionCompat(this, TAG);
+        // Call to super to set up the session
+        setSessionToken(mediaSession.getSessionToken());
+        mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS |
+                MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
+        mediaSession.setPlaybackState(new PlaybackStateCompat.Builder()
+                .setState(PlaybackStateCompat.STATE_PAUSED, 0, 0)
+                .setActions(PlaybackStateCompat.ACTION_PLAY_PAUSE)
+                .build());
+        mediaSession.setMetadata(new MediaMetadataCompat.Builder()
+                .putString(MediaMetadataCompat.METADATA_KEY_TITLE, "Test Track Name")
+                .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, 10000)
+                .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART,
+                        BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher))
+                .build());
+        // Set the Activity that the media session is tied to - probably just BaseActivity.
+        // This will launch when the user taps our notification.
+        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 667,
+                new Intent(this, BaseActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
+        mediaSession.setSessionActivity(pendingIntent);
+        // Set up callbacks - these will be called via the onStartCommand's registration of the MediaButtonReceiver
+        mediaSession.setCallback(
+                new MediaSessionCompat.Callback() {
+                    @Override
+                    public boolean onMediaButtonEvent(Intent mediaButtonEvent) {
+                        final String intentAction = mediaButtonEvent.getAction();
+                        if (Intent.ACTION_MEDIA_BUTTON.equals(intentAction)) {
+                            final KeyEvent event = mediaButtonEvent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
+                            if (event == null) {
+                                return super.onMediaButtonEvent(mediaButtonEvent);
+                            }
+                            final int keycode = event.getKeyCode();
+                            final int action = event.getAction();
+                            if (event.getRepeatCount() == 0 && action == KeyEvent.ACTION_DOWN) {
+                                switch (keycode) {
+                                    // Do what you want in here
+                                    case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+                                        Log.d(TAG, "KEYCODE_MEDIA_PLAY_PAUSE");
+                                        if (isPlaying()) {
+                                            pause();
+                                        } else {
+                                            play();
+                                        }
+                                        break;
+                                    case KeyEvent.KEYCODE_MEDIA_PAUSE:
+                                        Log.d(TAG, "KEYCODE_MEDIA_PAUSE");
+                                        pause();
+                                        break;
+                                    case KeyEvent.KEYCODE_MEDIA_PLAY:
+                                        Log.d(TAG, "KEYCODE_MEDIA_PLAY");
+                                        play();
+                                        break;
+                                }
+                            }
+                        }
+                        return super.onMediaButtonEvent(mediaButtonEvent);
+                    }
+                }
+        );
+        // Request audio focus
+        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        audioManager.requestAudioFocus(
+                new AudioManager.OnAudioFocusChangeListener() {
+                    @Override
+                    public void onAudioFocusChange(int focusChange) {
+                        switch (focusChange) {
+                            case AudioManager.AUDIOFOCUS_LOSS:
+                                // Some other app has requested permanent audio focus.
+                                // Pause the playback (just in case it was accidental)
+                                // Then maybe wait ~30 seconds then shut down the service.
+                                pause();
+                                break;
+                            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
+                                // Some other app needs the full focus temporarily. Pause playback.
+                                pause();
+                                break;
+                            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+                                // Some other app wants to play something, but we can keep playing.
+                                // Just "duck" the volume a bit while the focus is elsewhere.
+                                // TODO: duck to what volume? How to ensure the volume is regained?
+                                break;
+                            case AudioManager.AUDIOFOCUS_GAIN:
+                                // We're back, baby!!! Play.
+                                play();
+                                // Ensure we're the latest to get the media button intents.
+                                mediaSession.setActive(true);
+                                // TODO: setActive(false) when we stop playback.
+                                break;
+                        }
+                    }
+                }, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+
+        startService(new Intent(getApplicationContext(), MStreamAudioService.class));
+    }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        // Set an on song completion listener
-        this.jukebox.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                goToNextTrack();
-            }
-        });
-        return super.onStartCommand(intent, flags, startId);
+        Log.d(TAG, "onStartCommand");
+//        // Set an on song completion listener
+//        this.mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+//            @Override
+//            public void onCompletion(MediaPlayer mp) {
+//                goToNextTrack();
+//            }
+//        });
+        // Handle the Media Button Receiver automatic intents
+        MediaButtonReceiver.handleIntent(mediaSession, intent);
+        return START_STICKY;
+    }
+
+    private void play() {
+        registerReceiver(noisyReceiver, noisyFilter);
+        mediaSession.setPlaybackState(new PlaybackStateCompat.Builder()
+                .setState(PlaybackStateCompat.STATE_PLAYING, 0, 1.0f)
+                .setActions(PlaybackStateCompat.ACTION_PLAY_PAUSE).build());
+        startForeground(0, buildNotiication());
+    }
+
+    private void pause() {
+        unregisterReceiver(noisyReceiver);
+        mediaSession.setPlaybackState(new PlaybackStateCompat.Builder()
+                .setState(PlaybackStateCompat.STATE_PAUSED, 0, 0.0f)
+                .setActions(PlaybackStateCompat.ACTION_PLAY_PAUSE).build());
+        // allow the user to swipe us away when paused, but keep the notification up.
+        stopForeground(false);
+    }
+
+    private void stop() {
+        // Stop hogging audio focus
+        ((AudioManager) getSystemService(Context.AUDIO_SERVICE)).abandonAudioFocus(null);
+        mediaSession.setActive(false);
+        // user has stopped us, remove the notification as it no longer applies.
+        stopForeground(true);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mediaSession.release();
+    }
+
+    private Notification buildNotiication() {
+        MediaDescriptionCompat description = mediaSession.getController().getMetadata().getDescription();
+
+        // TODO: any way to get metadata from mStream? Or just the filename?
+        return new NotificationCompat.Builder(this)
+                // TODO: figure out a good icon, maybe a custom tiny mstream logo in one channel
+                .setSmallIcon(R.drawable.ic_folder_black_24dp)
+                .setLargeIcon(description.getIconBitmap())
+                .setContentTitle(description.getTitle())
+                .setContentText(description.getSubtitle())
+                .setSubText(description.getDescription())
+                // when tapped, launch the mstream activity (have to set this elsewhere)
+                .setContentIntent(mediaSession.getController().getSessionActivity())
+                // Media controls should be publicly visible
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                // When swiped away, stop playback.
+                .setDeleteIntent(getActionIntent(KeyEvent.KEYCODE_MEDIA_STOP))
+                // TODO: test out the coloration
+                .setColor(getResources().getColor(R.color.colorPrimaryDark))
+                // Add some actions
+                .addAction(new NotificationCompat.Action(R.drawable.ic_pause_white_36dp, getString(R.string.pause),
+                        getActionIntent(KeyEvent.KEYCODE_MEDIA_PAUSE)))
+                .addAction(new NotificationCompat.Action(R.drawable.ic_play_arrow_white_36dp, getString(R.string.play),
+                        getActionIntent(KeyEvent.KEYCODE_MEDIA_PLAY)))
+                // Set the style and configure the action buttons
+                .setStyle(new NotificationCompat.MediaStyle()
+                        // Show the first button we added, in this cause, pause
+                        .setShowActionsInCompactView(0)
+                        .setMediaSession(mediaSession.getSessionToken())
+                        // Add a little 'x' to allow users to tap it to exit playback, in addition to swiping away
+                        .setShowCancelButton(true)
+                        .setCancelButtonIntent(getActionIntent(KeyEvent.KEYCODE_MEDIA_STOP)))
+                .build();
+    }
+
+    /**
+     * A helper method to get a PendingIntent based on a media key function.
+     */
+    private PendingIntent getActionIntent(int mediaKeyEvent) {
+        Intent intent = new Intent(Intent.ACTION_MEDIA_BUTTON);
+        intent.setPackage(this.getPackageName());
+        intent.putExtra(Intent.EXTRA_KEY_EVENT, new KeyEvent(KeyEvent.ACTION_DOWN, mediaKeyEvent));
+        return PendingIntent.getBroadcast(this, mediaKeyEvent, intent, 0);
     }
 
     public LinkedList<FileItem> getPlaylist() {
@@ -63,34 +268,28 @@ public class MStreamAudioService extends Service {
     }
 
     public int getPosition() {
-        return this.jukebox.getCurrentPosition();
+        return this.mediaPlayer.getCurrentPosition();
     }
 
     public boolean isPlaying() {
-        return this.jukebox.isPlaying();
+        return mediaSession.getController().getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING;
     }
 
     public int getDuration() {
-        return this.jukebox.getDuration();
+        return this.mediaPlayer.getDuration();
     }
 
     public void playTrack(String url) {
         try {
             this.isSongLoaded = false;
-            jukebox.stop();
-            jukebox.reset();
+            mediaPlayer.stop();
+            mediaPlayer.reset();
 
             //url = url.replace(" ", "%20");
-            jukebox.setDataSource(getApplicationContext(), Uri.parse(url));
+            mediaPlayer.setDataSource(getApplicationContext(), Uri.parse(url));
 
-            // Old way of doing things
-//            jukebox.prepare();
-//            jukebox.start();
-//            this.isSongLoaded = true;
-//            sendMessage("new-track");
-
-            jukebox.prepareAsync();
-            jukebox.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            mediaPlayer.prepareAsync();
+            mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 public void onPrepared(MediaPlayer mp) {
                     mp.start();
                     isSongLoaded = true;
@@ -106,7 +305,7 @@ public class MStreamAudioService extends Service {
     }
 
     public void seekTo(int time) {
-        this.jukebox.seekTo(time);
+        this.mediaPlayer.seekTo(time);
     }
 
     public void goToNextTrack() {
@@ -167,9 +366,9 @@ public class MStreamAudioService extends Service {
     public void playPause() {
         try {
             if (isPlaying()) {
-                jukebox.pause();
+                mediaPlayer.pause();
             } else if (this.isSongLoaded) {
-                jukebox.start();
+                mediaPlayer.start();
             }
         } catch (Exception e) {
             Log.d(TAG, "Exception thrown  :" + e);
@@ -189,6 +388,21 @@ public class MStreamAudioService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         return null;
+    }
+
+    // Overrides for MediaBrowser
+    @Nullable
+    @Override
+    public BrowserRoot onGetRoot(@NonNull String clientPackageName, int clientUid, @Nullable Bundle rootHints) {
+        // Returning null == no one can connect, so we’ll return something
+        return new BrowserRoot(getString(R.string.app_name), null);
+    }
+
+    // Gives a list of all the items able to be browsed. covers playable and nonplayable items (files and folders).
+    // Should be using this to populate the UI!
+    @Override
+    public void onLoadChildren(@NonNull String parentId, @NonNull Result<List<MediaBrowserCompat.MediaItem>> result) {
+        result.sendResult(null);
     }
 
     // Find Global
