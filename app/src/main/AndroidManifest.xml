@@ -26,13 +26,19 @@
 
         <service
             android:name=".player.MStreamAudioService"
-            android:exported="false"/>
-
-        <receiver android:name=".player.MediaBecomingNoisyReceiver">
+            android:exported="false">
+            <!-- Intents received by MediaButtonReceiver will now be available in onStartCommand -->
             <intent-filter>
-                <action android:name="android.media.AUDIO_BECOMING_NOISY"/>
+                <action android:name="android.intent.action.MEDIA_BUTTON"/>
+            </intent-filter>
+        </service>
+
+        <receiver android:name="android.support.v4.media.session.MediaButtonReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON"/>
             </intent-filter>
         </receiver>
+
     </application>
 
 </manifest>
