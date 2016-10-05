@@ -1,4 +1,4 @@
-package io.mstream.mstream;
+package io.mstream.mstream.playlist;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -16,8 +16,9 @@ import android.widget.ListView;
 
 import java.util.LinkedList;
 
+import io.mstream.mstream.BaseActivity;
+import io.mstream.mstream.R;
 import io.mstream.mstream.filebrowser.FileItem;
-
 
 /**
  * A simple {@link Fragment} subclass.

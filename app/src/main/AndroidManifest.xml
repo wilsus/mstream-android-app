@@ -25,7 +25,7 @@
             android:windowSoftInputMode="stateHidden"/>
 
         <service
-            android:name=".JukeboxService"
+            android:name=".player.JukeboxService"
             android:enabled="true"
             android:exported="true">
         </service>

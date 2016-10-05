@@ -1,4 +1,4 @@
-package io.mstream.mstream;
+package io.mstream.mstream.playlist;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,6 +8,7 @@ import android.widget.TextView;
 
 import java.util.LinkedList;
 
+import io.mstream.mstream.R;
 import io.mstream.mstream.filebrowser.FileItem;
 
 

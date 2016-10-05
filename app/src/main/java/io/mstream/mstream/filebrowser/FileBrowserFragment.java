@@ -1,4 +1,4 @@
-package io.mstream.mstream;
+package io.mstream.mstream.filebrowser;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -21,9 +21,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.LinkedList;
 
-import io.mstream.mstream.filebrowser.FileBrowserAdapter;
-import io.mstream.mstream.filebrowser.FileItem;
-import io.mstream.mstream.filebrowser.FileStore;
+import io.mstream.mstream.BaseActivity;
+import io.mstream.mstream.R;
 import io.mstream.mstream.serverlist.ServerStore;
 
 // TODO: Replace Volley with OkHTTP

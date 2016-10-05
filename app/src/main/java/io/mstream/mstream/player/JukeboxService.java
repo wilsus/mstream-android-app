@@ -1,4 +1,4 @@
-package io.mstream.mstream;
+package io.mstream.mstream.player;
 
 import android.app.Service;
 import android.content.Intent;
