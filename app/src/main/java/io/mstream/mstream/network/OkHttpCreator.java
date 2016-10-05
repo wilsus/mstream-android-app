@@ -30,7 +30,7 @@ public class OkHttpCreator {
         // Add an interceptor to log all requests and responses
         // NOTE: This needs to be the last interceptor added, so other interceptors will execute first
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
-        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.HEADERS);
+        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BASIC);
 
         return new OkHttpClient.Builder()
                 // Set a short timeout on connects and reads
