@@ -25,10 +25,9 @@
             android:windowSoftInputMode="stateHidden"/>
 
         <service
-            android:name=".player.JukeboxService"
-            android:enabled="true"
-            android:exported="true">
-        </service>
+            android:name=".player.MStreamAudioService"
+            android:exported="false"/>
+
         <receiver android:name=".player.MediaBecomingNoisyReceiver">
             <intent-filter>
                 <action android:name="android.media.AUDIO_BECOMING_NOISY"/>

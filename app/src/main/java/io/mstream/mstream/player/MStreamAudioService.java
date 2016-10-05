@@ -18,8 +18,8 @@ import io.mstream.mstream.filebrowser.FileItem;
 import io.mstream.mstream.serverlist.ServerItem;
 
 
-public class JukeboxService extends Service {
-    private static final String TAG = "JukeboxService";
+public class MStreamAudioService extends Service {
+    private static final String TAG = "MStreamAudioService";
 
     MediaPlayer jukebox = new MediaPlayer();
 
@@ -40,7 +40,7 @@ public class JukeboxService extends Service {
     }
 
     // TODO Is this needed anymore ?
-    public JukeboxService() {
+    public MStreamAudioService() {
 
     }
 
@@ -218,8 +218,8 @@ public class JukeboxService extends Service {
     }
 
     public class LocalBinder extends Binder {
-        public JukeboxService getServerInstance() {
-            return JukeboxService.this;
+        public MStreamAudioService getServerInstance() {
+            return MStreamAudioService.this;
         }
     }
 

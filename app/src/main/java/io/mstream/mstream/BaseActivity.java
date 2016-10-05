@@ -24,7 +24,7 @@ import java.util.List;
 
 import io.mstream.mstream.filebrowser.FileBrowserFragment;
 import io.mstream.mstream.filebrowser.FileItem;
-import io.mstream.mstream.player.JukeboxService;
+import io.mstream.mstream.player.MStreamAudioService;
 import io.mstream.mstream.playlist.PlaylistFragment;
 import io.mstream.mstream.serverlist.ServerItem;
 import io.mstream.mstream.serverlist.ServerListAdapter;
@@ -34,7 +34,7 @@ import io.mstream.mstream.serverlist.ServerStore;
 public class BaseActivity extends AppCompatActivity {
     private static final String TAG = "BaseActivity";
 
-    private JukeboxService mJukebox;
+    private MStreamAudioService mJukebox;
 
     public SeekBar seekBar;
     private Handler myHandler = new Handler();
@@ -72,10 +72,10 @@ public class BaseActivity extends AppCompatActivity {
         });
 
         // Start the Jukebox Service
-//        startService(new Intent(getBaseContext(), JukeboxService.class));
+//        startService(new Intent(getBaseContext(), MStreamAudioService.class));
 
         // Bind the jukebox
-//        Intent mIntent = new Intent(this, JukeboxService.class);
+//        Intent mIntent = new Intent(this, MStreamAudioService.class);
 //        bindService(mIntent, mConnection, Context.BIND_AUTO_CREATE);
 
         //Broadcast Manager
@@ -159,7 +159,7 @@ public class BaseActivity extends AppCompatActivity {
 //        }
 //
 //        public void onServiceConnected(ComponentName name, IBinder service) {
-//            JukeboxService.LocalBinder mLocalBinder = (JukeboxService.LocalBinder) service;
+//            MStreamAudioService.LocalBinder mLocalBinder = (MStreamAudioService.LocalBinder) service;
 //            mJukebox = mLocalBinder.getServerInstance();
 //        }
 //    };
