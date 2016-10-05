@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
+import io.mstream.mstream.filebrowser.FileItem;
 import io.mstream.mstream.serverlist.ServerItem;
 
 
@@ -26,7 +27,7 @@ public class JukeboxService extends Service {
     boolean isSongLoaded = false;
 
     // Playlist is a linked list
-    public LinkedList<ListItem> playlist = new LinkedList<>();
+    public LinkedList<FileItem> playlist = new LinkedList<>();
 
     // Keep a cache of the currently playing song position
     Integer playlistCache = 0;
@@ -43,21 +44,21 @@ public class JukeboxService extends Service {
 
     }
 
-    public LinkedList<ListItem> getPlaylist() {
+    public LinkedList<FileItem> getPlaylist() {
         return this.playlist;
     }
 
     // Add a track to playlist
-    public void addTrackToPlaylist(ListItem trackItem) {
+    public void addTrackToPlaylist(FileItem trackItem) {
         // If the linked list is empty, set the currently playing status
         if (this.playlist.isEmpty()) {
-            trackItem.setCurrrentlyPlaying(true);
+            trackItem.setCurrentlyPlaying(true);
 
             // Set the cache to 1, because there will only be one item on the list
             this.playlistCache = 0;
 
             // Set Media//////////////////////
-            String url = trackItem.getItemLink();
+            String url = trackItem.getItemUrl();
             playTrack(url);
             ////////////////////////////////////
         }
@@ -125,25 +126,25 @@ public class JukeboxService extends Service {
         Integer currentTrackIndex = findCurrentlyPlaying();
         Integer nextTrackIndex = currentTrackIndex;
         nextTrackIndex++;
-        ListItem currentTrackItem = this.playlist.get(currentTrackIndex);
+        FileItem currentTrackItem = this.playlist.get(currentTrackIndex);
 
         // Check if it's the last element in the list
         if (currentTrackItem == this.playlist.getLast()) {
             return;
         }
 
-        ListItem nextTrackItem = this.playlist.get(nextTrackIndex);
-        currentTrackItem.setCurrrentlyPlaying(false);
-        nextTrackItem.setCurrrentlyPlaying(true);
+        FileItem nextTrackItem = this.playlist.get(nextTrackIndex);
+        currentTrackItem.setCurrentlyPlaying(false);
+        nextTrackItem.setCurrentlyPlaying(true);
 
-        playTrack(nextTrackItem.getItemLink());
+        playTrack(nextTrackItem.getItemUrl());
     }
 
     public void goToPreviousTrack() {
 
     }
 
-    public void goToSelectedTrack(ListItem item) {
+    public void goToSelectedTrack(FileItem item) {
         // TODO: make this more efficient
         // Check the playlsit cache
         // Remove currently playing status if true
@@ -155,18 +156,18 @@ public class JukeboxService extends Service {
             // If we find the currently playing item
             if (checkIfCurrentlyPlaying(i)) {
                 // Remove currently playing status
-                this.playlist.get(i).setCurrrentlyPlaying(false);
+                this.playlist.get(i).setCurrentlyPlaying(false);
 
             }
 
             // if the items match
             if (item == this.playlist.get(i)) {
                 // Reset the playlist cache, and set the item to currntlyPlaying = true
-                this.playlist.get(i).setCurrrentlyPlaying(true);
+                this.playlist.get(i).setCurrentlyPlaying(true);
                 this.playlistCache = i;
 
                 // Start playing
-                playTrack(this.playlist.get(i).getItemLink());
+                playTrack(this.playlist.get(i).getItemUrl());
 
             }
         }
@@ -276,7 +277,7 @@ public class JukeboxService extends Service {
 
     // TODO: Function that checks if linked linked list item is currently playing
     public boolean checkIfCurrentlyPlaying(int index) {
-        ListItem testThisItem = this.playlist.get(index);
+        FileItem testThisItem = this.playlist.get(index);
 
         return testThisItem.getCurrentlyPlayingStatus();
     }

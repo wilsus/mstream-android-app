@@ -13,6 +13,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="8dp"
         android:text="@string/back"/>
 
     <Button
@@ -20,10 +22,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
+        android:layout_marginEnd="24dp"
+        android:layout_marginTop="8dp"
         android:text="@string/all"/>
 
-    <ListView
-        android:id="@+id/listViewX"
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/browse_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentBottom="true"
