@@ -1,6 +1,5 @@
 package io.mstream.mstream;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -9,8 +8,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-
-
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -25,7 +22,6 @@ import java.util.LinkedList;
 
 import io.mstream.mstream.filebrowser.FileBrowserAdapter;
 import io.mstream.mstream.filebrowser.FileItem;
-import io.mstream.mstream.filebrowser.FileStore;
 import io.mstream.mstream.serverlist.ServerStore;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -46,7 +42,7 @@ public class FileBrowserFragment extends Fragment implements FileBrowserAdapter.
     public String currentServerAddress = "";
     private RecyclerView filesListView;
 
-    private  final OkHttpClient httpClient = new OkHttpClient();
+    private final OkHttpClient httpClient = new OkHttpClient();
 
     public FileBrowserFragment() {
         // Required empty public constructor
@@ -181,7 +177,7 @@ public class FileBrowserFragment extends Fragment implements FileBrowserAdapter.
 //            }
 //        });
 
-        callServer( directoryMap.getLast(), false);
+        callServer(directoryMap.getLast(), false);
 
     }
 
@@ -196,15 +192,13 @@ public class FileBrowserFragment extends Fragment implements FileBrowserAdapter.
 //                }
 //            });
 
-            callServer( directoryMap.getLast(), true);
+            callServer(directoryMap.getLast(), true);
 
         }
     }
 
 
-
-
-    public void callServer(final String directory, final Boolean goBack)  {
+    public void callServer(final String directory, final Boolean goBack) {
 
         RequestBody formBody = new FormBody.Builder()
                 .add("dir", directory)
@@ -217,13 +211,14 @@ public class FileBrowserFragment extends Fragment implements FileBrowserAdapter.
                 .build();
 
 
-
         httpClient.newCall(request).enqueue(new Callback() {
-            @Override public void onFailure(Call call, IOException e) {
+            @Override
+            public void onFailure(Call call, IOException e) {
                 e.printStackTrace();
             }
 
-            @Override public void onResponse(Call call, Response response) throws IOException {
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
                 if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
 
 
@@ -240,7 +235,6 @@ public class FileBrowserFragment extends Fragment implements FileBrowserAdapter.
         });
 
     }
-
 
 
     @Override
