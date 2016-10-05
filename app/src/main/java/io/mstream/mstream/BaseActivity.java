@@ -22,6 +22,7 @@ import android.widget.Toast;
 import java.util.LinkedList;
 import java.util.List;
 
+import io.mstream.mstream.filebrowser.FileBrowserFragment;
 import io.mstream.mstream.filebrowser.FileItem;
 import io.mstream.mstream.serverlist.ServerItem;
 import io.mstream.mstream.serverlist.ServerListAdapter;
