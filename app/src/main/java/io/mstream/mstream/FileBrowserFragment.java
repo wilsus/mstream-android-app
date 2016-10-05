@@ -26,7 +26,6 @@ import io.mstream.mstream.serverlist.ServerStore;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -41,8 +40,6 @@ public class FileBrowserFragment extends Fragment implements FileBrowserAdapter.
     private LinkedList<String> directoryMap = new LinkedList<>();
     public String currentServerAddress = "";
     private RecyclerView filesListView;
-
-    private final OkHttpClient httpClient = new OkHttpClient();
 
     public FileBrowserFragment() {
         // Required empty public constructor
@@ -197,9 +194,7 @@ public class FileBrowserFragment extends Fragment implements FileBrowserAdapter.
         }
     }
 
-
     public void callServer(final String directory, final Boolean goBack) {
-
         RequestBody formBody = new FormBody.Builder()
                 .add("dir", directory)
                 .add("filetypes", "[\"mp3\",\"flac\",\"wav\",\"ogg\"]")
@@ -210,8 +205,7 @@ public class FileBrowserFragment extends Fragment implements FileBrowserAdapter.
                 .post(formBody)
                 .build();
 
-
-        httpClient.newCall(request).enqueue(new Callback() {
+        ((MStreamApplication) getActivity().getApplication()).getOkHttpClient().newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
                 e.printStackTrace();
@@ -220,22 +214,16 @@ public class FileBrowserFragment extends Fragment implements FileBrowserAdapter.
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-
-
                 final String responseString = response.body().string();
-
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         writeToList(responseString, goBack);
                     }
                 });
-
             }
         });
-
     }
-
 
     @Override
     public void onDirectoryClick(String directory) {
