@@ -9,12 +9,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
-import com.android.volley.Response;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -23,8 +22,13 @@ import java.util.LinkedList;
 
 import io.mstream.mstream.filebrowser.FileBrowserAdapter;
 import io.mstream.mstream.filebrowser.FileItem;
-import io.mstream.mstream.filebrowser.FileStore;
 import io.mstream.mstream.serverlist.ServerStore;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.FormBody;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 // TODO: Replace Volley with OkHTTP
 // TODO: Replace the map Object with an Array
@@ -162,24 +166,63 @@ public class FileBrowserFragment extends Fragment implements FileBrowserAdapter.
 
     public void goToDirectory(final String directory) {
         directoryMap.addLast(directory);
-        FileStore.callServer(getActivity().getApplicationContext(), directory, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                writeToList(response, false);
-            }
-        });
+//        FileStore.callServer(getActivity().getApplicationContext(), directory, httpClient, new Response.Listener<String>() {
+//            @Override
+//            public void onResponse(Response response)  throws IOException {
+//                final String responseString = response.body().string();
+//                writeToList(responseString, false);
+//            }
+//        });
+
+        callServer(directoryMap.getLast(), false);
+
     }
 
     public void goBack() {
         if (!directoryMap.getLast().equals("")) {
             directoryMap.removeLast();
-            FileStore.callServer(getActivity().getApplicationContext(), directoryMap.getLast(), new Response.Listener<String>() {
-                @Override
-                public void onResponse(String response) {
-                    writeToList(response, true);
-                }
-            });
+//            FileStore.callServer(getActivity().getApplicationContext(), directoryMap.getLast(), httpClient , new Response.Listener<String>() {
+//                @Override
+//                public void onResponse(Response response)  throws IOException {
+//                    final String responseString = response.body().string();
+//                    writeToList(responseString, true);
+//                }
+//            });
+
+            callServer(directoryMap.getLast(), true);
+
         }
+    }
+
+    public void callServer(final String directory, final Boolean goBack) {
+        RequestBody formBody = new FormBody.Builder()
+                .add("dir", directory)
+                .add("filetypes", "[\"mp3\",\"flac\",\"wav\",\"ogg\"]")
+                .build();
+
+        Request request = new Request.Builder()
+                .url(getCurrentServerString() + "dirparser")
+                .post(formBody)
+                .build();
+
+        ((MStreamApplication) getActivity().getApplication()).getOkHttpClient().newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+                final String responseString = response.body().string();
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        writeToList(responseString, goBack);
+                    }
+                });
+            }
+        });
     }
 
     @Override
