@@ -150,7 +150,7 @@ public class BaseActivity extends AppCompatActivity {
             navigationMenu.setLayoutManager(new LinearLayoutManager(this));
             ServerListAdapter adapter = new ServerListAdapter(serverItems);
             navigationMenu.setAdapter(adapter);
-//                changeToBrowser();
+            changeToBrowser();
         }
     }
 
