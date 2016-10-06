@@ -61,12 +61,6 @@ public class MStreamAudioService extends MediaBrowserServiceCompat {
                 .setState(PlaybackStateCompat.STATE_PAUSED, 0, 0)
                 .setActions(PlaybackStateCompat.ACTION_PLAY_PAUSE)
                 .build());
-        mediaSession.setMetadata(new MediaMetadataCompat.Builder()
-                .putString(MediaMetadataCompat.METADATA_KEY_TITLE, "Test Track Name")
-                .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, 10000)
-                .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART,
-                        BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher))
-                .build());
         // Set the Activity that the media session is tied to - probably just BaseActivity.
         // This will launch when the user taps our notification.
         PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 667,
@@ -148,8 +142,27 @@ public class MStreamAudioService extends MediaBrowserServiceCompat {
         mediaSession.setPlaybackState(new PlaybackStateCompat.Builder()
                 .setState(PlaybackStateCompat.STATE_PLAYING, 0, 1.0f)
                 .setActions(PlaybackStateCompat.ACTION_PLAY_PAUSE).build());
-        startForeground(6689, buildNotiication());
-        player.play(null);
+
+        // Update the metadata for the playing track
+        // TODO: live values
+        MediaMetadataCompat metadata = new MediaMetadataCompat.Builder()
+                // TODO: where does the display title show up?
+                .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, "one two")
+                .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, "three four")
+                .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION, "five six")
+                .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, "http://darncoyotes.mstream.io/MP3/Darn%20Coyotes%20-%2005%20From%20Athens.mp3")
+                .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher))
+                .build();
+        // Set the metadata for the session
+        mediaSession.setMetadata(metadata);
+        // Then build the notification, since it requires the session metadata!
+        updateNotification();
+        // Finally, play the item with the metadata specified above.
+        player.play(new MediaSessionCompat.QueueItem(metadata.getDescription(), 123));
+    }
+
+    private void updateNotification() {
+        startForeground(6689, buildNotification());
     }
 
     private void pause() {
@@ -157,6 +170,7 @@ public class MStreamAudioService extends MediaBrowserServiceCompat {
         mediaSession.setPlaybackState(new PlaybackStateCompat.Builder()
                 .setState(PlaybackStateCompat.STATE_PAUSED, 0, 0.0f)
                 .setActions(PlaybackStateCompat.ACTION_PLAY_PAUSE).build());
+        updateNotification();
         // allow the user to swipe us away when paused, but keep the notification up.
         stopForeground(false);
     }
@@ -176,13 +190,14 @@ public class MStreamAudioService extends MediaBrowserServiceCompat {
         mediaSession.release();
     }
 
-    private Notification buildNotiication() {
+    private Notification buildNotification() {
         MediaDescriptionCompat description = mediaSession.getController().getMetadata().getDescription();
 
         // TODO: any way to get metadata from mStream? Or just the filename?
-        return new NotificationCompat.Builder(this)
-                // TODO: figure out a good icon, maybe a custom tiny mstream logo in one channel
-                .setSmallIcon(R.drawable.ic_folder_black_24dp)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+
+        // TODO: figure out a good icon, maybe a custom tiny mstream logo in one channel
+        builder.setSmallIcon(R.drawable.ic_audiotrack_black_24dp)
                 .setLargeIcon(description.getIconBitmap())
                 .setContentTitle(description.getTitle())
                 .setContentText(description.getSubtitle())
@@ -194,21 +209,31 @@ public class MStreamAudioService extends MediaBrowserServiceCompat {
                 // When swiped away, stop playback.
                 .setDeleteIntent(getActionIntent(KeyEvent.KEYCODE_MEDIA_STOP))
                 // TODO: test out the coloration
-                .setColor(getResources().getColor(R.color.colorPrimaryDark))
-                // Add some actions
-                .addAction(new NotificationCompat.Action(R.drawable.ic_pause_white_36dp, getString(R.string.pause),
-                        getActionIntent(KeyEvent.KEYCODE_MEDIA_PAUSE)))
-                .addAction(new NotificationCompat.Action(R.drawable.ic_play_arrow_white_36dp, getString(R.string.play),
-                        getActionIntent(KeyEvent.KEYCODE_MEDIA_PLAY)))
-                // Set the style and configure the action buttons
-                .setStyle(new NotificationCompat.MediaStyle()
-                        // Show the first button we added, in this cause, pause
-                        .setShowActionsInCompactView(0)
-                        .setMediaSession(mediaSession.getSessionToken())
-                        // Add a little 'x' to allow users to tap it to exit playback, in addition to swiping away
-                        .setShowCancelButton(true)
-                        .setCancelButtonIntent(getActionIntent(KeyEvent.KEYCODE_MEDIA_STOP)))
-                .build();
+                .setColor(getResources().getColor(R.color.colorPrimaryDark));
+        // Add some actions
+        // ...
+        // Then add a play/pause action
+        addPlayPauseAction(builder);
+        // Set the style and configure the action buttons
+        builder.setStyle(new NotificationCompat.MediaStyle()
+                // Show the first button we added, in this cause, pause
+                .setShowActionsInCompactView(0)
+                .setMediaSession(mediaSession.getSessionToken())
+                // Add a little 'x' to allow users to tap it to exit playback, in addition to swiping away
+                .setShowCancelButton(true)
+                .setCancelButtonIntent(getActionIntent(KeyEvent.KEYCODE_MEDIA_STOP)));
+
+        return builder.build();
+    }
+
+    private void addPlayPauseAction(NotificationCompat.Builder builder) {
+        if (isPlaying()) {
+            builder.addAction(new NotificationCompat.Action(R.drawable.ic_pause_white_36dp, getString(R.string.pause),
+                    getActionIntent(KeyEvent.KEYCODE_MEDIA_PAUSE)));
+        } else {
+            builder.addAction(new NotificationCompat.Action(R.drawable.ic_play_arrow_white_36dp, getString(R.string.play),
+                    getActionIntent(KeyEvent.KEYCODE_MEDIA_PLAY)));
+        }
     }
 
     /**

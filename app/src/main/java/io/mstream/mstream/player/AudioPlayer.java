@@ -10,6 +10,7 @@ import android.net.wifi.WifiManager;
 import android.os.PowerManager;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
+import android.text.TextUtils;
 import android.util.Log;
 
 import java.io.IOException;
@@ -127,11 +128,11 @@ class AudioPlayer implements Playback, AudioManager.OnAudioFocusChangeListener,
         playOnFocusGain = true;
         tryToGetAudioFocus();
         registerAudioNoisyReceiver();
-//        String mediaId = item.getDescription().getMediaId();
-        boolean mediaHasChanged = true;//!TextUtils.equals(mediaId, currentMediaId);
+        String mediaId = item.getDescription().getMediaId();
+        boolean mediaHasChanged = !TextUtils.equals(mediaId, currentMediaId);
         if (mediaHasChanged) {
             currentPosition = 0;
-//            currentMediaId = mediaId;
+            currentMediaId = mediaId;
         }
 
         if (state == PlaybackStateCompat.STATE_PAUSED && !mediaHasChanged && mediaPlayer != null) {
@@ -139,8 +140,8 @@ class AudioPlayer implements Playback, AudioManager.OnAudioFocusChangeListener,
         } else {
             state = PlaybackStateCompat.STATE_STOPPED;
             relaxResources(false); // release everything except MediaPlayer
-            // TODO: dynamic source
-            String source = "http://darncoyotes.mstream.io/MP3/Darn%20Coyotes%20-%2005%20From%20Athens.mp3";
+            // This could produce a NPE, but we want the app to crash if that happens. means something is wrong!
+            String source = item.getDescription().getMediaUri().toString();
 
             try {
                 createMediaPlayerIfNeeded();
