@@ -98,6 +98,13 @@ public class MStreamAudioService extends MediaBrowserServiceCompat {
                                         Log.d(TAG, "KEYCODE_MEDIA_PLAY");
                                         play();
                                         break;
+                                    case KeyEvent.KEYCODE_MEDIA_STOP:
+                                        Log.d(TAG, "KEYCODE_MEDIA_STOP");
+                                        stop();
+                                        break;
+                                    default:
+                                        Log.d(TAG, "Keycode is " + keycode);
+                                        break;
                                 }
                             }
                         }
