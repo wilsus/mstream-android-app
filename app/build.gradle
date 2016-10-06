@@ -21,9 +21,14 @@ android {
 
 dependencies {
     compile project(":volley")
+
     // Google support libraries
     final supportLibVersion = "24.2.1"
     compile 'com.android.support:appcompat-v7:' + supportLibVersion
     compile 'com.android.support:recyclerview-v7:' + supportLibVersion
     compile 'com.android.support:design:' + supportLibVersion
+
+    // Network
+    compile 'com.squareup.okhttp3:okhttp:3.4.1'
+    compile 'com.squareup.okhttp3:logging-interceptor:3.4.1'
 }
