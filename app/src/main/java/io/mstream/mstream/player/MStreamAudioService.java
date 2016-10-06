@@ -204,7 +204,7 @@ public class MStreamAudioService extends MediaBrowserServiceCompat {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
 
         // TODO: figure out a good icon, maybe a custom tiny mstream logo in one channel
-        builder.setSmallIcon(R.drawable.ic_audiotrack_black_24dp)
+        builder.setSmallIcon(R.drawable.ic_notification)
                 .setLargeIcon(description.getIconBitmap())
                 .setContentTitle(description.getTitle())
                 .setContentText(description.getSubtitle())
