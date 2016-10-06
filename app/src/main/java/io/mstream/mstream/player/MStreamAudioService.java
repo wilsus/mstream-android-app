@@ -154,9 +154,9 @@ public class MStreamAudioService extends MediaBrowserServiceCompat {
         // TODO: live values
         MediaMetadataCompat metadata = new MediaMetadataCompat.Builder()
                 // TODO: where does the display title show up?
-                .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, "one two")
-                .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, "three four")
-                .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION, "five six")
+                .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, "this is the display title")
+                .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, "this is the display subtitle")
+                .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION, "this is the display description")
                 .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, "http://darncoyotes.mstream.io/MP3/Darn%20Coyotes%20-%2005%20From%20Athens.mp3")
                 .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher))
                 .build();
