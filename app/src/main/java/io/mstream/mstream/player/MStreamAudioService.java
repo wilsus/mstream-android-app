@@ -11,7 +11,6 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
@@ -383,11 +382,6 @@ public class MStreamAudioService extends MediaBrowserServiceCompat {
 
     // Delete entire playlist
     public void blowAwayPlaylist() {
-    }
-
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
     }
 
     // Overrides for MediaBrowser
