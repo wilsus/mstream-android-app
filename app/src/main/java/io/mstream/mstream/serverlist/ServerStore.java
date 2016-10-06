@@ -1,5 +1,7 @@
 package io.mstream.mstream.serverlist;
 
+import android.support.annotation.NonNull;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -15,6 +17,7 @@ public final class ServerStore {
     private ServerStore() {
     }
 
+    @NonNull
     public static ServerItem getDefaultServer() {
         // TODO: improve perf here, cache the default?
         Set<String> servers = LocalPreferences.getInstance().getServers();
@@ -25,7 +28,7 @@ public final class ServerStore {
                 return item;
             }
         }
-        return null;
+        return new ServerItem.Builder("", "").build();
     }
 
     public static List<ServerItem> getServers() {

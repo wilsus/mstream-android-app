@@ -37,43 +37,45 @@ public class AddServerActivity extends AppCompatActivity {
         urlText = (EditText) findViewById(R.id.input_url);
         urlTextLayout = (TextInputLayout) findViewById(R.id.input_url_layout);
         makeDefault = (CheckBox) findViewById(R.id.make_default);
+        findViewById(R.id.add_server).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (validate()) {
+                    v.setEnabled(false);
+
+                    String name = nameText.getText().toString();
+                    String url = urlText.getText().toString();
+                    String password = passwordText.getText().toString();
+                    String username = usernameText.getText().toString();
+
+                    // Create new server Item
+                    ServerItem newServerItem = new ServerItem.Builder(name, url)
+                            .username(username)
+                            .password(password)
+                            .build();
+
+                    ServerStore.addServer(newServerItem);
+                    if (makeDefault.isChecked()) {
+                        ServerStore.setDefaultServer(newServerItem);
+                    }
+
+                    // TODO: Test connection to server.  Return an error if it can't connect
+
+                    // Send serverItem to the main activity to be added the list of servers
+                    // TODO: Check if this function returns an error?
+//            boolean status = ((BaseActivity) getActivity()).addItemToServerList(newServerItem);
+//            if (!status) {
+//                Toast.makeText(this, "Server Name Already Exists", Toast.LENGTH_LONG).show();
+//            }
+                    finish();
+                }
+            }
+        });
 
         // If there are no servers yet, ensure the Make Default box is checked
         if (ServerStore.getServers().isEmpty()) {
             makeDefault.setChecked(true);
             makeDefault.setEnabled(false);
-        }
-    }
-
-    public void addServer(View button) {
-        if (validate()) {
-            button.setEnabled(false);
-
-            String name = nameText.getText().toString();
-            String url = urlText.getText().toString();
-            String password = passwordText.getText().toString();
-            String username = usernameText.getText().toString();
-
-            // Create new server Item
-            ServerItem newServerItem = new ServerItem.Builder(name, url)
-                    .username(username)
-                    .password(password)
-                    .build();
-
-            ServerStore.addServer(newServerItem);
-            if (makeDefault.isChecked()) {
-                ServerStore.setDefaultServer(newServerItem);
-            }
-
-            // TODO: Test connection to server.  Return an error if it can't connect
-
-            // Send serverItem to the main activity to be added the list of servers
-            // TODO: Check if this function returns an error?
-//            boolean status = ((BaseActivity) getActivity()).addItemToServerList(newServerItem);
-//            if (!status) {
-//                Toast.makeText(this, "Server Name Already Exists", Toast.LENGTH_LONG).show();
-//            }
-            finish();
         }
     }
 
