@@ -8,8 +8,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.BitmapFactory;
 import android.media.AudioManager;
-import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -25,7 +23,6 @@ import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 import android.view.KeyEvent;
 
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -36,14 +33,10 @@ import io.mstream.mstream.filebrowser.FileItem;
 public class MStreamAudioService extends MediaBrowserServiceCompat {
     private static final String TAG = "MStreamAudioService";
 
+    // the Media Session allows the system to know what we've got going on
     private MediaSessionCompat mediaSession;
-    private MediaPlayer mediaPlayer = new MediaPlayer();
-    // We need to track the status
-    boolean isSongLoaded = false;
-    // Playlist is a linked list
-    public LinkedList<FileItem> playlist = new LinkedList<>();
-    // Keep a cache of the currently playing song position
-    private Integer playlistCache = 0;
+    // The player!
+    private AudioPlayer player;
     // Don't become noisy.
     private final IntentFilter noisyFilter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
     private final BroadcastReceiver noisyReceiver = new BroadcastReceiver() {
@@ -53,10 +46,21 @@ public class MStreamAudioService extends MediaBrowserServiceCompat {
         }
     };
 
+    // We need to track the status
+    boolean isSongLoaded = false;
+    // Playlist is a linked list
+    public LinkedList<FileItem> playlist = new LinkedList<>();
+    // Keep a cache of the currently playing song position
+    private Integer playlistCache = 0;
+
     @Override
     public void onCreate() {
         super.onCreate();
         Log.d(TAG, "Creating audio service!");
+
+        // Actually play audio, how about that
+        player = new AudioPlayer(this);
+
         // Set up Media Session
         mediaSession = new MediaSessionCompat(this, TAG);
         // Call to super to set up the session
@@ -117,44 +121,12 @@ public class MStreamAudioService extends MediaBrowserServiceCompat {
                     }
                 }
         );
-        // Request audio focus
-        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        audioManager.requestAudioFocus(
-                new AudioManager.OnAudioFocusChangeListener() {
-                    @Override
-                    public void onAudioFocusChange(int focusChange) {
-                        switch (focusChange) {
-                            case AudioManager.AUDIOFOCUS_LOSS:
-                                // Some other app has requested permanent audio focus.
-                                // Pause the playback (just in case it was accidental)
-                                // Then maybe wait ~30 seconds then shut down the service.
-                                pause();
-                                break;
-                            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
-                                // Some other app needs the full focus temporarily. Pause playback.
-                                pause();
-                                break;
-                            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
-                                // Some other app wants to play something, but we can keep playing.
-                                // Just "duck" the volume a bit while the focus is elsewhere.
-                                // TODO: duck to what volume? How to ensure the volume is regained?
-                                break;
-                            case AudioManager.AUDIOFOCUS_GAIN:
-                                // We're back, baby!!! Play.
-                                play();
-                                // Ensure we're the latest to get the media button intents.
-                                mediaSession.setActive(true);
-                                // TODO: setActive(false) when we stop playback.
-                                break;
-                        }
-                    }
-                }, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
-
         startService(new Intent(getApplicationContext(), MStreamAudioService.class));
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        play();
         Log.d(TAG, "onStartCommand");
 //        // Set an on song completion listener
 //        this.mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
@@ -168,15 +140,32 @@ public class MStreamAudioService extends MediaBrowserServiceCompat {
         return START_STICKY;
     }
 
+    // Overrides for MediaBrowser
+    @Nullable
+    @Override
+    public BrowserRoot onGetRoot(@NonNull String clientPackageName, int clientUid, @Nullable Bundle rootHints) {
+        // Returning null == no one can connect, so we’ll return something
+        return new BrowserRoot(getString(R.string.app_name), null);
+    }
+
+    // Gives a list of all the items able to be browsed. covers playable and nonplayable items (files and folders).
+    // Should be using this to populate the UI!
+    @Override
+    public void onLoadChildren(@NonNull String parentId, @NonNull Result<List<MediaBrowserCompat.MediaItem>> result) {
+        result.sendResult(null);
+    }
+
     private void play() {
         registerReceiver(noisyReceiver, noisyFilter);
         mediaSession.setPlaybackState(new PlaybackStateCompat.Builder()
                 .setState(PlaybackStateCompat.STATE_PLAYING, 0, 1.0f)
                 .setActions(PlaybackStateCompat.ACTION_PLAY_PAUSE).build());
         startForeground(0, buildNotiication());
+        player.play(null);
     }
 
     private void pause() {
+        player.pause();
         unregisterReceiver(noisyReceiver);
         mediaSession.setPlaybackState(new PlaybackStateCompat.Builder()
                 .setState(PlaybackStateCompat.STATE_PAUSED, 0, 0.0f)
@@ -186,6 +175,7 @@ public class MStreamAudioService extends MediaBrowserServiceCompat {
     }
 
     private void stop() {
+        player.stop(false);
         // Stop hogging audio focus
         ((AudioManager) getSystemService(Context.AUDIO_SERVICE)).abandonAudioFocus(null);
         mediaSession.setActive(false);
@@ -244,6 +234,15 @@ public class MStreamAudioService extends MediaBrowserServiceCompat {
         return PendingIntent.getBroadcast(this, mediaKeyEvent, intent, 0);
     }
 
+    public boolean isPlaying() {
+        return mediaSession.getController().getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING;
+    }
+
+
+    /////////////////////////////////
+    //          OLD STUFF          //
+    /////////////////////////////////
+
     public LinkedList<FileItem> getPlaylist() {
         return this.playlist;
     }
@@ -267,44 +266,32 @@ public class MStreamAudioService extends MediaBrowserServiceCompat {
     }
 
     public int getPosition() {
-        return this.mediaPlayer.getCurrentPosition();
-    }
-
-    public boolean isPlaying() {
-        return mediaSession.getController().getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING;
-    }
-
-    public int getDuration() {
-        return this.mediaPlayer.getDuration();
+        return player.getCurrentStreamPosition();
     }
 
     public void playTrack(String url) {
-        try {
-            this.isSongLoaded = false;
-            mediaPlayer.stop();
-            mediaPlayer.reset();
-
-            //url = url.replace(" ", "%20");
-            mediaPlayer.setDataSource(getApplicationContext(), Uri.parse(url));
-
-            mediaPlayer.prepareAsync();
-            mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                public void onPrepared(MediaPlayer mp) {
-                    mp.start();
-                    isSongLoaded = true;
-
-                    // Broadcast message
-                    sendMessage("new-track");
-                }
-            });
-        } catch (IllegalArgumentException | IllegalStateException | IOException e) {
-            e.getCause();
-            //Toast.makeText(getApplicationContext(), "You might not set the URI correctly!", Toast.LENGTH_LONG).show();
-        }
+//        try {
+//            this.isSongLoaded = false;
+//            player.stop(false);
+//            player.setDataSource(getApplicationContext(), Uri.parse(url));
+//            player.prepareAsync();
+//            player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+//                public void onPrepared(MediaPlayer mp) {
+//                    mp.start();
+//                    isSongLoaded = true;
+//
+//                    // Broadcast message
+//                    sendMessage("new-track");
+//                }
+//            });
+//        } catch (IllegalArgumentException | IllegalStateException | IOException e) {
+//            e.getCause();
+//            //Toast.makeText(getApplicationContext(), "You might not set the URI correctly!", Toast.LENGTH_LONG).show();
+//        }
     }
 
     public void seekTo(int time) {
-        this.mediaPlayer.seekTo(time);
+        this.player.seekTo(time);
     }
 
     public void goToNextTrack() {
@@ -354,49 +341,6 @@ public class MStreamAudioService extends MediaBrowserServiceCompat {
                 playTrack(this.playlist.get(i).getItemUrl());
             }
         }
-    }
-
-    public void goToRandomTrack() {
-    }
-
-    public void changeTrackPosition() {
-    }
-
-    public void playPause() {
-        try {
-            if (isPlaying()) {
-                mediaPlayer.pause();
-            } else if (this.isSongLoaded) {
-                mediaPlayer.start();
-            }
-        } catch (Exception e) {
-            Log.d(TAG, "Exception thrown  :" + e);
-        }
-    }
-
-    public void startPlaying() {
-    }
-
-    public void stopPlaying() {
-    }
-
-    // Delete entire playlist
-    public void blowAwayPlaylist() {
-    }
-
-    // Overrides for MediaBrowser
-    @Nullable
-    @Override
-    public BrowserRoot onGetRoot(@NonNull String clientPackageName, int clientUid, @Nullable Bundle rootHints) {
-        // Returning null == no one can connect, so we’ll return something
-        return new BrowserRoot(getString(R.string.app_name), null);
-    }
-
-    // Gives a list of all the items able to be browsed. covers playable and nonplayable items (files and folders).
-    // Should be using this to populate the UI!
-    @Override
-    public void onLoadChildren(@NonNull String parentId, @NonNull Result<List<MediaBrowserCompat.MediaItem>> result) {
-        result.sendResult(null);
     }
 
     // Find Global
