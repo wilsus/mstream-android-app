@@ -2,10 +2,8 @@ package io.mstream.mstream.player;
 
 import android.app.Notification;
 import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.os.Bundle;
@@ -37,14 +35,6 @@ public class MStreamAudioService extends MediaBrowserServiceCompat {
     private MediaSessionCompat mediaSession;
     // The player!
     private AudioPlayer player;
-    // Don't become noisy.
-    private final IntentFilter noisyFilter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
-    private final BroadcastReceiver noisyReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            pause();
-        }
-    };
 
     // We need to track the status
     boolean isSongLoaded = false;
@@ -126,7 +116,6 @@ public class MStreamAudioService extends MediaBrowserServiceCompat {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        play();
         Log.d(TAG, "onStartCommand");
 //        // Set an on song completion listener
 //        this.mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
@@ -156,17 +145,15 @@ public class MStreamAudioService extends MediaBrowserServiceCompat {
     }
 
     private void play() {
-        registerReceiver(noisyReceiver, noisyFilter);
         mediaSession.setPlaybackState(new PlaybackStateCompat.Builder()
                 .setState(PlaybackStateCompat.STATE_PLAYING, 0, 1.0f)
                 .setActions(PlaybackStateCompat.ACTION_PLAY_PAUSE).build());
-        startForeground(0, buildNotiication());
+        startForeground(6689, buildNotiication());
         player.play(null);
     }
 
     private void pause() {
         player.pause();
-        unregisterReceiver(noisyReceiver);
         mediaSession.setPlaybackState(new PlaybackStateCompat.Builder()
                 .setState(PlaybackStateCompat.STATE_PAUSED, 0, 0.0f)
                 .setActions(PlaybackStateCompat.ACTION_PLAY_PAUSE).build());

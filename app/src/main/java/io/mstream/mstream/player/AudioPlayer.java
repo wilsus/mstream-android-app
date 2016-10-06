@@ -1,6 +1,9 @@
 package io.mstream.mstream.player;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.wifi.WifiManager;
@@ -40,6 +43,20 @@ class AudioPlayer implements Playback, AudioManager.OnAudioFocusChangeListener,
     private volatile int currentPosition;
     private volatile String currentMediaId;
 
+    private volatile boolean audioNoisyReceiverRegistered;
+    private final IntentFilter audioNoisyIntentFilter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
+    private final BroadcastReceiver audioNoisyReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (AudioManager.ACTION_AUDIO_BECOMING_NOISY.equals(intent.getAction())) {
+                Log.d(TAG, "Headphones disconnected.");
+                if (isPlaying()) {
+                    pause();
+                }
+            }
+        }
+    };
+
     // Type of audio focus we have:
     private int audioFocus = AUDIO_NO_FOCUS_NO_DUCK;
     private final AudioManager audioManager;
@@ -67,6 +84,7 @@ class AudioPlayer implements Playback, AudioManager.OnAudioFocusChangeListener,
         currentPosition = getCurrentStreamPosition();
         // Give up Audio focus
         giveUpAudioFocus();
+        unregisterAudioNoisyReceiver();
         // Relax all resources
         relaxResources(true);
     }
@@ -108,6 +126,7 @@ class AudioPlayer implements Playback, AudioManager.OnAudioFocusChangeListener,
     public void play(MediaSessionCompat.QueueItem item) {
         playOnFocusGain = true;
         tryToGetAudioFocus();
+        registerAudioNoisyReceiver();
 //        String mediaId = item.getDescription().getMediaId();
         boolean mediaHasChanged = true;//!TextUtils.equals(mediaId, currentMediaId);
         if (mediaHasChanged) {
@@ -172,6 +191,7 @@ class AudioPlayer implements Playback, AudioManager.OnAudioFocusChangeListener,
         if (callback != null) {
             callback.onPlaybackStatusChanged(state);
         }
+        unregisterAudioNoisyReceiver();
     }
 
     @Override
@@ -423,6 +443,20 @@ class AudioPlayer implements Playback, AudioManager.OnAudioFocusChangeListener,
         // we can also release the Wifi lock, if we're holding it
         if (wifiLock.isHeld()) {
             wifiLock.release();
+        }
+    }
+
+    private void registerAudioNoisyReceiver() {
+        if (!audioNoisyReceiverRegistered) {
+            context.registerReceiver(audioNoisyReceiver, audioNoisyIntentFilter);
+            audioNoisyReceiverRegistered = true;
+        }
+    }
+
+    private void unregisterAudioNoisyReceiver() {
+        if (audioNoisyReceiverRegistered) {
+            context.unregisterReceiver(audioNoisyReceiver);
+            audioNoisyReceiverRegistered = false;
         }
     }
 }
