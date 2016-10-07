@@ -58,8 +58,16 @@ public class FileStore {
                 .add(FILETYPES, FILETYPES_REQUESTED)
                 .build();
         final String serverUrl = ServerStore.getDefaultServer().getServerUrl();
+
+        // TODO: This code should be replaced with a proper URL builder
+        String modifiedServerUrl = serverUrl;
+        // Remove slash if necessary
+        if(modifiedServerUrl.charAt(modifiedServerUrl.length() - 1) == '/'){
+            modifiedServerUrl = modifiedServerUrl.substring(0, modifiedServerUrl.length()-1);
+        }
+
         Request request = new Request.Builder()
-                .url(serverUrl + DIRPARSER_PATH)
+                .url(modifiedServerUrl + DIRPARSER_PATH)
                 .post(formBody)
                 .build();
 
