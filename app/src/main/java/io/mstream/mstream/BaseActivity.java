@@ -51,7 +51,7 @@ public class BaseActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_file_browser);
+        setContentView(R.layout.activity_base);
 
         // Toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -152,6 +152,18 @@ public class BaseActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         mediaBrowser.disconnect();
+    }
+
+    @Override
+    public void onBackPressed() {
+        // If the drawer is open when the user presses Back, close it first
+        DrawerLayout drawer = ((DrawerLayout) findViewById(R.id.drawer_layout));
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            // If it's already closed, finish the activity.
+            super.onBackPressed();
+        }
     }
 
     @Override

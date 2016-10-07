@@ -42,7 +42,6 @@
             android:layout_alignParentBottom="true"
             android:layout_alignParentStart="true"
             android:text="@string/play_pause"/>
-
     </RelativeLayout>
 
     <LinearLayout
