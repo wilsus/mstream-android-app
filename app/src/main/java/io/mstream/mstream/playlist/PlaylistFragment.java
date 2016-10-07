@@ -13,12 +13,15 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
 import java.util.ArrayList;
+import java.util.List;
 
+import io.mstream.mstream.BaseActivity;
 import io.mstream.mstream.R;
 
 /**
@@ -47,6 +50,28 @@ public class PlaylistFragment extends Fragment {
                 public void onPlaybackStateChanged(@NonNull PlaybackStateCompat state) {
                     super.onPlaybackStateChanged(state);
                     Log.d(TAG, "Received state change: " + state);
+                }
+            };
+
+    private final MediaBrowserCompat.SubscriptionCallback subscriptionCallback =
+            new MediaBrowserCompat.SubscriptionCallback() {
+                @Override
+                public void onChildrenLoaded(@NonNull String parentId, List<MediaBrowserCompat.MediaItem> children) {
+                    try {
+                        Log.d(TAG, "fragment onChildrenLoaded, parentId=" + parentId + " count=" + children.size());
+                        playlistAdapter.clear();
+                        for (MediaBrowserCompat.MediaItem item : children) {
+                            playlistAdapter.add(item);
+                        }
+                    } catch (Throwable t) {
+                        Log.e(TAG, "Error in onChildrenLoaded", t);
+                    }
+                }
+
+                @Override
+                public void onError(@NonNull String id) {
+                    Log.e(TAG, "browse fragment subscription onError, id=" + id);
+                    Toast.makeText(getActivity(), R.string.error_loading_media, Toast.LENGTH_LONG).show();
                 }
             };
 
@@ -89,6 +114,10 @@ public class PlaylistFragment extends Fragment {
     @Subscribe(sticky = true)
     public void onConnectedToMediaController(MediaControllerConnectedEvent e) {
         Log.d(TAG, "Received an event! " + MediaControllerConnectedEvent.class.getName());
+
+        // TODO: I think the ID has to be some kind of parent id??? playlist id maybe? but it's all local, right?
+        ((BaseActivity) getActivity()).getMediaBrowser().subscribe("0", subscriptionCallback);
+
         // Add MediaController callback so we can redraw the list when metadata changes:
         MediaControllerCompat controller = getActivity().getSupportMediaController();
         if (controller != null) {

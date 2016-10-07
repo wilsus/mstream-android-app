@@ -23,4 +23,6 @@
     <string name="pause">Pause</string>
     <string name="play">Play</string>
     <string name="now_playing">Now Playing</string>
+    <string name="error_loading_media">Error Loading Media</string>
+    <string name="error_no_metadata">Error: No Metadata</string>
 </resources>

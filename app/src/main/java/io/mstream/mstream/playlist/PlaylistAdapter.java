@@ -19,7 +19,7 @@ import io.mstream.mstream.ui.ArrayAdapter;
 
 class PlaylistAdapter extends ArrayAdapter<MediaBrowserCompat.MediaItem, PlaylistAdapter.PlaylistItemViewHolder> {
     private OnClickMediaItem onClickHandler;
-    private String currentlyPlayingItemTitle;
+    private String currentlyPlayingItemTitle = "";
 
     PlaylistAdapter(List<MediaBrowserCompat.MediaItem> items, OnClickMediaItem handler) {
         super(items);

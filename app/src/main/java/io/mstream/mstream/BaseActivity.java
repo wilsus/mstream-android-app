@@ -175,4 +175,8 @@ public class BaseActivity extends AppCompatActivity {
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, FileBrowserFragment.newInstance()).commit();
     }
+
+    public MediaBrowserCompat getMediaBrowser() {
+        return mediaBrowser;
+    }
 }
