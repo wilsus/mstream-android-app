@@ -9,12 +9,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 import io.mstream.mstream.BaseActivity;
 import io.mstream.mstream.R;
+import io.mstream.mstream.serverlist.NewDefaultServerEvent;
 
 // TODO: Replace Volley with OkHTTP
 // TODO: Replace the map Object with an Array
@@ -53,7 +57,6 @@ public class FileBrowserFragment extends Fragment {
                     public void run() {
                         fileBrowserAdapter.clear();
                         fileBrowserAdapter.add(files);
-                        fileBrowserAdapter.notifyItemRangeChanged(0, fileBrowserAdapter.getItemCount());
                     }
                 });
             }
@@ -114,6 +117,24 @@ public class FileBrowserFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Subscribe
+    public void refreshServer(NewDefaultServerEvent e) {
+        directoryMap.clear();
+        goToDirectory("");
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
+    }
+
     private void addTrackToPlaylist(FileItem selectedItem) {
         ((BaseActivity) getActivity()).addTrack(selectedItem);
     }
@@ -121,7 +142,6 @@ public class FileBrowserFragment extends Fragment {
     private void goToDirectory(final String directory) {
         directoryMap.addLast(directory);
         new FileStore(getContext()).getFiles(directoryMap.getLast(), onFilesReturnedListener);
-
     }
 
     private void goBack() {

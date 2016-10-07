@@ -24,9 +24,7 @@ task clean(type: Delete) {
 
 
 dependencies {
-
     apply plugin: 'java'
     compile fileTree(dir: 'libs', include: ['*.jar'])
-
 }
 
