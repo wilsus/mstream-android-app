@@ -57,7 +57,9 @@ public class FileStore {
                 .add(DIR, directory)
                 .add(FILETYPES, FILETYPES_REQUESTED)
                 .build();
+
         final String serverUrl = ServerStore.getDefaultServerUrl();
+
         Request request = new Request.Builder()
                 .url(serverUrl + DIRPARSER_PATH)
                 .post(formBody)
