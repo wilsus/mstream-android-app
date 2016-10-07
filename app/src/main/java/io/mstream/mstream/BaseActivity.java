@@ -21,10 +21,13 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.util.List;
 
 import io.mstream.mstream.filebrowser.FileBrowserFragment;
 import io.mstream.mstream.player.MStreamAudioService;
+import io.mstream.mstream.playlist.MediaControllerConnectedEvent;
 import io.mstream.mstream.playlist.PlaylistFragment;
 import io.mstream.mstream.serverlist.ServerItem;
 import io.mstream.mstream.serverlist.ServerListAdapter;
@@ -52,7 +55,7 @@ public class BaseActivity extends AppCompatActivity {
         ActionBar actionBar = getSupportActionBar();
         actionBar.setHomeAsUpIndicator(R.drawable.ic_settings_white_24dp);
         actionBar.setDisplayHomeAsUpEnabled(true);
-//
+
         // Navigation Menu
         navigationMenu = (RecyclerView) findViewById(R.id.navigation_view);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -73,11 +76,11 @@ public class BaseActivity extends AppCompatActivity {
                     public void onConnected() {
                         try {
                             Log.d(TAG, "MediaBrowser onConnected");
-                            // Ah, here’s our Token again
                             MediaSessionCompat.Token token = mediaBrowser.getSessionToken();
-                            // This is what gives us access to everything
+                            // This is what gives us access to everything!
                             MediaControllerCompat controller = new MediaControllerCompat(BaseActivity.this, token);
                             setSupportMediaController(controller);
+                            EventBus.getDefault().postSticky(new MediaControllerConnectedEvent());
                         } catch (RemoteException e) {
                             Log.e(BaseActivity.class.getSimpleName(), "Error creating controller", e);
                         }
@@ -85,15 +88,14 @@ public class BaseActivity extends AppCompatActivity {
 
                     @Override
                     public void onConnectionSuspended() {
-                        // We were connected, but no longer :-(
                         Log.d(TAG, "MediaBrowser connection suspended");
+                        EventBus.getDefault().removeStickyEvent(MediaControllerConnectedEvent.class);
                     }
 
                     @Override
                     public void onConnectionFailed() {
-                        // The attempt to connect failed completely.
-                        // Check the ComponentName!
                         Log.d(TAG, "MediaBrowser failed!!!");
+                        EventBus.getDefault().removeStickyEvent(MediaControllerConnectedEvent.class);
                     }
                 }, null);
     }
@@ -164,12 +166,12 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     // Functions to switch between fragments
-    public void changeToPlaylist() {
+    private void changeToPlaylist() {
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, PlaylistFragment.newInstance()).commit();
     }
 
-    public void changeToBrowser() {
+    private void changeToBrowser() {
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, FileBrowserFragment.newInstance()).commit();
     }

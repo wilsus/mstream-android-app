@@ -25,9 +25,9 @@ class AudioPlayer implements Playback, AudioManager.OnAudioFocusChangeListener,
 
     // The volume we set the media player to when we lose audio focus, but are
     // allowed to reduce the volume instead of stopping playback.
-    public static final float VOLUME_DUCK = 0.2f;
+    private static final float VOLUME_DUCK = 0.2f;
     // The volume we set the media player when we have audio focus.
-    public static final float VOLUME_NORMAL = 1.0f;
+    private static final float VOLUME_NORMAL = 1.0f;
 
     // we don't have audio focus, and can't duck (play at a low volume)
     private static final int AUDIO_NO_FOCUS_NO_DUCK = 0;
@@ -63,7 +63,7 @@ class AudioPlayer implements Playback, AudioManager.OnAudioFocusChangeListener,
     private final AudioManager audioManager;
     private MediaPlayer mediaPlayer;
 
-    public AudioPlayer(Context context) {
+    AudioPlayer(Context context) {
         this.context = context;
         this.audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         // Create the Wifi lock (this does not acquire the lock, this just creates it)

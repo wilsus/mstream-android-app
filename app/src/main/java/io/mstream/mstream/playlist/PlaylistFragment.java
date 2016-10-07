@@ -1,10 +1,15 @@
 package io.mstream.mstream.playlist;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.media.MediaBrowserCompat;
+import android.support.v4.media.MediaMetadataCompat;
+import android.support.v4.media.session.MediaControllerCompat;
+import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,7 +25,30 @@ import io.mstream.mstream.R;
  * A fragment that displays the Playlist.
  */
 public class PlaylistFragment extends Fragment {
+    private static final String TAG = "PlaylistFragment";
+
     private PlaylistAdapter playlistAdapter;
+
+    // Receive callbacks from the MediaController. Here we update our state such as which queue
+    // is being shown, the current title and description and the PlaybackState.
+    private final MediaControllerCompat.Callback mediaControllerCallback =
+            new MediaControllerCompat.Callback() {
+                @Override
+                public void onMetadataChanged(MediaMetadataCompat metadata) {
+                    super.onMetadataChanged(metadata);
+                    if (metadata == null) {
+                        return;
+                    }
+                    Log.d(TAG, "Received metadata change to media " + metadata.getDescription().getMediaId());
+                    playlistAdapter.setCurrentlyPlayingItemTitle(metadata.getDescription().getTitle().toString());
+                }
+
+                @Override
+                public void onPlaybackStateChanged(@NonNull PlaybackStateCompat state) {
+                    super.onPlaybackStateChanged(state);
+                    Log.d(TAG, "Received state change: " + state);
+                }
+            };
 
     /**
      * Use this factory method to create a new instance of this Fragment.
@@ -58,9 +86,15 @@ public class PlaylistFragment extends Fragment {
         EventBus.getDefault().register(this);
     }
 
-    @Subscribe
-    public void setNewTrack(NewTrackPlayingEvent e) {
-        playlistAdapter.setCurrentlyPlayingItemTitle("");
+    @Subscribe(sticky = true)
+    public void onConnectedToMediaController(MediaControllerConnectedEvent e) {
+        Log.d(TAG, "Received an event! " + MediaControllerConnectedEvent.class.getName());
+        // Add MediaController callback so we can redraw the list when metadata changes:
+        MediaControllerCompat controller = getActivity().getSupportMediaController();
+        if (controller != null) {
+            Log.d(TAG, "Registering callback.");
+            controller.registerCallback(mediaControllerCallback);
+        }
     }
 
     @Override
@@ -68,5 +102,4 @@ public class PlaylistFragment extends Fragment {
         super.onStop();
         EventBus.getDefault().unregister(this);
     }
-
 }
