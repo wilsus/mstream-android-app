@@ -36,7 +36,7 @@ public class FileStore {
     private static final String DIR = "dir";
     private static final String FILETYPES = "filetypes";
     private static final String FILETYPES_REQUESTED = "[\"mp3\",\"flac\",\"wav\",\"ogg\"]";
-    private static final String DIRPARSER_PATH = "/dirparser";
+    private static final String DIRPARSER_PATH = "dirparser";
 
     // Strings to parse the response
     // TODO: move to own class?
