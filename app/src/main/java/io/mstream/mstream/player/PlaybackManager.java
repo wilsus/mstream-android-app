@@ -15,7 +15,7 @@ import io.mstream.mstream.playlist.QueueManager;
  * A manager that handles the active Playback and also the Queue, so the Service doesn't have to
  */
 
-public class PlaybackManager implements Playback.Callback {
+class PlaybackManager implements Playback.Callback {
     private static final String TAG = "PlaybackManager";
 
     private QueueManager queueManager;
@@ -23,7 +23,7 @@ public class PlaybackManager implements Playback.Callback {
     private PlaybackServiceCallback serviceCallback;
     private MediaSessionCallback mediaSessionCallback;
 
-    public PlaybackManager(PlaybackServiceCallback serviceCallback, QueueManager queueManager, Playback playback) {
+    PlaybackManager(PlaybackServiceCallback serviceCallback, QueueManager queueManager, Playback playback) {
         this.serviceCallback = serviceCallback;
         this.queueManager = queueManager;
         mediaSessionCallback = new MediaSessionCallback();
@@ -31,18 +31,18 @@ public class PlaybackManager implements Playback.Callback {
         this.playback.setCallback(this);
     }
 
-    public Playback getPlayback() {
+    Playback getPlayback() {
         return playback;
     }
 
-    public MediaSessionCompat.Callback getMediaSessionCallback() {
+    MediaSessionCompat.Callback getMediaSessionCallback() {
         return mediaSessionCallback;
     }
 
     /**
      * Handle a request to play music
      */
-    public void handlePlayRequest() {
+    void handlePlayRequest() {
         Log.d(TAG, "handlePlayRequest: mState=" + playback.getState());
         MediaSessionCompat.QueueItem currentMusic = queueManager.getCurrentMusic();
         if (currentMusic != null) {
@@ -54,7 +54,7 @@ public class PlaybackManager implements Playback.Callback {
     /**
      * Handle a request to pause music
      */
-    public void handlePauseRequest() {
+    void handlePauseRequest() {
         Log.d(TAG, "handlePauseRequest: mState=" + playback.getState());
         if (playback.isPlaying()) {
             playback.pause();
@@ -68,7 +68,7 @@ public class PlaybackManager implements Playback.Callback {
      *                  message will be set in the PlaybackState and will be visible to
      *                  MediaController clients.
      */
-    public void handleStopRequest(String withError) {
+    void handleStopRequest(String withError) {
         Log.d(TAG, "handleStopRequest: mState=" + playback.getState() + " error=" + withError);
         playback.stop(true);
         serviceCallback.onPlaybackStop();
@@ -79,7 +79,7 @@ public class PlaybackManager implements Playback.Callback {
      * Update the current media player state, optionally showing an error message.
      * @param error if not null, error message to present to the user.
      */
-    public void updatePlaybackState(String error) {
+    void updatePlaybackState(String error) {
         Log.d(TAG, "updatePlaybackState, playback state=" + playback.getState());
         long position = PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN;
         if (playback != null && playback.isConnected()) {
@@ -160,7 +160,7 @@ public class PlaybackManager implements Playback.Callback {
         queueManager.setQueueFromMusic(mediaId);
     }
 
-    public List<MediaBrowserCompat.MediaItem> getQueueAsMediaItems() {
+    List<MediaBrowserCompat.MediaItem> getQueueAsMediaItems() {
         return queueManager.getQueueAsMediaItems();
     }
 
@@ -192,7 +192,7 @@ public class PlaybackManager implements Playback.Callback {
         public void onPlayFromMediaId(String mediaId, Bundle extras) {
             Log.d(TAG, "playFromMediaId mediaId:" + mediaId + " extras=" + extras);
             // TODO: problems?
-//            queueManager.setQueueFromMusic(mediaId);
+            queueManager.setQueueFromMusic(mediaId);
             handlePlayRequest();
         }
 

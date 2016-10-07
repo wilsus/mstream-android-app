@@ -42,6 +42,7 @@ public class PlaylistFragment extends Fragment {
                     if (metadata == null) {
                         return;
                     }
+                    // TODO: figure out why this isn't firing
                     Log.d(TAG, "Received metadata change to media " + metadata.getDescription().getMediaId());
                     playlistAdapter.setCurrentlyPlayingItemTitle(metadata.getDescription().getTitle().toString());
                 }
