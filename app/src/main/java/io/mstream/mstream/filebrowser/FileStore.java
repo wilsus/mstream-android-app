@@ -47,17 +47,17 @@ public class FileStore {
 
     private OkHttpClient okHttpClient;
 
-    public FileStore(Context context) {
+    FileStore(Context context) {
         okHttpClient = ((MStreamApplication) context.getApplicationContext()).getOkHttpClient();
 
     }
 
-    public void getFiles(final String directory, final OnFilesReturnedListener listener) {
+    void getFiles(final String directory, final OnFilesReturnedListener listener) {
         RequestBody formBody = new FormBody.Builder()
                 .add(DIR, directory)
                 .add(FILETYPES, FILETYPES_REQUESTED)
                 .build();
-        final String serverUrl = ServerStore.getDefaultServer().getServerUrl();
+        final String serverUrl = ServerStore.getDefaultServerUrl();
         Request request = new Request.Builder()
                 .url(serverUrl + DIRPARSER_PATH)
                 .post(formBody)
@@ -72,12 +72,12 @@ public class FileStore {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 if (!response.isSuccessful()) {
+                    response.close();
                     throw new IOException("Unexpected code " + response);
                 }
                 final String responseString = response.body().string();
                 Log.d(TAG, responseString);
                 // Parse JSON and build objects from there
-                //{"path":"/","contents":[{"type":"directory","name":"FLAC"},{"type":"directory","name":"MP3"}]
                 try {
                     JSONObject responseJson = new JSONObject(responseString);
                     JSONArray contents = responseJson.getJSONArray(CONTENTS);
@@ -113,6 +113,8 @@ public class FileStore {
                     listener.onFilesReturned(serverFileList);
                 } catch (JSONException e) {
                     Log.e(TAG, "Problem parsing file response json", e);
+                } finally {
+                    response.close();
                 }
             }
         });

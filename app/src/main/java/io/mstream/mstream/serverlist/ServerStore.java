@@ -17,6 +17,10 @@ public final class ServerStore {
     private ServerStore() {
     }
 
+    public static String getDefaultServerUrl() {
+        return LocalPreferences.getInstance().getDefaultServerUrl();
+    }
+
     @NonNull
     public static ServerItem getDefaultServer() {
         // TODO: improve perf here, cache the default?

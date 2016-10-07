@@ -38,7 +38,6 @@ public class FileBrowserFragment extends Fragment {
     public static FileBrowserFragment newInstance() {
         FileBrowserFragment fragment = new FileBrowserFragment();
         Bundle args = new Bundle();
-
         fragment.setArguments(args);
         return fragment;
     }

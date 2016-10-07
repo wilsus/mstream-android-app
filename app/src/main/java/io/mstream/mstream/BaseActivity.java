@@ -21,7 +21,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
-import android.widget.Toast;
 
 import java.util.List;
 
@@ -141,11 +140,6 @@ public class BaseActivity extends AppCompatActivity {
         if (serverItems.isEmpty()) {
             startActivity(new Intent(this, AddServerActivity.class));
         } else {
-            // Set the selected server
-            ServerItem defaultServer = ServerStore.getDefaultServer();
-            if (defaultServer != null && defaultServer.getServerUrl() != null) {
-                selectedServer = defaultServer;
-            }
             // Add the servers to the navigation menu
             navigationMenu.setLayoutManager(new LinearLayoutManager(this));
             ServerListAdapter adapter = new ServerListAdapter(serverItems);
@@ -193,23 +187,13 @@ public class BaseActivity extends AppCompatActivity {
 
     // Functions to switch between fragments
     public void changeToPlaylist() {
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new PlaylistFragment()).commit();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, new PlaylistFragment()).commit();
     }
 
     public void changeToBrowser() {
-        if (selectedServer == null) {
-            Toast.makeText(getApplicationContext(), "You need to select a server", Toast.LENGTH_LONG).show();
-            startActivity(new Intent(this, AddServerActivity.class));
-            return;
-        }
-
-        Bundle bundle = new Bundle();
-        String server = selectedServer.getServerUrl();
-        bundle.putString("server", server);
-        FileBrowserFragment fileBrowserFrag = new FileBrowserFragment();
-        fileBrowserFrag.setArguments(bundle);
-
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fileBrowserFrag).commit();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, FileBrowserFragment.newInstance()).commit();
     }
 
     public void addTrack(FileItem selectedItem) {
