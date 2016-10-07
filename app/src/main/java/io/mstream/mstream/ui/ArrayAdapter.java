@@ -65,6 +65,13 @@ public abstract class ArrayAdapter<T, V extends RecyclerView.ViewHolder> extends
     }
 
     /**
+     * Gets all the objects in the adapter.
+     */
+    public List<T> getItems() {
+        return mObjects;
+    }
+
+    /**
      * Gets the item id at the given position.
      */
     public long getItemId(final int position) {

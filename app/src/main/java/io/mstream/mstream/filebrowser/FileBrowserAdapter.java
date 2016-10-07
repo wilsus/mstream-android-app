@@ -15,10 +15,10 @@ import io.mstream.mstream.ui.ArrayAdapter;
 /**
  * An adapter for the file browser recyclerview.
  */
-public class FileBrowserAdapter extends ArrayAdapter<FileItem, FileBrowserAdapter.FileBrowserViewHolder> {
+class FileBrowserAdapter extends ArrayAdapter<FileItem, FileBrowserAdapter.FileBrowserViewHolder> {
     private OnClickFileItem onClickHandler;
 
-    public FileBrowserAdapter(List<FileItem> items, OnClickFileItem handler) {
+    FileBrowserAdapter(List<FileItem> items, OnClickFileItem handler) {
         super(items);
         onClickHandler = handler;
     }
@@ -67,7 +67,7 @@ public class FileBrowserAdapter extends ArrayAdapter<FileItem, FileBrowserAdapte
         }
     }
 
-    public interface OnClickFileItem {
+    interface OnClickFileItem {
         void onDirectoryClick(String directory);
 
         void onFileClick(FileItem item);

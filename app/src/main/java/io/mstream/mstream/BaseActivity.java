@@ -3,7 +3,6 @@ package io.mstream.mstream;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.RemoteException;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.session.MediaControllerCompat;
@@ -25,7 +24,6 @@ import android.widget.SeekBar;
 import java.util.List;
 
 import io.mstream.mstream.filebrowser.FileBrowserFragment;
-import io.mstream.mstream.filebrowser.FileItem;
 import io.mstream.mstream.player.MStreamAudioService;
 import io.mstream.mstream.playlist.PlaylistFragment;
 import io.mstream.mstream.serverlist.ServerItem;
@@ -37,11 +35,6 @@ public class BaseActivity extends AppCompatActivity {
     private static final String TAG = "BaseActivity";
 
     public SeekBar seekBar;
-    private Handler myHandler = new Handler();
-
-    // Server Options
-    public ServerItem selectedServer = null;
-
     private DrawerLayout mDrawerLayout;
     private RecyclerView navigationMenu;
 
@@ -70,7 +63,6 @@ public class BaseActivity extends AppCompatActivity {
         playButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                playPause();
             }
         });
 
@@ -104,36 +96,12 @@ public class BaseActivity extends AppCompatActivity {
                         Log.d(TAG, "MediaBrowser failed!!!");
                     }
                 }, null);
-        mediaBrowser.connect();
-
-        // Check that the activity is using the layout version with the fragment_container FrameLayout
-        if (findViewById(R.id.fragment_container) != null) {
-
-            // However, if we're being restored from a previous state,
-            // then we don't need to do anything and should return or else
-            // we could end up with overlapping fragments.
-            if (savedInstanceState != null) {
-                return;
-            }
-
-            // Create a new Fragment to be placed in the activity layout
-//            final FileBrowserFragment fileBrowserFragment = new FileBrowserFragment();
-//            final PlaylistFragment playlistFragment = new PlaylistFragment();
-
-
-            // In case this activity was started with special instructions from an
-            // Intent, pass the Intent's extras to the fragment as arguments
-//            this.fileBrowserFragment.setArguments(getIntent().getExtras());
-//            this.playlistFragment.setArguments(getIntent().getExtras());
-
-            // TODO: Mashing the switch button crashes the app
-            // TODO: Fragments don't hold their state
-        }
     }
 
     @Override
     protected void onStart() {
         super.onStart();
+        mediaBrowser.connect();
         // Get the active server, if it's been changed outside this Activity
         List<ServerItem> serverItems = ServerStore.getServers();
         // If there are no servers, direct the user to add a server
@@ -149,8 +117,8 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    protected void onStop() {
+        super.onStop();
         mediaBrowser.disconnect();
     }
 
@@ -178,11 +146,9 @@ public class BaseActivity extends AppCompatActivity {
             case R.id.action_browser:
                 changeToBrowser();
                 return true;
-
             case R.id.action_playlist:
                 changeToPlaylist();
                 return true;
-
             default:
                 // If we got here, the user's action was not recognized.
                 // Invoke the superclass to handle it.
@@ -200,35 +166,11 @@ public class BaseActivity extends AppCompatActivity {
     // Functions to switch between fragments
     public void changeToPlaylist() {
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, new PlaylistFragment()).commit();
+                .replace(R.id.fragment_container, PlaylistFragment.newInstance()).commit();
     }
 
     public void changeToBrowser() {
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, FileBrowserFragment.newInstance()).commit();
     }
-
-    public void addTrack(FileItem selectedItem) {
-//        audioService.addTrackToPlaylist(selectedItem);
-    }
-
-//    public LinkedList getPlaylist() {
-//        return audioService.getPlaylist();
-//    }
-
-    public void goToSelectedTrack(FileItem item) {
-//        audioService.goToSelectedTrack(item);
-    }
-
-    public void playPause() {
-        getSupportMediaController().getTransportControls().play();
-    }
-
-//    public int getDuration(){
-//        return audioService.getDuration();
-//    }
-//
-//    public int getPosition(){
-//        return audioService.getPosition();
-//    }
 }
