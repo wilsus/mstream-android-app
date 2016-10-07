@@ -22,4 +22,5 @@
     <string name="track">Track</string>
     <string name="pause">Pause</string>
     <string name="play">Play</string>
+    <string name="now_playing">Now Playing</string>
 </resources>

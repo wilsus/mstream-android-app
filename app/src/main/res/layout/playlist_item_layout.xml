@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="48dp"
+    android:background="?attr/selectableItemBackground"
+    android:orientation="horizontal"
+    android:paddingEnd="24dp"
+    android:paddingStart="24dp">
+
+    <ImageView
+        android:id="@+id/now_playing_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginEnd="16dp"
+        android:contentDescription="@string/now_playing"
+        android:src="@drawable/ic_play_arrow_white_36dp"
+        android:tint="@color/dark_blue"
+        android:visibility="gone"/>
+
+    <TextView
+        android:id="@+id/filename"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical"/>
+</LinearLayout>
