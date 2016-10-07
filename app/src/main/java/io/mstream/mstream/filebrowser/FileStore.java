@@ -36,7 +36,7 @@ public class FileStore {
     private static final String DIR = "dir";
     private static final String FILETYPES = "filetypes";
     private static final String FILETYPES_REQUESTED = "[\"mp3\",\"flac\",\"wav\",\"ogg\"]";
-    private static final String DIRPARSER_PATH = "/dirparser";
+    private static final String DIRPARSER_PATH = "dirparser";
 
     // Strings to parse the response
     // TODO: move to own class?
@@ -47,27 +47,21 @@ public class FileStore {
 
     private OkHttpClient okHttpClient;
 
-    public FileStore(Context context) {
+    FileStore(Context context) {
         okHttpClient = ((MStreamApplication) context.getApplicationContext()).getOkHttpClient();
 
     }
 
-    public void getFiles(final String directory, final OnFilesReturnedListener listener) {
+    void getFiles(final String directory, final OnFilesReturnedListener listener) {
         RequestBody formBody = new FormBody.Builder()
                 .add(DIR, directory)
                 .add(FILETYPES, FILETYPES_REQUESTED)
                 .build();
-        final String serverUrl = ServerStore.getDefaultServer().getServerUrl();
 
-        // TODO: This code should be replaced with a proper URL builder
-        String modifiedServerUrl = serverUrl;
-        // Remove slash if necessary
-        if(modifiedServerUrl.charAt(modifiedServerUrl.length() - 1) == '/'){
-            modifiedServerUrl = modifiedServerUrl.substring(0, modifiedServerUrl.length()-1);
-        }
+        final String serverUrl = ServerStore.getDefaultServerUrl();
 
         Request request = new Request.Builder()
-                .url(modifiedServerUrl + DIRPARSER_PATH)
+                .url(serverUrl + DIRPARSER_PATH)
                 .post(formBody)
                 .build();
 
@@ -80,12 +74,12 @@ public class FileStore {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 if (!response.isSuccessful()) {
+                    response.close();
                     throw new IOException("Unexpected code " + response);
                 }
                 final String responseString = response.body().string();
                 Log.d(TAG, responseString);
                 // Parse JSON and build objects from there
-                //{"path":"/","contents":[{"type":"directory","name":"FLAC"},{"type":"directory","name":"MP3"}]
                 try {
                     JSONObject responseJson = new JSONObject(responseString);
                     JSONArray contents = responseJson.getJSONArray(CONTENTS);
@@ -121,6 +115,8 @@ public class FileStore {
                     listener.onFilesReturned(serverFileList);
                 } catch (JSONException e) {
                     Log.e(TAG, "Problem parsing file response json", e);
+                } finally {
+                    response.close();
                 }
             }
         });

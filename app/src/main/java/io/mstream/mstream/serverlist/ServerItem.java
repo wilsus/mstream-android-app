@@ -80,7 +80,14 @@ public class ServerItem {
         private String password;
 
         public Builder(@NonNull String name, @NonNull String url) {
-            this.name = name;
+            this.name = name.trim();
+
+            if (!url.startsWith("http://")) {
+                url = "http://" + url;
+            }
+            if (!url.endsWith("/")) {
+                url += "/";
+            }
             this.url = url;
         }
 

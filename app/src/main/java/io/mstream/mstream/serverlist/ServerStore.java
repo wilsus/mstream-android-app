@@ -1,6 +1,6 @@
 package io.mstream.mstream.serverlist;
 
-import android.support.annotation.NonNull;
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,18 +17,8 @@ public final class ServerStore {
     private ServerStore() {
     }
 
-    @NonNull
-    public static ServerItem getDefaultServer() {
-        // TODO: improve perf here, cache the default?
-        Set<String> servers = LocalPreferences.getInstance().getServers();
-        String defaultServerUrl = LocalPreferences.getInstance().getDefaultServerUrl();
-        for (String serverJson : servers) {
-            ServerItem item = ServerItem.fromJsonString(serverJson);
-            if (item != null && item.getServerUrl().equals(defaultServerUrl)) {
-                return item;
-            }
-        }
-        return new ServerItem.Builder("", "").build();
+    public static String getDefaultServerUrl() {
+        return LocalPreferences.getInstance().getDefaultServerUrl();
     }
 
     public static List<ServerItem> getServers() {
@@ -57,5 +47,7 @@ public final class ServerStore {
 
     public static void setDefaultServer(ServerItem item) {
         LocalPreferences.getInstance().setDefaultServerUrl(item.getServerUrl());
+        // Now that we've set a new default server, emit an event to let interested app elements know.
+        EventBus.getDefault().post(new NewDefaultServerEvent());
     }
 }

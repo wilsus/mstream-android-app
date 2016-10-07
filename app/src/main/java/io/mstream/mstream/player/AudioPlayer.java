@@ -25,16 +25,16 @@ class AudioPlayer implements Playback, AudioManager.OnAudioFocusChangeListener,
 
     // The volume we set the media player to when we lose audio focus, but are
     // allowed to reduce the volume instead of stopping playback.
-    public static final float VOLUME_DUCK = 0.2f;
+    private static final float VOLUME_DUCK = 0.2f;
     // The volume we set the media player when we have audio focus.
-    public static final float VOLUME_NORMAL = 1.0f;
+    private static final float VOLUME_NORMAL = 1.0f;
 
     // we don't have audio focus, and can't duck (play at a low volume)
     private static final int AUDIO_NO_FOCUS_NO_DUCK = 0;
     // we don't have focus, but can duck (play at a low volume)
     private static final int AUDIO_NO_FOCUS_CAN_DUCK = 1;
     // we have full audio focus
-    private static final int AUDIO_FOCUSED  = 2;
+    private static final int AUDIO_FOCUSED = 2;
 
     private final Context context;
     private final WifiManager.WifiLock wifiLock;
@@ -63,7 +63,7 @@ class AudioPlayer implements Playback, AudioManager.OnAudioFocusChangeListener,
     private final AudioManager audioManager;
     private MediaPlayer mediaPlayer;
 
-    public AudioPlayer(Context context) {
+    AudioPlayer(Context context) {
         this.context = context;
         this.audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         // Create the Wifi lock (this does not acquire the lock, this just creates it)
@@ -197,7 +197,7 @@ class AudioPlayer implements Playback, AudioManager.OnAudioFocusChangeListener,
 
     @Override
     public void seekTo(int position) {
-        Log.d(TAG, "seekTo called with "+ position);
+        Log.d(TAG, "seekTo called with " + position);
 
         if (mediaPlayer == null) {
             // If we do not have a current media player, simply update the current position
@@ -286,7 +286,7 @@ class AudioPlayer implements Playback, AudioManager.OnAudioFocusChangeListener,
             // If we were playing when we lost focus, we need to resume playing.
             if (playOnFocusGain) {
                 if (mediaPlayer != null && !mediaPlayer.isPlaying()) {
-                    Log.d(TAG,"configMediaPlayerState startMediaPlayer. seeking to " + currentPosition);
+                    Log.d(TAG, "configMediaPlayerState startMediaPlayer. seeking to " + currentPosition);
                     if (currentPosition == mediaPlayer.getCurrentPosition()) {
                         mediaPlayer.start();
                         state = PlaybackStateCompat.STATE_PLAYING;
@@ -309,7 +309,7 @@ class AudioPlayer implements Playback, AudioManager.OnAudioFocusChangeListener,
      */
     @Override
     public void onAudioFocusChange(int focusChange) {
-        Log.d(TAG, "onAudioFocusChange. focusChange="+ focusChange);
+        Log.d(TAG, "onAudioFocusChange. focusChange=" + focusChange);
         if (focusChange == AudioManager.AUDIOFOCUS_GAIN) {
             // We have gained focus:
             audioFocus = AUDIO_FOCUSED;
@@ -330,19 +330,18 @@ class AudioPlayer implements Playback, AudioManager.OnAudioFocusChangeListener,
                 playOnFocusGain = true;
             }
         } else {
-            Log.e(TAG, "onAudioFocusChange: Ignoring unsupported focusChange: "+focusChange);
+            Log.e(TAG, "onAudioFocusChange: Ignoring unsupported focusChange: " + focusChange);
         }
         configMediaPlayerState();
     }
 
     /**
      * Called when MediaPlayer has completed a seek
-     *
      * @see MediaPlayer.OnSeekCompleteListener
      */
     @Override
     public void onSeekComplete(MediaPlayer mp) {
-        Log.d(TAG, "onSeekComplete from MediaPlayer:"+ mp.getCurrentPosition());
+        Log.d(TAG, "onSeekComplete from MediaPlayer:" + mp.getCurrentPosition());
         currentPosition = mp.getCurrentPosition();
         if (state == PlaybackStateCompat.STATE_BUFFERING) {
             mediaPlayer.start();
@@ -355,7 +354,6 @@ class AudioPlayer implements Playback, AudioManager.OnAudioFocusChangeListener,
 
     /**
      * Called when media player is done playing current song.
-     *
      * @see MediaPlayer.OnCompletionListener
      */
     @Override
@@ -370,7 +368,6 @@ class AudioPlayer implements Playback, AudioManager.OnAudioFocusChangeListener,
 
     /**
      * Called when media player is done preparing.
-     *
      * @see MediaPlayer.OnPreparedListener
      */
     @Override
@@ -385,7 +382,6 @@ class AudioPlayer implements Playback, AudioManager.OnAudioFocusChangeListener,
      * Called when there's an error playing media. When this happens, the media
      * player goes to the Error state. We warn the user about the error and
      * reset the media player.
-     *
      * @see MediaPlayer.OnErrorListener
      */
     @Override
@@ -403,7 +399,7 @@ class AudioPlayer implements Playback, AudioManager.OnAudioFocusChangeListener,
      * already exists.
      */
     private void createMediaPlayerIfNeeded() {
-        Log.d(TAG, "createMediaPlayerIfNeeded. needed? "+ (mediaPlayer ==null));
+        Log.d(TAG, "createMediaPlayerIfNeeded. needed? " + (mediaPlayer == null));
         if (mediaPlayer == null) {
             mediaPlayer = new MediaPlayer();
 
@@ -427,12 +423,10 @@ class AudioPlayer implements Playback, AudioManager.OnAudioFocusChangeListener,
     /**
      * Releases resources used by the service for playback. This includes the
      * "foreground service" status, the wake locks and possibly the MediaPlayer.
-     *
-     * @param releaseMediaPlayer Indicates whether the Media Player should also
-     *            be released or not
+     * @param releaseMediaPlayer Indicates whether the Media Player should also be released or not
      */
     private void relaxResources(boolean releaseMediaPlayer) {
-        Log.d(TAG, "relaxResources. releaseMediaPlayer="+ releaseMediaPlayer);
+        Log.d(TAG, "relaxResources. releaseMediaPlayer=" + releaseMediaPlayer);
 
         // stop and release the Media Player, if it's available
         if (releaseMediaPlayer && mediaPlayer != null) {

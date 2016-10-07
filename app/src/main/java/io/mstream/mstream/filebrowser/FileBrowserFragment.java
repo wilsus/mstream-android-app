@@ -9,36 +9,32 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import io.mstream.mstream.BaseActivity;
 import io.mstream.mstream.R;
+import io.mstream.mstream.serverlist.NewDefaultServerEvent;
 
-// TODO: Replace Volley with OkHTTP
-// TODO: Replace the map Object with an Array
-
+/**
+ * A fragment that displays the File Browser.
+ */
 public class FileBrowserFragment extends Fragment {
-    public LinkedList<FileItem> serverFileList;
+    private static final String ROOT_DIRECTORY = "";
     private LinkedList<String> directoryMap = new LinkedList<>();
     private FileBrowserAdapter fileBrowserAdapter;
     private FileStore.OnFilesReturnedListener onFilesReturnedListener;
 
-    public FileBrowserFragment() {
-        // Required empty public constructor
-    }
-
     /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
+     * Use this factory method to create a new instance of this fragment
      * @return A new instance of fragment FileBrowserFragment.
      */
-    // TODO: Rename and change types and number of parameters
     public static FileBrowserFragment newInstance() {
         FileBrowserFragment fragment = new FileBrowserFragment();
         Bundle args = new Bundle();
-
         fragment.setArguments(args);
         return fragment;
     }
@@ -54,14 +50,13 @@ public class FileBrowserFragment extends Fragment {
                     public void run() {
                         fileBrowserAdapter.clear();
                         fileBrowserAdapter.add(files);
-                        fileBrowserAdapter.notifyItemRangeChanged(0, fileBrowserAdapter.getItemCount());
                     }
                 });
             }
         };
 
         // Call the server
-        goToDirectory("");
+        goToDirectory(ROOT_DIRECTORY);
     }
 
     @Override
@@ -86,8 +81,7 @@ public class FileBrowserFragment extends Fragment {
 
             @Override
             public void onClick(View v) {
-                for (int i = 0; i < serverFileList.size(); i++) {
-                    FileItem item = serverFileList.get(i);
+                for (FileItem item : fileBrowserAdapter.getItems()) {
                     // Don't add directories
                     if (!item.getItemType().equals(FileItem.DIRECTORY)) {
                         addTrackToPlaylist(item);
@@ -115,18 +109,35 @@ public class FileBrowserFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Subscribe
+    public void refreshServer(NewDefaultServerEvent e) {
+        directoryMap.clear();
+        goToDirectory(ROOT_DIRECTORY);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
+    }
+
     private void addTrackToPlaylist(FileItem selectedItem) {
-        ((BaseActivity) getActivity()).addTrack(selectedItem);
+        // TODO: hook up to the mediacontroller
     }
 
     private void goToDirectory(final String directory) {
         directoryMap.addLast(directory);
         new FileStore(getContext()).getFiles(directoryMap.getLast(), onFilesReturnedListener);
-
     }
 
     private void goBack() {
-        if (!directoryMap.getLast().equals("")) {
+        if (!directoryMap.getLast().equals(ROOT_DIRECTORY)) {
             directoryMap.removeLast();
             new FileStore(getContext()).getFiles(directoryMap.getLast(), onFilesReturnedListener);
         }

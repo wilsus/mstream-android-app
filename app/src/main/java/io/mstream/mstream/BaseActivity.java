@@ -3,7 +3,6 @@ package io.mstream.mstream;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.RemoteException;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.session.MediaControllerCompat;
@@ -21,13 +20,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
-import android.widget.Toast;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.List;
 
 import io.mstream.mstream.filebrowser.FileBrowserFragment;
-import io.mstream.mstream.filebrowser.FileItem;
 import io.mstream.mstream.player.MStreamAudioService;
+import io.mstream.mstream.playlist.MediaControllerConnectedEvent;
 import io.mstream.mstream.playlist.PlaylistFragment;
 import io.mstream.mstream.serverlist.ServerItem;
 import io.mstream.mstream.serverlist.ServerListAdapter;
@@ -38,11 +38,6 @@ public class BaseActivity extends AppCompatActivity {
     private static final String TAG = "BaseActivity";
 
     public SeekBar seekBar;
-    private Handler myHandler = new Handler();
-
-    // Server Options
-    public ServerItem selectedServer = null;
-
     private DrawerLayout mDrawerLayout;
     private RecyclerView navigationMenu;
 
@@ -52,7 +47,7 @@ public class BaseActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_file_browser);
+        setContentView(R.layout.activity_base);
 
         // Toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -60,7 +55,7 @@ public class BaseActivity extends AppCompatActivity {
         ActionBar actionBar = getSupportActionBar();
         actionBar.setHomeAsUpIndicator(R.drawable.ic_settings_white_24dp);
         actionBar.setDisplayHomeAsUpEnabled(true);
-//
+
         // Navigation Menu
         navigationMenu = (RecyclerView) findViewById(R.id.navigation_view);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -71,7 +66,6 @@ public class BaseActivity extends AppCompatActivity {
         playButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                playPause();
             }
         });
 
@@ -82,11 +76,11 @@ public class BaseActivity extends AppCompatActivity {
                     public void onConnected() {
                         try {
                             Log.d(TAG, "MediaBrowser onConnected");
-                            // Ah, here’s our Token again
                             MediaSessionCompat.Token token = mediaBrowser.getSessionToken();
-                            // This is what gives us access to everything
+                            // This is what gives us access to everything!
                             MediaControllerCompat controller = new MediaControllerCompat(BaseActivity.this, token);
                             setSupportMediaController(controller);
+                            EventBus.getDefault().postSticky(new MediaControllerConnectedEvent());
                         } catch (RemoteException e) {
                             Log.e(BaseActivity.class.getSimpleName(), "Error creating controller", e);
                         }
@@ -94,58 +88,28 @@ public class BaseActivity extends AppCompatActivity {
 
                     @Override
                     public void onConnectionSuspended() {
-                        // We were connected, but no longer :-(
                         Log.d(TAG, "MediaBrowser connection suspended");
+                        EventBus.getDefault().removeStickyEvent(MediaControllerConnectedEvent.class);
                     }
 
                     @Override
                     public void onConnectionFailed() {
-                        // The attempt to connect failed completely.
-                        // Check the ComponentName!
                         Log.d(TAG, "MediaBrowser failed!!!");
+                        EventBus.getDefault().removeStickyEvent(MediaControllerConnectedEvent.class);
                     }
                 }, null);
-        mediaBrowser.connect();
-
-        // Check that the activity is using the layout version with the fragment_container FrameLayout
-        if (findViewById(R.id.fragment_container) != null) {
-
-            // However, if we're being restored from a previous state,
-            // then we don't need to do anything and should return or else
-            // we could end up with overlapping fragments.
-            if (savedInstanceState != null) {
-                return;
-            }
-
-            // Create a new Fragment to be placed in the activity layout
-//            final FileBrowserFragment fileBrowserFragment = new FileBrowserFragment();
-//            final PlaylistFragment playlistFragment = new PlaylistFragment();
-
-
-            // In case this activity was started with special instructions from an
-            // Intent, pass the Intent's extras to the fragment as arguments
-//            this.fileBrowserFragment.setArguments(getIntent().getExtras());
-//            this.playlistFragment.setArguments(getIntent().getExtras());
-
-            // TODO: Mashing the switch button crashes the app
-            // TODO: Fragments don't hold their state
-        }
     }
 
     @Override
     protected void onStart() {
         super.onStart();
+        mediaBrowser.connect();
         // Get the active server, if it's been changed outside this Activity
         List<ServerItem> serverItems = ServerStore.getServers();
         // If there are no servers, direct the user to add a server
         if (serverItems.isEmpty()) {
             startActivity(new Intent(this, AddServerActivity.class));
         } else {
-            // Set the selected server
-            ServerItem defaultServer = ServerStore.getDefaultServer();
-            if (defaultServer != null && defaultServer.getServerUrl() != null) {
-                selectedServer = defaultServer;
-            }
             // Add the servers to the navigation menu
             navigationMenu.setLayoutManager(new LinearLayoutManager(this));
             ServerListAdapter adapter = new ServerListAdapter(serverItems);
@@ -155,9 +119,21 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    protected void onStop() {
+        super.onStop();
         mediaBrowser.disconnect();
+    }
+
+    @Override
+    public void onBackPressed() {
+        // If the drawer is open when the user presses Back, close it first
+        DrawerLayout drawer = ((DrawerLayout) findViewById(R.id.drawer_layout));
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            // If it's already closed, finish the activity.
+            super.onBackPressed();
+        }
     }
 
     @Override
@@ -172,11 +148,9 @@ public class BaseActivity extends AppCompatActivity {
             case R.id.action_browser:
                 changeToBrowser();
                 return true;
-
             case R.id.action_playlist:
                 changeToPlaylist();
                 return true;
-
             default:
                 // If we got here, the user's action was not recognized.
                 // Invoke the superclass to handle it.
@@ -192,47 +166,17 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     // Functions to switch between fragments
-    public void changeToPlaylist() {
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new PlaylistFragment()).commit();
+    private void changeToPlaylist() {
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, PlaylistFragment.newInstance()).commit();
     }
 
-    public void changeToBrowser() {
-        if (selectedServer == null) {
-            Toast.makeText(getApplicationContext(), "You need to select a server", Toast.LENGTH_LONG).show();
-            startActivity(new Intent(this, AddServerActivity.class));
-            return;
-        }
-
-        Bundle bundle = new Bundle();
-        String server = selectedServer.getServerUrl();
-        bundle.putString("server", server);
-        FileBrowserFragment fileBrowserFrag = new FileBrowserFragment();
-        fileBrowserFrag.setArguments(bundle);
-
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fileBrowserFrag).commit();
+    private void changeToBrowser() {
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, FileBrowserFragment.newInstance()).commit();
     }
 
-    public void addTrack(FileItem selectedItem) {
-//        audioService.addTrackToPlaylist(selectedItem);
+    public MediaBrowserCompat getMediaBrowser() {
+        return mediaBrowser;
     }
-
-//    public LinkedList getPlaylist() {
-//        return audioService.getPlaylist();
-//    }
-
-    public void goToSelectedTrack(FileItem item) {
-//        audioService.goToSelectedTrack(item);
-    }
-
-    public void playPause() {
-        getSupportMediaController().getTransportControls().play();
-    }
-
-//    public int getDuration(){
-//        return audioService.getDuration();
-//    }
-//
-//    public int getPosition(){
-//        return audioService.getPosition();
-//    }
 }

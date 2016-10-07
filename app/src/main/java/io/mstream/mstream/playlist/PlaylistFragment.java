@@ -1,137 +1,135 @@
 package io.mstream.mstream.playlist;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.media.MediaBrowserCompat;
+import android.support.v4.media.MediaMetadataCompat;
+import android.support.v4.media.session.MediaControllerCompat;
+import android.support.v4.media.session.PlaybackStateCompat;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ListView;
+import android.widget.Toast;
 
-import java.util.LinkedList;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import io.mstream.mstream.BaseActivity;
 import io.mstream.mstream.R;
-import io.mstream.mstream.filebrowser.FileItem;
 
 /**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link PlaylistFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link PlaylistFragment#newInstance} factory method to
- * create an instance of this fragment.
+ * A fragment that displays the Playlist.
  */
 public class PlaylistFragment extends Fragment {
-    private PlaylistBaseAdapter adapter;
+    private static final String TAG = "PlaylistFragment";
 
-    private OnFragmentInteractionListener mListener;
+    private PlaylistAdapter playlistAdapter;
 
-    public PlaylistFragment() {
-        // Required empty public constructor
-    }
+    // Receive callbacks from the MediaController. Here we update our state such as which queue
+    // is being shown, the current title and description and the PlaybackState.
+    private final MediaControllerCompat.Callback mediaControllerCallback =
+            new MediaControllerCompat.Callback() {
+                @Override
+                public void onMetadataChanged(MediaMetadataCompat metadata) {
+                    super.onMetadataChanged(metadata);
+                    if (metadata == null) {
+                        return;
+                    }
+                    // TODO: figure out why this isn't firing
+                    Log.d(TAG, "Received metadata change to media " + metadata.getDescription().getMediaId());
+                    playlistAdapter.setCurrentlyPlayingItemTitle(metadata.getDescription().getTitle().toString());
+                }
+
+                @Override
+                public void onPlaybackStateChanged(@NonNull PlaybackStateCompat state) {
+                    super.onPlaybackStateChanged(state);
+                    Log.d(TAG, "Received state change: " + state);
+                }
+            };
+
+    private final MediaBrowserCompat.SubscriptionCallback subscriptionCallback =
+            new MediaBrowserCompat.SubscriptionCallback() {
+                @Override
+                public void onChildrenLoaded(@NonNull String parentId, List<MediaBrowserCompat.MediaItem> children) {
+                    try {
+                        Log.d(TAG, "fragment onChildrenLoaded, parentId=" + parentId + " count=" + children.size());
+                        playlistAdapter.clear();
+                        for (MediaBrowserCompat.MediaItem item : children) {
+                            playlistAdapter.add(item);
+                        }
+                    } catch (Throwable t) {
+                        Log.e(TAG, "Error in onChildrenLoaded", t);
+                    }
+                }
+
+                @Override
+                public void onError(@NonNull String id) {
+                    Log.e(TAG, "browse fragment subscription onError, id=" + id);
+                    Toast.makeText(getActivity(), R.string.error_loading_media, Toast.LENGTH_LONG).show();
+                }
+            };
 
     /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
+     * Use this factory method to create a new instance of this Fragment.
      * @return A new instance of fragment PlaylistFragment.
      */
-    // TODO: Rename and change types and number of parameters
-    public static PlaylistFragment newInstance(String param1, String param2) {
+    public static PlaylistFragment newInstance() {
         PlaylistFragment fragment = new PlaylistFragment();
         Bundle args = new Bundle();
-
         fragment.setArguments(args);
         return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_playlist, container, false);
-        ListView listView = (ListView) view.findViewById(R.id.playlistView);
 
-        LinkedList<FileItem> playlist = new LinkedList<>();//((BaseActivity) getActivity()).getPlaylist();
+        RecyclerView mediaItemListView = (RecyclerView) view.findViewById(R.id.playlist_recycler_view);
+        mediaItemListView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        playlistAdapter = new PlaylistAdapter(new ArrayList<MediaBrowserCompat.MediaItem>(),
+                new PlaylistAdapter.OnClickMediaItem() {
+                    @Override
+                    public void onMediaItemClick(MediaBrowserCompat.MediaItem item) {
+                        // TODO: play the item
+                    }
+                });
+        mediaItemListView.setAdapter(playlistAdapter);
 
-        this.adapter = new PlaylistBaseAdapter(playlist);
-        listView.setAdapter(this.adapter);
-
-
-        // On Click
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                FileItem itemX = (FileItem) parent.getItemAtPosition(position);
-
-//                final FileItem thisItem = itemX.getValue();
-//                final String link = thisItem.getItemUrl();
-//                String type = thisItem.getItemType();
-
-
-                // Change to clicked song
-                ((BaseActivity) getActivity()).goToSelectedTrack(itemX);
-                // TODO: Refresh View
-
-            }
-        });
         return view;
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Subscribe(sticky = true)
+    public void onConnectedToMediaController(MediaControllerConnectedEvent e) {
+        Log.d(TAG, "Received an event! " + MediaControllerConnectedEvent.class.getName());
+
+        // TODO: I think the ID has to be some kind of parent id??? playlist id maybe? but it's all local, right?
+        ((BaseActivity) getActivity()).getMediaBrowser().subscribe("0", subscriptionCallback);
+
+        // Add MediaController callback so we can redraw the list when metadata changes:
+        MediaControllerCompat controller = getActivity().getSupportMediaController();
+        if (controller != null) {
+            Log.d(TAG, "Registering callback.");
+            controller.registerCallback(mediaControllerCallback);
+        }
+    }
 
     @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-            LocalBroadcastManager.getInstance(context).registerReceiver(mMessageReceiver, new IntentFilter("new-track"));
-
-        }
-        //else {
-        // throw new RuntimeException(context.toString() + " must implement OnFragmentInteractionListener");
-        //}
+    public void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
     }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
-    }
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
-    }
-
-
-    // Listen for new song calls
-    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            // Refresh Listview
-//            ListView listView  = (ListView) view.findViewById(R.id.playlistView);
-//            listView.invalidateViews();
-            adapter.notifyDataSetChanged();
-        }
-    };
 }
