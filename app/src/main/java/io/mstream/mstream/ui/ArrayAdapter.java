@@ -35,8 +35,12 @@ public abstract class ArrayAdapter<T, V extends RecyclerView.ViewHolder> extends
      * Adds the specified objects at the end of the array.
      */
     public void add(final List<T> objects) {
-        mObjects = objects;
-        notifyDataSetChanged();
+        if (getItemCount() == 0) {
+            mObjects.addAll(0, objects);
+        } else {
+            mObjects.addAll(getItemCount() - 1, objects);
+        }
+        notifyItemRangeInserted(getItemCount() - objects.size(), objects.size());
     }
 
     /**

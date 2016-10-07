@@ -20,4 +20,6 @@
     <string name="inactive_server">Inactive Server</string>
     <string name="folder">Folder</string>
     <string name="track">Track</string>
+    <string name="pause">Pause</string>
+    <string name="play">Play</string>
 </resources>

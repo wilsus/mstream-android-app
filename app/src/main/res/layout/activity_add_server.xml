@@ -87,7 +87,6 @@
         android:layout_gravity="center"
         android:layout_marginBottom="32dp"
         android:layout_marginTop="8dp"
-        android:onClick="addServer"
         android:padding="16dp"
         android:text="@string/add_server"
         android:theme="@style/AppTheme.Button"/>

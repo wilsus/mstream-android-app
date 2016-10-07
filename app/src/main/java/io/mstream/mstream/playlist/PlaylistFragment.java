@@ -1,4 +1,4 @@
-package io.mstream.mstream;
+package io.mstream.mstream.playlist;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -16,8 +16,9 @@ import android.widget.ListView;
 
 import java.util.LinkedList;
 
+import io.mstream.mstream.BaseActivity;
+import io.mstream.mstream.R;
 import io.mstream.mstream.filebrowser.FileItem;
-
 
 /**
  * A simple {@link Fragment} subclass.
@@ -62,7 +63,7 @@ public class PlaylistFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_playlist, container, false);
         ListView listView = (ListView) view.findViewById(R.id.playlistView);
 
-        LinkedList<FileItem> playlist = ((BaseActivity) getActivity()).getPlaylist();
+        LinkedList<FileItem> playlist = new LinkedList<>();//((BaseActivity) getActivity()).getPlaylist();
 
         this.adapter = new PlaylistBaseAdapter(playlist);
         listView.setAdapter(this.adapter);
