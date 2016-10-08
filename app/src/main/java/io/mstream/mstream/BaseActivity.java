@@ -85,7 +85,7 @@ public class BaseActivity extends AppCompatActivity {
         int tabIconColor = ContextCompat.getColor(BaseActivity.this, R.color.medium_grey);
         Drawable browse = ContextCompat.getDrawable(this, R.drawable.ic_folder_open_white_24dp);
         Drawable playlist = ContextCompat.getDrawable(this, R.drawable.ic_playlist_play_white_24dp);
-        browse.setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
+        playlist.setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
         tabLayout.getTabAt(0).setIcon(browse);
         tabLayout.getTabAt(1).setIcon(playlist);
         // Highlight selected tab in white, and deselected in grey, to match the text
