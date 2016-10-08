@@ -50,8 +50,16 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
+            app:cardCornerRadius="0dp"
             app:cardElevation="8dp">
 
+            <fragment
+                android:id="@+id/fragment_playback_controls"
+                android:name="io.mstream.mstream.PlayerControlsFragment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                tools:layout="@layout/fragment_playback_controls"/>
         </android.support.v7.widget.CardView>
     </RelativeLayout>
 

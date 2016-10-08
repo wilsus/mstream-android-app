@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/medium_blue"
+    android:orientation="horizontal">
+
+    <ImageButton
+        android:id="@+id/play_pause"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:background="?selectableItemBackgroundBorderless"
+        android:contentDescription="@string/play"
+        android:padding="8dp"
+        android:src="@drawable/ic_play_arrow_black_36dp"
+        android:tint="@android:color/white"/>
+
+    <!-- TODO: make it fancier, match desktop? -->
+    <!-- The desktop site has the seekbar being the background - I think I can do that. -->
+    <SeekBar
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical"/>
+</LinearLayout>
