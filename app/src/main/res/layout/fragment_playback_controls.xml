@@ -20,6 +20,7 @@
     <!-- TODO: make it fancier, match desktop? -->
     <!-- The desktop site has the seekbar being the background - I think I can do that. -->
     <SeekBar
+        android:id="@+id/seek_bar"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center_vertical"/>

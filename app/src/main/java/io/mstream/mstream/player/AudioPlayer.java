@@ -406,11 +406,9 @@ class AudioPlayer implements Playback, AudioManager.OnAudioFocusChangeListener,
             // Make sure the media player will acquire a wake-lock while
             // playing. If we don't do that, the CPU might go to sleep while the
             // song is playing, causing playback to stop.
-            mediaPlayer.setWakeMode(context.getApplicationContext(),
-                    PowerManager.PARTIAL_WAKE_LOCK);
+            mediaPlayer.setWakeMode(context.getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
 
-            // we want the media player to notify us when it's ready preparing,
-            // and when it's done playing:
+            // we want the media player to notify us when it's ready preparing, and when it's done playing:
             mediaPlayer.setOnPreparedListener(this);
             mediaPlayer.setOnCompletionListener(this);
             mediaPlayer.setOnErrorListener(this);

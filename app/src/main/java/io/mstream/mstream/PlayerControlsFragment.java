@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.SeekBar;
 import android.widget.Toast;
 
 import org.greenrobot.eventbus.EventBus;
@@ -75,6 +76,7 @@ public class PlayerControlsFragment extends Fragment {
     };
 
     private ImageButton playPauseButton;
+    private SeekBar seekBar;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -83,6 +85,8 @@ public class PlayerControlsFragment extends Fragment {
         playPauseButton = (ImageButton) rootView.findViewById(R.id.play_pause);
         playPauseButton.setEnabled(true);
         playPauseButton.setOnClickListener(playPauseButtonListener);
+
+        seekBar = (SeekBar) rootView.findViewById(R.id.seek_bar);
 
         return rootView;
     }
@@ -116,6 +120,12 @@ public class PlayerControlsFragment extends Fragment {
         } else {
             playPauseButton.setImageDrawable(ContextCompat.getDrawable(getActivity(), R.drawable.ic_pause_black_36dp));
         }
+
+        // TODO: does this work?
+        Log.d(TAG, "seekbar! state progress is " + state.getPosition() + " and state buffer is " + state.getBufferedPosition());
+        seekBar.setSecondaryProgress((int) state.getBufferedPosition());
+        seekBar.setProgress((int) state.getPosition());
+        seekBar.setMax(180000);
     }
 
     @Override
