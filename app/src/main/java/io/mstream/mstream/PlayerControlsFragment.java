@@ -51,6 +51,8 @@ public class PlayerControlsFragment extends Fragment {
                 default:
                     break;
             }
+            // TODO: remove, used only for testing particular hardcoced track
+            seekBar.setMax(180000);
         }
     };
 
@@ -70,8 +72,7 @@ public class PlayerControlsFragment extends Fragment {
             }
             Log.d(TAG, "Received metadata state change to mediaId=" + metadata.getDescription().getMediaId() +
                     " song=" + metadata.getDescription().getTitle());
-            // TODO: do we want to show the currently-playing song in the controls?
-//            PlayerControlsFragment.this.onMetadataChanged(metadata);
+            PlayerControlsFragment.this.onMetadataChanged(metadata);
         }
     };
 
@@ -87,6 +88,26 @@ public class PlayerControlsFragment extends Fragment {
         playPauseButton.setOnClickListener(playPauseButtonListener);
 
         seekBar = (SeekBar) rootView.findViewById(R.id.seek_bar);
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                // TODO: actual current time text?
+//                startText.setText(DateUtils.formatElapsedTime(progress / 1000));
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                // TODO: used for trick play, if we're not getting progress events all the time
+//                stopSeekbarUpdate();
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                seekMedia(seekBar.getProgress());
+                // TODO: used for trick play, if we're not getting progress events all the time
+//                scheduleSeekbarUpdate();
+            }
+        });
 
         return rootView;
     }
@@ -125,7 +146,6 @@ public class PlayerControlsFragment extends Fragment {
         Log.d(TAG, "seekbar! state progress is " + state.getPosition() + " and state buffer is " + state.getBufferedPosition());
         seekBar.setSecondaryProgress((int) state.getBufferedPosition());
         seekBar.setProgress((int) state.getPosition());
-        seekBar.setMax(180000);
     }
 
     @Override
@@ -163,12 +183,26 @@ public class PlayerControlsFragment extends Fragment {
         MediaControllerCompat controller = getActivity().getSupportMediaController();
         Log.d(TAG, "onConnected, mediaController==null? " + (controller == null));
         if (controller != null) {
-            // TODO: metadata?
-//            onMetadataChanged(controller.getMetadata());
+            onMetadataChanged(controller.getMetadata());
             onPlaybackStateChanged(controller.getPlaybackState());
             controller.registerCallback(mediaControllerCallback);
         }
     }
+
+    private void onMetadataChanged(MediaMetadataCompat metadata) {
+        if (metadata == null) {
+            return;
+        }
+
+        // TODO: have to set this metadata when adding the track. can we get it from the server?
+        // Otherwise, need to set up event system between media player and this view.
+        int duration = (int) metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION);
+        Log.d(TAG, "updating duration to " + duration);
+        seekBar.setMax(duration);
+        // TODO: textviews for actual duration/progress?
+//        endText.setText(DateUtils.formatElapsedTime(duration/1000));
+    }
+
 
     private void playMedia() {
         MediaControllerCompat controller = getActivity().getSupportMediaController();
@@ -181,6 +215,13 @@ public class PlayerControlsFragment extends Fragment {
         MediaControllerCompat controller = getActivity().getSupportMediaController();
         if (controller != null) {
             controller.getTransportControls().pause();
+        }
+    }
+
+    private void seekMedia(int progress) {
+        MediaControllerCompat controller = getActivity().getSupportMediaController();
+        if (controller != null) {
+            controller.getTransportControls().seekTo(progress);
         }
     }
 }
