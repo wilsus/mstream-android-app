@@ -2,12 +2,17 @@ package io.mstream.mstream;
 
 import android.content.ComponentName;
 import android.content.Intent;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.RemoteException;
+import android.support.design.widget.TabLayout;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -15,7 +20,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -32,13 +36,13 @@ import io.mstream.mstream.playlist.PlaylistFragment;
 import io.mstream.mstream.serverlist.ServerItem;
 import io.mstream.mstream.serverlist.ServerListAdapter;
 import io.mstream.mstream.serverlist.ServerStore;
+import io.mstream.mstream.ui.ViewPagerAdapter;
 
 
 public class BaseActivity extends AppCompatActivity {
     private static final String TAG = "BaseActivity";
 
-    public SeekBar seekBar;
-    private DrawerLayout mDrawerLayout;
+    private DrawerLayout drawerLayout;
     private RecyclerView navigationMenu;
 
     // Media Controls!
@@ -47,6 +51,13 @@ public class BaseActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // First check to make sure the default server URL isn't null - if it is, open the AddServerActivity.
+        // TODO: maybe move this to application oncreate? or a splash activity
+        if (ServerStore.getDefaultServerUrl() == null) {
+            startActivity(new Intent(this, AddServerActivity.class));
+        }
+
         setContentView(R.layout.activity_base);
 
         // Toolbar
@@ -58,14 +69,51 @@ public class BaseActivity extends AppCompatActivity {
 
         // Navigation Menu
         navigationMenu = (RecyclerView) findViewById(R.id.navigation_view);
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 
-        // Player controls
-        seekBar = (SeekBar) findViewById(R.id.seek_bar);
+        // Main navigation - viewpager for Browse and Playlist
+        ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
+        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
+        adapter.addFragment(FileBrowserFragment.newInstance(), getString(R.string.browse));
+        adapter.addFragment(PlaylistFragment.newInstance(), getString(R.string.playlist));
+        viewPager.setAdapter(adapter);
+        TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
+        tabLayout.setupWithViewPager(viewPager);
+
+        // Set up the tab coloration with an initial state and a listener for other states
+        // TODO: clean this up, make more robust/generic
+        int tabIconColor = ContextCompat.getColor(BaseActivity.this, R.color.medium_grey);
+        Drawable browse = ContextCompat.getDrawable(this, R.drawable.ic_folder_open_white_24dp);
+        Drawable playlist = ContextCompat.getDrawable(this, R.drawable.ic_playlist_play_white_24dp);
+        browse.setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
+        tabLayout.getTabAt(0).setIcon(browse);
+        tabLayout.getTabAt(1).setIcon(playlist);
+        // Highlight selected tab in white, and deselected in grey, to match the text
+        tabLayout.addOnTabSelectedListener(
+                new TabLayout.ViewPagerOnTabSelectedListener(viewPager) {
+                    @Override
+                    public void onTabSelected(TabLayout.Tab tab) {
+                        super.onTabSelected(tab);
+                        int tabIconColor = ContextCompat.getColor(BaseActivity.this, R.color.almost_white);
+                        tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
+                    }
+
+                    @Override
+                    public void onTabUnselected(TabLayout.Tab tab) {
+                        super.onTabUnselected(tab);
+                        int tabIconColor = ContextCompat.getColor(BaseActivity.this, R.color.medium_grey);
+                        tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
+                    }
+                }
+        );
+
+        // Player controls - TODO make these their own custom view or fragment
+        SeekBar seekBar = (SeekBar) findViewById(R.id.seek_bar);
         Button playButton = (Button) findViewById(R.id.play_button);
         playButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                getSupportMediaController().getTransportControls().play();
             }
         });
 
@@ -114,7 +162,6 @@ public class BaseActivity extends AppCompatActivity {
             navigationMenu.setLayoutManager(new LinearLayoutManager(this));
             ServerListAdapter adapter = new ServerListAdapter(serverItems);
             navigationMenu.setAdapter(adapter);
-            changeToBrowser();
         }
     }
 
@@ -138,42 +185,12 @@ public class BaseActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                mDrawerLayout.openDrawer(GravityCompat.START);
-                return true;
-            case R.id.action_browser:
-                changeToBrowser();
-                return true;
-            case R.id.action_playlist:
-                changeToPlaylist();
-                return true;
-            default:
-                // If we got here, the user's action was not recognized.
-                // Invoke the superclass to handle it.
-                return super.onOptionsItemSelected(item);
+        if (item.getItemId() == android.R.id.home) {
+            drawerLayout.openDrawer(GravityCompat.START);
+            return true;
+        } else {
+            return super.onOptionsItemSelected(item);
         }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
-
-    // Functions to switch between fragments
-    private void changeToPlaylist() {
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, PlaylistFragment.newInstance()).commit();
-    }
-
-    private void changeToBrowser() {
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, FileBrowserFragment.newInstance()).commit();
     }
 
     public MediaBrowserCompat getMediaBrowser() {

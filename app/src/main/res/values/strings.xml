@@ -3,8 +3,6 @@
 
     <string name="nav_server_menu">Servers</string>
     <string name="nav_item_server">Add Server</string>
-    <string name="action_browser">Open Browser</string>
-    <string name="action_playlist">Playlist View</string>
     <string name="back">Back</string>
     <string name="all">All</string>
     <string name="play_pause">▶/❚❚</string>
@@ -25,4 +23,6 @@
     <string name="now_playing">Now Playing</string>
     <string name="error_loading_media">Error Loading Media</string>
     <string name="error_no_metadata">Error: No Metadata</string>
+    <string name="browse">Browse</string>
+    <string name="playlist">Playlist</string>
 </resources>
