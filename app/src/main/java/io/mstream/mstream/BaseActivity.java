@@ -21,9 +21,6 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
-import android.widget.SeekBar;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -106,16 +103,6 @@ public class BaseActivity extends AppCompatActivity {
                     }
                 }
         );
-
-        // Player controls - TODO make these their own custom view or fragment
-        SeekBar seekBar = (SeekBar) findViewById(R.id.seek_bar);
-        Button playButton = (Button) findViewById(R.id.play_button);
-        playButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                getSupportMediaController().getTransportControls().play();
-            }
-        });
 
         // Start the Audio Service
         mediaBrowser = new MediaBrowserCompat(this, new ComponentName(this, MStreamAudioService.class),
