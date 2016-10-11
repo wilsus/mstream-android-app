@@ -88,6 +88,7 @@ public class PlayerControlsFragment extends Fragment {
         playPauseButton.setOnClickListener(playPauseButtonListener);
 
         seekBar = (SeekBar) rootView.findViewById(R.id.seek_bar);
+        seekBar.setPadding(0, 0, 0, 0);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {

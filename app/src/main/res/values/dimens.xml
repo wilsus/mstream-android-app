@@ -7,4 +7,5 @@
     <dimen name="add_server_width">288dp</dimen>
 
     <dimen name="nav_drawer_width">280dp</dimen>
+    <dimen name="controls_height">52dp</dimen>
 </resources>

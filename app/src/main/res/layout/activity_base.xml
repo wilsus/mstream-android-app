@@ -70,7 +70,7 @@
         android:layout_gravity="start"
         android:background="@android:color/white"
         android:orientation="vertical">
-
+<!-- TODO: use almost_white and fix the drawer header image so it doesn't have a white background -->
         <include
             layout="@layout/drawer_header"/>
 
