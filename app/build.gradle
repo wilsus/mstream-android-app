@@ -22,8 +22,6 @@ android {
 dependencies {
     compile 'org.greenrobot:eventbus:3.0.0'
 
-    compile project(":volley")
-
     // Google support libraries
     final supportLibVersion = "24.2.1"
     compile 'com.android.support:appcompat-v7:' + supportLibVersion
