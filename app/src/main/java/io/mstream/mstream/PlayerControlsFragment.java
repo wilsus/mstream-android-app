@@ -131,8 +131,17 @@ public class PlayerControlsFragment extends Fragment {
                 break;
             case PlaybackStateCompat.STATE_ERROR:
                 Log.e(TAG, "error playbackstate: " + state.getErrorMessage());
-                Toast.makeText(getActivity(), state.getErrorMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(), "Playback error: " + state.getErrorMessage(), Toast.LENGTH_LONG).show();
                 break;
+            case PlaybackStateCompat.STATE_BUFFERING:
+            case PlaybackStateCompat.STATE_CONNECTING:
+            case PlaybackStateCompat.STATE_FAST_FORWARDING:
+            case PlaybackStateCompat.STATE_NONE:
+            case PlaybackStateCompat.STATE_PLAYING:
+            case PlaybackStateCompat.STATE_REWINDING:
+            case PlaybackStateCompat.STATE_SKIPPING_TO_NEXT:
+            case PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS:
+            case PlaybackStateCompat.STATE_SKIPPING_TO_QUEUE_ITEM:
             default:
                 break;
         }
