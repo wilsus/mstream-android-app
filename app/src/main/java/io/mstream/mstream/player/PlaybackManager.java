@@ -100,6 +100,8 @@ class PlaybackManager implements Playback.Callback {
         //noinspection ResourceType
         stateBuilder.setState(state, position, 1.0f, SystemClock.elapsedRealtime());
 
+        stateBuilder.setBufferedPosition(playback.getBufferedPosition());
+
         // Set the activeQueueItemId if the current index is valid.
         MediaSessionCompat.QueueItem currentMusic = queueManager.getCurrentMusic();
         if (currentMusic != null) {
