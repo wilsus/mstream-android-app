@@ -22,7 +22,7 @@
 
         <activity
             android:name=".AddServerActivity"
-            android:windowSoftInputMode="stateHidden"/>
+            android:windowSoftInputMode="stateVisible|adjustResize" />
 
         <service
             android:name=".player.MStreamAudioService"
