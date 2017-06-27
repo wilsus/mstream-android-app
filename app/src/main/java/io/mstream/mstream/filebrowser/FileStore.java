@@ -58,7 +58,7 @@ public class FileStore {
                 .add(FILETYPES, FILETYPES_REQUESTED)
                 .build();
 
-        final String serverUrl = ServerStore.getDefaultServerUrl();
+        final String serverUrl = ServerStore.currentServer.getServerUrl();
 
         Request request = new Request.Builder()
                 .url(serverUrl + DIRPARSER_PATH)

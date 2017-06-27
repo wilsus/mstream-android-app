@@ -21,9 +21,11 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import io.mstream.mstream.filebrowser.FileBrowserFragment;
@@ -45,17 +47,14 @@ public class BaseActivity extends AppCompatActivity {
     // Media Controls!
     private MediaBrowserCompat mediaBrowser;
 
+    private BaseBrowserAdapter baseBrowserAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // First check to make sure the default server URL isn't null - if it is, open the AddServerActivity.
-        // TODO: maybe move this to application oncreate? or a splash activity
-        if (ServerStore.getDefaultServerUrl() == null) {
-            startActivity(new Intent(this, AddServerActivity.class));
-        }
-
         setContentView(R.layout.activity_base);
+        ServerStore.loadServers();
 
         // Toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -69,40 +68,66 @@ public class BaseActivity extends AppCompatActivity {
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 
         // Main navigation - viewpager for Browse and Playlist
-        ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
-        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        adapter.addFragment(FileBrowserFragment.newInstance(), getString(R.string.browse));
-        adapter.addFragment(PlaylistFragment.newInstance(), getString(R.string.playlist));
-        viewPager.setAdapter(adapter);
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
-        tabLayout.setupWithViewPager(viewPager);
+//        ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
+//        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
+//        adapter.addFragment(FileBrowserFragment.newInstance(), getString(R.string.browse));
+//        adapter.addFragment(PlaylistFragment.newInstance(), getString(R.string.playlist));
+//        viewPager.setAdapter(adapter);
+//        TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
+//        tabLayout.setupWithViewPager(viewPager);
 
         // Set up the tab coloration with an initial state and a listener for other states
         // TODO: clean this up, make more robust/generic
-        int tabIconColor = ContextCompat.getColor(BaseActivity.this, R.color.medium_grey);
-        Drawable browse = ContextCompat.getDrawable(this, R.drawable.ic_folder_open_white_24dp);
-        Drawable playlist = ContextCompat.getDrawable(this, R.drawable.ic_playlist_play_white_24dp);
-        playlist.setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
-        tabLayout.getTabAt(0).setIcon(browse);
-        tabLayout.getTabAt(1).setIcon(playlist);
-        // Highlight selected tab in white, and deselected in grey, to match the text
-        tabLayout.addOnTabSelectedListener(
-                new TabLayout.ViewPagerOnTabSelectedListener(viewPager) {
+//        int tabIconColor = ContextCompat.getColor(BaseActivity.this, R.color.medium_grey);
+//        Drawable browse = ContextCompat.getDrawable(this, R.drawable.ic_folder_open_white_24dp);
+//        Drawable playlist = ContextCompat.getDrawable(this, R.drawable.ic_playlist_play_white_24dp);
+//        playlist.setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
+//        tabLayout.getTabAt(0).setIcon(browse);
+//        tabLayout.getTabAt(1).setIcon(playlist);
+//        // Highlight selected tab in white, and deselected in grey, to match the text
+//        tabLayout.addOnTabSelectedListener(
+//                new TabLayout.ViewPagerOnTabSelectedListener(viewPager) {
+//                    @Override
+//                    public void onTabSelected(TabLayout.Tab tab) {
+//                        super.onTabSelected(tab);
+//                        int tabIconColor = ContextCompat.getColor(BaseActivity.this, R.color.almost_white);
+//                        tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
+//                    }
+//
+//                    @Override
+//                    public void onTabUnselected(TabLayout.Tab tab) {
+//                        super.onTabUnselected(tab);
+//                        int tabIconColor = ContextCompat.getColor(BaseActivity.this, R.color.medium_grey);
+//                        tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
+//                    }
+//                }
+//        );
+
+        // Add server button
+        findViewById(R.id.button9).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                v.getContext().startActivity(new Intent(v.getContext(), AddServerActivity.class));
+            }
+        });
+
+
+        RecyclerView filesListView = (RecyclerView) findViewById(R.id.base_recycle_view);
+        filesListView.setLayoutManager(new LinearLayoutManager(this));
+        baseBrowserAdapter = new BaseBrowserAdapter(new ArrayList<BaseBrowserItem>(),
+                new BaseBrowserAdapter.OnClickFileItem() {
                     @Override
-                    public void onTabSelected(TabLayout.Tab tab) {
-                        super.onTabSelected(tab);
-                        int tabIconColor = ContextCompat.getColor(BaseActivity.this, R.color.almost_white);
-                        tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
+                    public void onDirectoryClick(String directory) {
+                        //goToDirectory(directory);
                     }
 
                     @Override
-                    public void onTabUnselected(TabLayout.Tab tab) {
-                        super.onTabUnselected(tab);
-                        int tabIconColor = ContextCompat.getColor(BaseActivity.this, R.color.medium_grey);
-                        tab.getIcon().setColorFilter(tabIconColor, PorterDuff.Mode.SRC_IN);
+                    public void onFileClick(BaseBrowserItem item) {
+                        //addTrackToPlaylist(item);
                     }
-                }
-        );
+                });
+        filesListView.setAdapter(baseBrowserAdapter);
+
 
         // Start the Audio Service
         mediaBrowser = new MediaBrowserCompat(this, new ComponentName(this, MStreamAudioService.class),
@@ -140,16 +165,17 @@ public class BaseActivity extends AppCompatActivity {
         super.onStart();
         mediaBrowser.connect();
         // Get the active server, if it's been changed outside this Activity
-        List<ServerItem> serverItems = ServerStore.getServers();
         // If there are no servers, direct the user to add a server
-        if (serverItems.isEmpty()) {
+        if (ServerStore.serverList.isEmpty()) {
             startActivity(new Intent(this, AddServerActivity.class));
         } else {
             // Add the servers to the navigation menu
             navigationMenu.setLayoutManager(new LinearLayoutManager(this));
-            ServerListAdapter adapter = new ServerListAdapter(serverItems);
+            ServerListAdapter adapter = new ServerListAdapter(ServerStore.serverList);
             navigationMenu.setAdapter(adapter);
         }
+
+        // TODO: Check if current server has been changed.  Update browser accordingly
     }
 
     @Override
@@ -183,4 +209,6 @@ public class BaseActivity extends AppCompatActivity {
     public MediaBrowserCompat getMediaBrowser() {
         return mediaBrowser;
     }
+
+
 }

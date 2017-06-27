@@ -25,28 +25,28 @@
                 android:background="?attr/colorPrimary"
                 android:theme="@style/ThemeOverlay.AppCompat.Dark"/>
 
-            <android.support.design.widget.TabLayout
-                android:id="@+id/tab_layout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:tabGravity="fill"
-                app:tabIndicatorHeight="4dp"
-                app:tabMaxWidth="0dp"
-                app:tabMode="fixed"
-                app:tabSelectedTextColor="@color/almost_white"
-                app:tabTextColor="@color/medium_grey"/>
+            <!--<android.support.design.widget.TabLayout-->
+                <!--android:id="@+id/tab_layout"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--app:tabGravity="fill"-->
+                <!--app:tabIndicatorHeight="4dp"-->
+                <!--app:tabMaxWidth="0dp"-->
+                <!--app:tabMode="fixed"-->
+                <!--app:tabSelectedTextColor="@color/almost_white"-->
+                <!--app:tabTextColor="@color/medium_grey"/>-->
         </android.support.design.widget.AppBarLayout>
 
-        <android.support.v4.view.ViewPager
-            android:id="@+id/viewpager"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_above="@+id/controls_container"
-            android:layout_below="@id/app_bar"/>
+        <!--<android.support.v4.view.ViewPager-->
+            <!--android:id="@+id/viewpager"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:layout_above="@+id/controls_container"-->
+            <!--android:layout_below="@id/app_bar"/>-->
 
         <!-- The play controls TODO: move to custom viewgroup or fragment -->
         <android.support.v7.widget.CardView
-            android:id="@id/controls_container"
+            android:id="@+id/controls_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
@@ -61,6 +61,78 @@
                 android:layout_alignParentBottom="true"
                 tools:layout="@layout/fragment_playback_controls"/>
         </android.support.v7.widget.CardView>
+
+        <Button
+            android:id="@+id/button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/app_bar"
+            android:text="Files" />
+
+        <Button
+            android:id="@+id/button2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/app_bar"
+            android:layout_toEndOf="@+id/button"
+            android:text="Artists" />
+
+        <Button
+            android:id="@+id/button3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/app_bar"
+            android:layout_toEndOf="@+id/button2"
+            android:text="Albums" />
+
+        <Button
+            android:id="@+id/button4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/app_bar"
+            android:layout_toEndOf="@+id/button3"
+            android:text="Queue" />
+
+        <Button
+            android:id="@+id/button5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/button"
+            android:text="BAck" />
+
+        <Button
+            android:id="@+id/button6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_below="@+id/button4"
+            android:text="Add All" />
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="TextView"
+            android:layout_below="@+id/button"
+            android:layout_toEndOf="@+id/button5" />
+
+        <TextView
+            android:id="@+id/textView3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/button5"
+            android:layout_alignEnd="@+id/textView2"
+            android:text="TextView" />
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/base_recycle_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/button5"
+            android:layout_above="@+id/controls_container" />
     </RelativeLayout>
 
     <!-- The navigation drawer -->
@@ -73,6 +145,12 @@
 
         <include
             layout="@layout/drawer_header"/>
+
+        <Button
+            android:id="@+id/button9"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add Server" />
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/navigation_view"

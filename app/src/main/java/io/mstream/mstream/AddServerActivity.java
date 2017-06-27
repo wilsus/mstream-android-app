@@ -61,33 +61,112 @@ public class AddServerActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (validate()) {
-                    v.setEnabled(false);
+                    final String name = nameText.getText().toString();
+                    final String url = urlText.getText().toString();
+                    final String password = passwordText.getText().toString();
+                    final String username = usernameText.getText().toString();
+                    final boolean isDefault = makeDefault.isChecked();
 
-                    String name = nameText.getText().toString();
-                    String url = urlText.getText().toString();
-                    String password = passwordText.getText().toString();
-                    String username = usernameText.getText().toString();
-
-                    // Create new server Item
-                    ServerItem newServerItem = new ServerItem.Builder(name, url)
-                            .username(username)
-                            .password(password)
-                            .build();
-
-                    ServerStore.addServer(newServerItem);
-                    if (makeDefault.isChecked()) {
-                        ServerStore.setDefaultServer(newServerItem);
+                    // Check for valid url
+                    if (url.isEmpty() || !Patterns.WEB_URL.matcher(url).matches()) {
+                        toastIt("Invalid URL");
+                        return;
                     }
 
-                    // TODO: Test connection to server.  Return an error if it can't connect
+                    // Initialize vars
+                    Request request;
+                    // v.setEnabled(false);
+                    final boolean loginFlag;
 
-                    // Send serverItem to the main activity to be added the list of servers
-                    // TODO: Check if this function returns an error?
-//            boolean status = ((BaseActivity) getActivity()).addItemToServerList(newServerItem);
-//            if (!status) {
-//                Toast.makeText(this, "Server Name Already Exists", Toast.LENGTH_LONG).show();
-//            }
-                    finish();
+                    // Handle login if necessary
+                    if(username.isEmpty() && password.isEmpty()){
+                        loginFlag = false;
+
+                        String loginURL = Uri.parse(url).buildUpon().appendPath("ping").build().toString();
+                        request = new Request.Builder()
+                                .url(loginURL)
+                                .build();
+                    }else{
+                        loginFlag = true;
+                        JSONObject jsonObj = new JSONObject();
+                        try{
+                            jsonObj.put("username", username);
+                            jsonObj.put("password", password);
+                        } catch (JSONException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+
+                        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+                        okhttp3.RequestBody body = RequestBody.create(JSON, jsonObj.toString());
+
+                        String loginURL = Uri.parse(url).buildUpon().appendPath("login").build().toString();
+                        request = new Request.Builder()
+                                .url(loginURL)
+                                .post(body)
+                                .build();
+                    }
+
+                    // Callback
+                    Callback loginCallback = new Callback() {
+                        @Override
+                        public void onFailure(Call call, IOException e) {
+                            toastIt("Failed To Connect To Server");
+                        }
+
+                        @Override
+                        public void onResponse(Call call, Response response) throws IOException {
+                            if(response.code() != 200){
+                                toastIt("Login Failed");
+                            }else{
+                                JSONObject responseObj;
+                                String jwt = "";
+                                String vPath = "";
+
+                                // Get the vPath and JWT
+                                try {
+                                    responseObj = new JSONObject(response.body().string());
+                                    if (responseObj.has("vPath")) {
+                                        vPath = responseObj.getString("vPath");
+                                    }
+                                    if (responseObj.has("token")) {
+                                        jwt = responseObj.getString("token");
+                                    }
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                    toastIt("Failed to decoded server response. WTF");
+                                    return;
+                                }
+
+                                toastIt("Login Success");
+
+                                ServerItem newServerItem;
+
+                                if(loginFlag){
+                                    // Create new server Item
+                                    newServerItem = new ServerItem.Builder(name, url)
+                                            .username(username)
+                                            .password(password)
+                                            .vPath(vPath)
+                                            .jwt(jwt)
+                                            .isDefault(isDefault)
+                                            .build();
+                                }else{
+                                    // Create new server Item
+                                    newServerItem = new ServerItem.Builder(name, url).vPath(vPath).isDefault(isDefault).build();
+                                }
+
+                                // Add the server
+                                ServerStore.addServer(newServerItem);
+                                finish();
+                            }
+                        }
+                    };
+
+                    // Make call
+                    OkHttpClient okHttpClient = ((MStreamApplication) getApplicationContext()).getOkHttpClient();
+                    okHttpClient.newCall(request).enqueue(loginCallback);
+
                 }
             }
         });
@@ -110,13 +189,6 @@ public class AddServerActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(Call call, IOException e) {
                         toastIt("Failed To Connect To Server");
-
-//                        try {
-//                            //Log.i(TAG, "login failed: " + call.execute().code());
-//                            toastIt("FAILURE");
-//                        } catch (IOException e1) {
-//                            e1.printStackTrace();
-//                        }
                     }
 
                     @Override
@@ -126,15 +198,6 @@ public class AddServerActivity extends AppCompatActivity {
                         }else{
                             toastIt("Login Success");
                         }
-
-//                        String loginResponseString = response.body().string();
-//                        try {
-//                            JSONObject responseObj = new JSONObject(response.body().string());
-//                            //Log.i(TAG, "responseObj: " + responseObj);
-//                        } catch (JSONException e) {
-//                            e.printStackTrace();
-//                        }
-                        // Log.i(TAG, "loginResponseString: " + loginResponseString);
                     }
                 };
 
@@ -165,7 +228,7 @@ public class AddServerActivity extends AppCompatActivity {
 
 
         // If there are no servers yet, ensure the Make Default box is checked
-        if (ServerStore.getServers().isEmpty()) {
+        if (ServerStore.serverList.isEmpty()) {
             makeDefault.setChecked(true);
             makeDefault.setEnabled(false);
         }
