@@ -38,8 +38,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.mstream.mstream.filebrowser.FileBrowserFragment;
-import io.mstream.mstream.filebrowser.FileItem;
 import io.mstream.mstream.player.MStreamAudioService;
 import io.mstream.mstream.playlist.MediaControllerConnectedEvent;
 import io.mstream.mstream.playlist.PlaylistFragment;

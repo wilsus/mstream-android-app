@@ -35,7 +35,7 @@ class BaseBrowserAdapter extends ArrayAdapter<BaseBrowserItem, BaseBrowserAdapte
         BaseBrowserItem item = getItem(position);
         holder.filename.setText(item.getItemText1());
 //        // Show a directory icon or a file icon as appropriate
-//        if (item.getItemType().equals(FileItem.DIRECTORY)) {
+//        if (item.getItemType().equals("directory")) {
 //            holder.directoryIcon.setVisibility(View.VISIBLE);
 //            holder.fileIcon.setVisibility(View.GONE);
 //        } else {
