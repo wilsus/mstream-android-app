@@ -19,7 +19,7 @@ import java.io.IOException;
  * A class that implements local media playback using {@link android.media.MediaPlayer}
  */
 class AudioPlayer implements Playback, AudioManager.OnAudioFocusChangeListener,
-        MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener, MediaPlayer.OnPreparedListener, MediaPlayer.OnSeekCompleteListener {
+        MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener, MediaPlayer.OnPreparedListener, MediaPlayer.OnSeekCompleteListener, MediaPlayer.OnBufferingUpdateListener {
 
     private static final String TAG = "AudioPlayer";
 
@@ -42,6 +42,7 @@ class AudioPlayer implements Playback, AudioManager.OnAudioFocusChangeListener,
     private boolean playOnFocusGain;
     private Callback callback;
     private volatile int currentPosition;
+    private int currentBufferPosition = 0;
     private volatile String currentMediaId;
 
     private volatile boolean audioNoisyReceiverRegistered;
@@ -114,6 +115,11 @@ class AudioPlayer implements Playback, AudioManager.OnAudioFocusChangeListener,
     public int getCurrentStreamPosition() {
         return mediaPlayer != null ?
                 mediaPlayer.getCurrentPosition() : currentPosition;
+    }
+
+    @Override
+    public int getBufferedPosition() {
+        return currentBufferPosition;
     }
 
     @Override
@@ -367,6 +373,18 @@ class AudioPlayer implements Playback, AudioManager.OnAudioFocusChangeListener,
     }
 
     /**
+     * Called when there's an update to the amount of buffer.
+     * @see MediaPlayer.OnBufferingUpdateListener
+     */
+    @Override
+    public void onBufferingUpdate(MediaPlayer mp, int percent) {
+        if (mp.getDuration() != -1) {
+            Log.v(TAG, "buffer updated! duration is " + mp.getDuration() + " and buffer percent is " + percent);
+            currentBufferPosition = mp.getDuration() / 100 * percent;
+        }
+    }
+
+    /**
      * Called when media player is done preparing.
      * @see MediaPlayer.OnPreparedListener
      */
@@ -413,6 +431,7 @@ class AudioPlayer implements Playback, AudioManager.OnAudioFocusChangeListener,
             mediaPlayer.setOnCompletionListener(this);
             mediaPlayer.setOnErrorListener(this);
             mediaPlayer.setOnSeekCompleteListener(this);
+            mediaPlayer.setOnBufferingUpdateListener(this);
         } else {
             mediaPlayer.reset();
         }

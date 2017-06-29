@@ -262,7 +262,6 @@ public class MStreamAudioService extends MediaBrowserServiceCompat implements Pl
                     Log.d(TAG, "Ignoring delayed stop since the media player is in use.");
                     return;
                 }
-                service.playbackManager.handleStopRequest("");
                 Log.d(TAG, "Stopping service with delay handler.");
                 service.stopSelf();
             }

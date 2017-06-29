@@ -102,6 +102,8 @@ public interface Playback {
      */
     String getCurrentMediaId();
 
+    int getBufferedPosition();
+
     interface Callback {
         /**
          * On current music completed.

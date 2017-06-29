@@ -7,12 +7,14 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.greenrobot.eventbus.EventBus;
@@ -51,8 +53,6 @@ public class PlayerControlsFragment extends Fragment {
                 default:
                     break;
             }
-            // TODO: remove, used only for testing particular hardcoced track
-            seekBar.setMax(180000);
         }
     };
 
@@ -78,6 +78,7 @@ public class PlayerControlsFragment extends Fragment {
 
     private ImageButton playPauseButton;
     private SeekBar seekBar;
+    private TextView timeLeftText;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -87,12 +88,14 @@ public class PlayerControlsFragment extends Fragment {
         playPauseButton.setEnabled(true);
         playPauseButton.setOnClickListener(playPauseButtonListener);
 
+        timeLeftText = (TextView) rootView.findViewById(R.id.time_left_text);
+
         seekBar = (SeekBar) rootView.findViewById(R.id.seek_bar);
+        seekBar.setPadding(0, 0, 0, 0);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                // TODO: actual current time text?
-//                startText.setText(DateUtils.formatElapsedTime(progress / 1000));
+                timeLeftText.setText(DateUtils.formatElapsedTime((seekBar.getMax() - progress) / 1000));
             }
 
             @Override
@@ -108,6 +111,8 @@ public class PlayerControlsFragment extends Fragment {
 //                scheduleSeekbarUpdate();
             }
         });
+        // TODO: remove, used only for testing particular hardcoded track
+        seekBar.setMax(192470);
 
         return rootView;
     }
@@ -130,8 +135,17 @@ public class PlayerControlsFragment extends Fragment {
                 break;
             case PlaybackStateCompat.STATE_ERROR:
                 Log.e(TAG, "error playbackstate: " + state.getErrorMessage());
-                Toast.makeText(getActivity(), state.getErrorMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity(), "Playback error: " + state.getErrorMessage(), Toast.LENGTH_LONG).show();
                 break;
+            case PlaybackStateCompat.STATE_BUFFERING:
+            case PlaybackStateCompat.STATE_CONNECTING:
+            case PlaybackStateCompat.STATE_FAST_FORWARDING:
+            case PlaybackStateCompat.STATE_NONE:
+            case PlaybackStateCompat.STATE_PLAYING:
+            case PlaybackStateCompat.STATE_REWINDING:
+            case PlaybackStateCompat.STATE_SKIPPING_TO_NEXT:
+            case PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS:
+            case PlaybackStateCompat.STATE_SKIPPING_TO_QUEUE_ITEM:
             default:
                 break;
         }
@@ -199,8 +213,6 @@ public class PlayerControlsFragment extends Fragment {
         int duration = (int) metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION);
         Log.d(TAG, "updating duration to " + duration);
         seekBar.setMax(duration);
-        // TODO: textviews for actual duration/progress?
-//        endText.setText(DateUtils.formatElapsedTime(duration/1000));
     }
 
 

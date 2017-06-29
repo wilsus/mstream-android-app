@@ -8,6 +8,11 @@
     <color name="dark_grey">#333</color>
     <!-- Used for icon coloration on white backgrounds on the website-->
     <color name="medium_grey">#808080</color>
+    <!-- Used for the seekbar background on the website -->
+    <color name="light_grey">#d7d7d7</color>
+    <!-- Shadows - lighter than medium, but darker than light -->
+    <color name="shadow_grey">#ccc</color>
+    <!-- Don't use pure white in general -->
     <color name="almost_white">#eaeaea</color>
     <!-- The info button background on the website -->
     <color name="medium_blue">#6684B2</color>
