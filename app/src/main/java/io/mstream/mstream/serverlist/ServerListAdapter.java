@@ -24,8 +24,6 @@ public class ServerListAdapter extends ArrayAdapter<ServerItem, ServerListAdapte
 
     public ServerListAdapter(List<ServerItem> items) {
         super(items);
-        // Add a dummy so we can offset the Add Server item
-        items.add(new ServerItem.Builder("", "").build());
     }
 
     @Override
@@ -36,36 +34,27 @@ public class ServerListAdapter extends ArrayAdapter<ServerItem, ServerListAdapte
 
     @Override
     public int getItemViewType(int position) {
-        return position > 0 ? R.layout.nav_drawer_server_item : R.layout.nav_drawer_add_server;
+        return R.layout.nav_drawer_server_item;
     }
 
     @Override
     public void onBindViewHolder(NavDrawerViewHolder holder, int position) {
-        if (position == 0) {
-            // This is the Add Server special item. Bind the layout differently.
+        ServerItem item = getItem(position);
+        holder.serverName.setText(item.getServerName());
+        if (item.equals(ServerStore.currentServer)) {
+            holder.isDefaultIcon.setVisibility(View.VISIBLE);
+            holder.notDefaultIcon.setVisibility(View.GONE);
         } else {
-            ServerItem item = getItem(position - 1);
-            holder.serverName.setText(item.getServerName());
-            if (item.getServerUrl().equals(LocalPreferences.getInstance().getDefaultServerUrl())) {
-                holder.isDefaultIcon.setVisibility(View.VISIBLE);
-                holder.notDefaultIcon.setVisibility(View.GONE);
-            } else {
-                holder.notDefaultIcon.setVisibility(View.VISIBLE);
-                holder.isDefaultIcon.setVisibility(View.GONE);
-            }
+            holder.notDefaultIcon.setVisibility(View.VISIBLE);
+            holder.isDefaultIcon.setVisibility(View.GONE);
         }
     }
 
     private void handleClick(int position, View v) {
-        if (position > 0) {
-            // This is a "select server" click
-            ServerStore.setDefaultServer(getItem(position - 1));
-            // By using notifyItemRangeChanged instead of notifyDataSetChanged, we get animation!
-            notifyItemRangeChanged(1, getItemCount() - 1);
-        } else {
-            // This is an "add server" click
-            v.getContext().startActivity(new Intent(v.getContext(), AddServerActivity.class));
-        }
+        // This is a "select server" click
+        ServerStore.currentServer = getItem(position );
+        // By using notifyItemRangeChanged instead of notifyDataSetChanged, we get animation!
+        notifyItemRangeChanged(0, getItemCount() );
     }
 
     class NavDrawerViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -85,5 +74,6 @@ public class ServerListAdapter extends ArrayAdapter<ServerItem, ServerListAdapte
         public void onClick(View view) {
             handleClick(getAdapterPosition(), view);
         }
+
     }
 }
