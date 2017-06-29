@@ -26,19 +26,7 @@
                 android:layout_height="?attr/actionBarSize"
                 android:background="?attr/colorPrimary"
                 android:theme="@style/ThemeOverlay.AppCompat.Dark"/>
-
-            <!--<android.support.design.widget.TabLayout-->
-                <!--android:id="@+id/tab_layout"-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--app:tabGravity="fill"-->
-                <!--app:tabIndicatorHeight="4dp"-->
-                <!--app:tabMaxWidth="0dp"-->
-                <!--app:tabMode="fixed"-->
-                <!--app:tabSelectedTextColor="@color/almost_white"-->
-                <!--app:tabTextColor="@color/medium_grey"/>-->
         </android.support.design.widget.AppBarLayout>
-
 
         <Button
             android:id="@+id/button"
