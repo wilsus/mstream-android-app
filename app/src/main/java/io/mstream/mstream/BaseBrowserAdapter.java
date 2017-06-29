@@ -33,7 +33,7 @@ class BaseBrowserAdapter extends ArrayAdapter<BaseBrowserItem, BaseBrowserAdapte
     @Override
     public void onBindViewHolder(BaseBrowserAdapter.BaseBrowserViewHolder holder, int position) {
         BaseBrowserItem item = getItem(position);
-//        holder.filename.setText(item.getItemName());
+        holder.filename.setText(item.getItemText1());
 //        // Show a directory icon or a file icon as appropriate
 //        if (item.getItemType().equals(FileItem.DIRECTORY)) {
 //            holder.directoryIcon.setVisibility(View.VISIBLE);
@@ -42,6 +42,8 @@ class BaseBrowserAdapter extends ArrayAdapter<BaseBrowserItem, BaseBrowserAdapte
 //            holder.fileIcon.setVisibility(View.VISIBLE);
 //            holder.directoryIcon.setVisibility(View.GONE);
 //        }
+        holder.fileIcon.setVisibility(View.VISIBLE);
+        holder.directoryIcon.setVisibility(View.GONE);
     }
 
     class BaseBrowserViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -60,16 +62,17 @@ class BaseBrowserAdapter extends ArrayAdapter<BaseBrowserItem, BaseBrowserAdapte
         @Override
         public void onClick(View view) {
             BaseBrowserItem item = getItem(getAdapterPosition());
-//            if (item.getItemType().equals(FileItem.DIRECTORY)) {
-//                onClickHandler.onDirectoryClick(item.getItemUrl());
-//            } else {
+            if (item.getItemType().equals("directory")) {
+                onClickHandler.onDirectoryClick(item);
+            }
+// else {
 //                onClickHandler.onFileClick(item);
 //            }
         }
     }
 
     interface OnClickFileItem {
-        void onDirectoryClick(String directory);
+        void onDirectoryClick(BaseBrowserItem item);
 
         void onFileClick(BaseBrowserItem item);
     }

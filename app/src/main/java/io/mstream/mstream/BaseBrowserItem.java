@@ -1,9 +1,9 @@
 package io.mstream.mstream;
 
+import android.support.annotation.NonNull;
+
 public class BaseBrowserItem {
 
-
-    private String type;
     // TYPES
         // file
         // directory
@@ -11,30 +11,21 @@ public class BaseBrowserItem {
         // album
         // playlist
         // queue-item
-
-    private String typeProp;
-    // Each type hasa single property that is used on a click event
-
-
-    // Text lines
+    private String type;
+    private String typeProp;     // Each type hasa single property that is used on a click event
     private String text1;
     private String text2;
-
-    // Image
     private String image;
-
-    // Background color
     private String backgroundColor;
 
 
-    public BaseBrowserItem(String type, String typeProp, String text1, String text2, String image, String backgroundColor) {
-        this.type = type;
-        this.typeProp = typeProp;
-        this.text1 = text1;
-        this.text2 = text2;
-        this.image = image;
-        this.backgroundColor = backgroundColor;
-
+    private BaseBrowserItem(Builder builder) {
+        this.type = builder.type;
+        this.typeProp = builder.typeProp;
+        this.text1 = builder.text1;
+        this.text2 = builder.text2;
+        this.image = builder.image;
+        this.backgroundColor = builder.backgroundColor;
     }
 
 
@@ -60,6 +51,42 @@ public class BaseBrowserItem {
 
     public String getBackgroundColor() {
         return this.backgroundColor;
+    }
+
+
+    public static class Builder {
+        private String type;
+        private String typeProp;
+        private String text1;
+        private String text2;
+        private String image;
+        private String backgroundColor;
+
+
+        public Builder(@NonNull String type, @NonNull String typeProp, @NonNull String mainText) {
+            this.type = type;
+            this.typeProp = typeProp;
+            this.text1 = mainText;
+        }
+
+        public Builder text2(String text2) {
+            this.text2 = text2;
+            return this;
+        }
+
+        public Builder image(String image) {
+            this.image = image;
+            return this;
+        }
+
+        public Builder backgroundColor(String backgroundColor) {
+            this.backgroundColor = backgroundColor;
+            return this;
+        }
+
+        public BaseBrowserItem build() {
+            return new BaseBrowserItem(this);
+        }
     }
 
 }
