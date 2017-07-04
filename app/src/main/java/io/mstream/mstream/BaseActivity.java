@@ -41,6 +41,7 @@ import java.util.List;
 import io.mstream.mstream.player.MStreamAudioService;
 import io.mstream.mstream.playlist.MediaControllerConnectedEvent;
 import io.mstream.mstream.playlist.PlaylistFragment;
+import io.mstream.mstream.playlist.QueueManager;
 import io.mstream.mstream.serverlist.ServerItem;
 import io.mstream.mstream.serverlist.ServerListAdapter;
 import io.mstream.mstream.serverlist.ServerStore;
@@ -57,12 +58,12 @@ import okhttp3.Response;
 public class BaseActivity extends AppCompatActivity {
     private static final String TAG = "BaseActivity";
 
+    // Left hand nav menu
     private DrawerLayout drawerLayout;
     private RecyclerView navigationMenu;
-
     // Media Controls!
     private MediaBrowserCompat mediaBrowser;
-
+    // Main browser
     private BaseBrowserAdapter baseBrowserAdapter;
 
     @Override
@@ -82,7 +83,6 @@ public class BaseActivity extends AppCompatActivity {
         // Navigation Menu
         navigationMenu = (RecyclerView) findViewById(R.id.navigation_view);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-
 
         // Add server button
         findViewById(R.id.button9).setOnClickListener(new View.OnClickListener() {
@@ -161,6 +161,11 @@ public class BaseActivity extends AppCompatActivity {
                     @Override
                     public void onFileClick(BaseBrowserItem item) {
                         //addTrackToPlaylist(item);
+                        // TODO: Add file to queue and retrieve metadata
+                        MediaControllerCompat controller = getSupportMediaController();
+                        if (controller != null) {
+                            QueueManager.addToQueue(item.getMetadata());
+                        }
                     }
                 });
         filesListView.setAdapter(baseBrowserAdapter);
@@ -248,7 +253,6 @@ public class BaseActivity extends AppCompatActivity {
                                 // For directories use the relative directory path
                                 String name = fileJson.getString("name");
                                 link = currentPath + name + "/";
-                                // TODO: Create Proper items
                                 serverFileList.add(new BaseBrowserItem.Builder("directory", link, name).build());
                             } else {
                                 String name = fileJson.getString("name");
@@ -256,8 +260,12 @@ public class BaseActivity extends AppCompatActivity {
                                 // For music we provide the whole URL
                                 // This way the playlist can handle files from multiple servers
                                 // String fileUrl = serverUrl + currentPath + fileJson.getString("name");
-                                // TODO: add vPath
-                                String fileUrl = Uri.parse(ServerStore.currentServer.getServerUrl()).buildUpon().appendPath(currentPath).appendPath(name).build().toString();
+                                String fileUrl = Uri.parse(ServerStore.currentServer.getServerUrl()).buildUpon().appendPath(ServerStore.currentServer.getServerVPath()).build().toString();
+                                if(fileUrl.charAt(fileUrl.length() - 1) != '/'){
+                                    fileUrl = fileUrl + "/";
+                                }
+                                fileUrl = fileUrl + currentPath  + fileJson.getString("name");
+                                fileUrl = Uri.parse(fileUrl).buildUpon().appendQueryParameter("token", ServerStore.currentServer.getServerJWT()).build().toString();
 
                                 try {
                                     // We need to encode the URL to handle files with special characters
@@ -268,8 +276,11 @@ public class BaseActivity extends AppCompatActivity {
                                 } catch (MalformedURLException | URISyntaxException e) {
                                     link = ""; // TODO: Better exception handling
                                 }
-                                serverFileList.add(new BaseBrowserItem.Builder("directory", link, name).build());
 
+                                MetadataObject tempMeta = new MetadataObject.Builder(link).build();
+                                BaseBrowserItem tempItem = new BaseBrowserItem.Builder("file", link, name).metadata(tempMeta).build( );
+
+                                serverFileList.add(tempItem);
                             }
                         }
 
@@ -277,10 +288,7 @@ public class BaseActivity extends AppCompatActivity {
                     } catch (JSONException e) {
                         e.printStackTrace();
                         toastIt("Failed to decoded server response. WTF");
-                        return;
                     }
-
-                    // TODO: Add items to rycler view
                 }
             }
         };
@@ -291,7 +299,6 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     private void toastIt(final String toastText){
-
         runOnUiThread(new Runnable() {
             public void run()
             {

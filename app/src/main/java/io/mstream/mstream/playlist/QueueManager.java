@@ -12,18 +12,21 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import io.mstream.mstream.MetadataObject;
+
 /**
  * Based on the Universal Android Music Player queue manager.
  */
 
+// TODO: Should all this be static?  There should only be one queue. Having the ability to make multiple of them seams like come back to bite us
 public class QueueManager {
     private static final String TAG = "QueueManager";
 
-    private MetadataUpdateListener listener;
+    private static MetadataUpdateListener listener;
 
     // "Now playing" queue:
-    private List<MediaSessionCompat.QueueItem> playlistQueue;
-    private int currentIndex;
+    private static List<MediaSessionCompat.QueueItem> playlistQueue;
+    private static int currentIndex;
 
     public QueueManager(@NonNull MetadataUpdateListener listener) {
         this.listener = listener;
@@ -73,22 +76,36 @@ public class QueueManager {
         return true;
     }
 
-    public void setQueueFromMusic(String filename) {
-        Log.d(TAG, "setQueueFromMusic " + filename);
 
-        List<MediaSessionCompat.QueueItem> playlist = new ArrayList<>(1);
-        MediaDescriptionCompat description = new MediaDescriptionCompat.Builder()
-                .setMediaUri(Uri.parse(filename))
-                .setMediaId(filename)
-                // TODO: something a bit less hacky, maybe a Utils method
-                .setTitle(MediaUtils.titleFromFilename(filename))
-                .build();
-        playlist.add(new MediaSessionCompat.QueueItem(description, 0));
-        setCurrentQueue("", playlist, filename);
-        updateMetadata();
+
+//    public void setQueueFromMusic(String filename) {
+//        Log.d(TAG, "setQueueFromMusic " + filename);
+//
+//        List<MediaSessionCompat.QueueItem> playlist = new ArrayList<>(1);
+//        MediaDescriptionCompat description = new MediaDescriptionCompat.Builder()
+//                .setMediaUri(Uri.parse(filename))
+//                .setMediaId(filename)
+//                // TODO: something a bit less hacky, maybe a Utils method
+//                .setTitle(MediaUtils.titleFromFilename(filename))
+//                .build();
+//        playlist.add(new MediaSessionCompat.QueueItem(description, 0));
+//        setCurrentQueue("", playlist, filename);
+//        updateMetadata();
+//    }
+
+    public static void addToQueue(MetadataObject metadata){
+        // Call the server if necessary
+        MstreamQueueObject mqo = new MstreamQueueObject();
+        mqo.setMetadata(metadata);
+        mqo.constructQueueItem();
+
+        playlistQueue.add(mqo.getQueueItem());
+
+        listener.onQueueUpdated("lol", playlistQueue);
     }
 
-    public MediaSessionCompat.QueueItem getCurrentMusic() {
+
+    public static MediaSessionCompat.QueueItem getCurrentMusic() {
         if (!MediaUtils.isIndexPlayable(currentIndex, playlistQueue)) {
             return null;
         }
@@ -102,19 +119,19 @@ public class QueueManager {
         return playlistQueue.size();
     }
 
-    protected void setCurrentQueue(String title, List<MediaSessionCompat.QueueItem> newQueue) {
-        setCurrentQueue(title, newQueue, null);
-    }
+//    protected void setCurrentQueue(String title, List<MediaSessionCompat.QueueItem> newQueue) {
+//        setCurrentQueue(title, newQueue, null);
+//    }
 
-    protected void setCurrentQueue(String title, List<MediaSessionCompat.QueueItem> newQueue, String initialMediaId) {
-        playlistQueue = newQueue;
-        int index = 0;
-//        if (initialMediaId != null) {
-//            index = MediaUtils.getMusicIndexOnQueue(playlistQueue, initialMediaId);
-//        }
-        currentIndex = Math.max(index, 0);
-        listener.onQueueUpdated(title, newQueue);
-    }
+//    protected void setCurrentQueue(String title, List<MediaSessionCompat.QueueItem> newQueue, String initialMediaId) {
+//        playlistQueue = newQueue;
+//        int index = 0;
+////        if (initialMediaId != null) {
+////            index = MediaUtils.getMusicIndexOnQueue(playlistQueue, initialMediaId);
+////        }
+//        currentIndex = Math.max(index, 0);
+//        listener.onQueueUpdated(title, newQueue);
+//    }
 
     public void updateMetadata() {
         MediaSessionCompat.QueueItem currentMusic = getCurrentMusic();

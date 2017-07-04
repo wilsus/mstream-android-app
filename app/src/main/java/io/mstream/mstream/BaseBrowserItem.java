@@ -10,13 +10,13 @@ public class BaseBrowserItem {
         // artist
         // album
         // playlist
-        // queue-item
     private String type;
     private String typeProp;     // Each type hasa single property that is used on a click event
     private String text1;
     private String text2;
     private String image;
     private String backgroundColor;
+    private MetadataObject metadata;
 
 
     private BaseBrowserItem(Builder builder) {
@@ -26,6 +26,7 @@ public class BaseBrowserItem {
         this.text2 = builder.text2;
         this.image = builder.image;
         this.backgroundColor = builder.backgroundColor;
+        this.metadata = builder.metadata;
     }
 
 
@@ -53,6 +54,10 @@ public class BaseBrowserItem {
         return this.backgroundColor;
     }
 
+    public MetadataObject getMetadata() {
+        return this.metadata;
+    }
+
 
     public static class Builder {
         private String type;
@@ -61,6 +66,7 @@ public class BaseBrowserItem {
         private String text2;
         private String image;
         private String backgroundColor;
+        private MetadataObject metadata;
 
 
         public Builder(@NonNull String type, @NonNull String typeProp, @NonNull String mainText) {
@@ -81,6 +87,11 @@ public class BaseBrowserItem {
 
         public Builder backgroundColor(String backgroundColor) {
             this.backgroundColor = backgroundColor;
+            return this;
+        }
+
+        public Builder metadata(MetadataObject metadata){
+            this.metadata = metadata;
             return this;
         }
 

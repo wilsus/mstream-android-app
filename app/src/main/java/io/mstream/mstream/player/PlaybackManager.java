@@ -9,6 +9,8 @@ import android.util.Log;
 
 import java.util.List;
 
+import io.mstream.mstream.MetadataObject;
+import io.mstream.mstream.playlist.MstreamQueueObject;
 import io.mstream.mstream.playlist.QueueManager;
 
 /**
@@ -156,10 +158,11 @@ class PlaybackManager implements Playback.Callback {
     }
 
     @Override
+    // TODO: We prob don't need this but it complains when I remove it
     public void setCurrentMediaId(String mediaId) {
         Log.d(TAG, "setCurrentMediaId" + mediaId);
         // TODO: problems?
-        queueManager.setQueueFromMusic(mediaId);
+        // queueManager.setQueueFromMusic(mediaId);
     }
 
     List<MediaBrowserCompat.MediaItem> getQueueAsMediaItems() {
@@ -190,13 +193,13 @@ class PlaybackManager implements Playback.Callback {
             playback.seekTo((int) position);
         }
 
-        @Override
-        public void onPlayFromMediaId(String mediaId, Bundle extras) {
-            Log.d(TAG, "playFromMediaId mediaId:" + mediaId + " extras=" + extras);
-            // TODO: problems?
-            queueManager.setQueueFromMusic(mediaId);
-            handlePlayRequest();
-        }
+//        @Override
+//        public void onPlayFromMediaId(String mediaId, Bundle extras) {
+//            Log.d(TAG, "playFromMediaId mediaId:" + mediaId + " extras=" + extras);
+//            // TODO: problems?
+//            queueManager.setQueueFromMusic(mediaId);
+//            handlePlayRequest();
+//        }
 
         @Override
         public void onPause() {
