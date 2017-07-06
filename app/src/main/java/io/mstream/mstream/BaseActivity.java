@@ -1,19 +1,15 @@
 package io.mstream.mstream;
 
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.RemoteException;
-import android.support.design.widget.TabLayout;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.view.GravityCompat;
-import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -23,6 +19,8 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import org.greenrobot.eventbus.EventBus;
@@ -36,16 +34,12 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.List;
 
 import io.mstream.mstream.player.MStreamAudioService;
 import io.mstream.mstream.playlist.MediaControllerConnectedEvent;
-import io.mstream.mstream.playlist.PlaylistFragment;
 import io.mstream.mstream.playlist.QueueManager;
-import io.mstream.mstream.serverlist.ServerItem;
 import io.mstream.mstream.serverlist.ServerListAdapter;
 import io.mstream.mstream.serverlist.ServerStore;
-import io.mstream.mstream.ui.ViewPagerAdapter;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -96,8 +90,23 @@ public class BaseActivity extends AppCompatActivity {
         findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // v.getContext().startActivity(new Intent(v.getContext(), AddServerActivity.class));
                 getFiles("");
+            }
+        });
+
+        // Artists Button
+        findViewById(R.id.button2).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getArtists();
+            }
+        });
+
+        // Artists Button
+        findViewById(R.id.button3).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getAlbums();
             }
         });
 
@@ -155,6 +164,14 @@ public class BaseActivity extends AppCompatActivity {
                     @Override
                     public void onDirectoryClick(BaseBrowserItem item) {
                         //goToDirectory(directory);
+                        View view = getCurrentFocus();
+                        if (view != null) {
+                            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                        }
+                        ((EditText) findViewById(R.id.search_response)).getText().clear();
+                        ((EditText) findViewById(R.id.search_response)).clearFocus();
+
                         getFiles(item.getTypeProp());
                     }
 
@@ -166,6 +183,34 @@ public class BaseActivity extends AppCompatActivity {
                         if (controller != null) {
                             QueueManager.addToQueue(item.getMetadata());
                         }
+                    }
+
+                    @Override
+                    public void onArtistClick(BaseBrowserItem item) {
+                        //addTrackToPlaylist(item);
+                        View view = getCurrentFocus();
+                        if (view != null) {
+                            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                        }
+                        ((EditText) findViewById(R.id.search_response)).getText().clear();
+                        ((EditText) findViewById(R.id.search_response)).clearFocus();
+
+                        getArtistsAlbums(item.getTypeProp());
+                    }
+
+                    @Override
+                    public void onAlbumClick(BaseBrowserItem item) {
+                        //addTrackToPlaylist(item);
+                        View view = getCurrentFocus();
+                        if (view != null) {
+                            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                        }
+                        ((EditText) findViewById(R.id.search_response)).getText().clear();
+                        ((EditText) findViewById(R.id.search_response)).clearFocus();
+
+                        getAlbumSongs(item.getTypeProp());
                     }
                 });
         filesListView.setAdapter(baseBrowserAdapter);
@@ -203,6 +248,249 @@ public class BaseActivity extends AppCompatActivity {
 
     public MediaBrowserCompat getMediaBrowser() {
         return mediaBrowser;
+    }
+
+    public void getAlbums(){
+        String loginURL = Uri.parse(ServerStore.currentServer.getServerUrl()).buildUpon().appendPath("db").appendPath("albums").build().toString();
+        Request request = new Request.Builder()
+                .url(loginURL)
+                .addHeader("x-access-token", ServerStore.currentServer.getServerJWT())
+                .build();
+
+        // Callback
+        Callback loginCallback = new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                toastIt("Failed To Connect To Server");
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if(response.code() != 200){
+                    toastIt("Files Failed");
+                }else{
+                    toastIt("Files Success");
+
+                    // Get the vPath and JWT
+                    try {
+                        JSONObject responseJson = new JSONObject(response.body().string());
+                        JSONArray contents = responseJson.getJSONArray("albums");
+                        final ArrayList<BaseBrowserItem> serverFileList = new ArrayList<>();
+
+                        for (int i = 0; i < contents.length(); i++) {
+                            String artist = contents.getString(i);
+
+                            // For directories use the relative directory path
+                            serverFileList.add(new BaseBrowserItem.Builder("album", artist, artist).build());
+                        }
+
+                        addIt(serverFileList);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        toastIt("Failed to decoded server response. WTF");
+                    }
+                }
+            }
+        };
+
+        // Make call
+        OkHttpClient okHttpClient = ((MStreamApplication) getApplicationContext()).getOkHttpClient();
+        okHttpClient.newCall(request).enqueue(loginCallback);
+    }
+
+    public void getArtists(){
+        String loginURL = Uri.parse(ServerStore.currentServer.getServerUrl()).buildUpon().appendPath("db").appendPath("artists").build().toString();
+        Request request = new Request.Builder()
+                .url(loginURL)
+                .addHeader("x-access-token", ServerStore.currentServer.getServerJWT())
+                .build();
+
+        // Callback
+        Callback loginCallback = new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                toastIt("Failed To Connect To Server");
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if(response.code() != 200){
+                    toastIt("Files Failed");
+                }else{
+                    toastIt("Files Success");
+
+                    // Get the vPath and JWT
+                    try {
+                        JSONObject responseJson = new JSONObject(response.body().string());
+                        JSONArray contents = responseJson.getJSONArray("artists");
+                        final ArrayList<BaseBrowserItem> serverFileList = new ArrayList<>();
+
+                        for (int i = 0; i < contents.length(); i++) {
+                            String artist = contents.getString(i);
+
+                            // For directories use the relative directory path
+                            serverFileList.add(new BaseBrowserItem.Builder("artist", artist, artist).build());
+                        }
+
+                        addIt(serverFileList);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        toastIt("Failed to decoded server response. WTF");
+                    }
+                }
+            }
+        };
+
+        // Make call
+        OkHttpClient okHttpClient = ((MStreamApplication) getApplicationContext()).getOkHttpClient();
+        okHttpClient.newCall(request).enqueue(loginCallback);
+    }
+
+    public void getArtistsAlbums(String artist){
+        JSONObject jsonObj = new JSONObject();
+        try{
+            jsonObj.put("artist", artist);
+        } catch (JSONException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+        okhttp3.RequestBody body = RequestBody.create(JSON, jsonObj.toString());
+
+        String loginURL = Uri.parse(ServerStore.currentServer.getServerUrl()).buildUpon().appendPath("db").appendPath("artists-albums").build().toString();
+        Request request = new Request.Builder()
+                .url(loginURL)
+                .addHeader("x-access-token", ServerStore.currentServer.getServerJWT())
+                .post(body)
+                .build();
+
+        // Callback
+        Callback loginCallback = new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                toastIt("Failed To Connect To Server");
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if(response.code() != 200){
+                    toastIt("Files Failed");
+                }else{
+                    toastIt("Files Success");
+
+                    // Get the vPath and JWT
+                    try {
+                        JSONObject responseJson = new JSONObject(response.body().string());
+                        JSONArray contents = responseJson.getJSONArray("albums");
+                        final ArrayList<BaseBrowserItem> serverFileList = new ArrayList<>();
+
+                        for (int i = 0; i < contents.length(); i++) {
+                            String artist = contents.getString(i);
+
+                            // For directories use the relative directory path
+                            serverFileList.add(new BaseBrowserItem.Builder("album", artist, artist).build());
+                        }
+
+                        addIt(serverFileList);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        toastIt("Failed to decoded server response. WTF");
+                    }
+                }
+            }
+        };
+
+        // Make call
+        OkHttpClient okHttpClient = ((MStreamApplication) getApplicationContext()).getOkHttpClient();
+        okHttpClient.newCall(request).enqueue(loginCallback);
+    }
+
+    public void getAlbumSongs(String album){
+        JSONObject jsonObj = new JSONObject();
+        try{
+            jsonObj.put("album", album);
+        } catch (JSONException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+        okhttp3.RequestBody body = RequestBody.create(JSON, jsonObj.toString());
+
+        String loginURL = Uri.parse(ServerStore.currentServer.getServerUrl()).buildUpon().appendPath("db").appendPath("album-songs").build().toString();
+        Request request = new Request.Builder()
+                .url(loginURL)
+                .addHeader("x-access-token", ServerStore.currentServer.getServerJWT())
+                .post(body)
+                .build();
+
+        // Callback
+        Callback loginCallback = new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                toastIt("Failed To Connect To Server");
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if(response.code() != 200){
+                    toastIt("Files Failed");
+                }else{
+                    toastIt("Files Success");
+
+                    // Get the vPath and JWT
+                    try {
+                        // JSONObject responseJson = new JSONObject(response.body().string());
+                        JSONArray contents = new JSONArray(response.body().string());
+                        final ArrayList<BaseBrowserItem> serverFileList = new ArrayList<>();
+
+                        for (int i = 0; i < contents.length(); i++) {
+                            JSONObject fileJson = contents.getJSONObject(i);
+                            String filepath = fileJson.getString("filepath");
+                            String link;
+
+                            // For music we provide the whole URL
+                            // This way the playlist can handle files from multiple servers
+                            // String fileUrl = serverUrl + currentPath + fileJson.getString("name");
+                            String fileUrl = Uri.parse(ServerStore.currentServer.getServerUrl()).buildUpon().appendPath(ServerStore.currentServer.getServerVPath()).build().toString();
+                            if(fileUrl.charAt(fileUrl.length() - 1) != '/'){
+                                fileUrl = fileUrl + "/";
+                            }
+                            fileUrl = fileUrl + filepath;
+                            fileUrl = Uri.parse(fileUrl).buildUpon().appendQueryParameter("token", ServerStore.currentServer.getServerJWT()).build().toString();
+
+                            try {
+                                // We need to encode the URL to handle files with special characters
+                                // Thank You stack overflow
+                                URL url = new URL(fileUrl);
+                                URI uri = new URI(url.getProtocol(), url.getUserInfo(), url.getHost(), url.getPort(), url.getPath(), url.getQuery(), url.getRef());
+                                link = uri.toASCIIString();
+                            } catch (MalformedURLException | URISyntaxException e) {
+                                link = ""; // TODO: Better exception handling
+                            }
+
+                            // TODO: Better handleing of metadata
+                            String[] split = filepath.split("/");
+
+                            MetadataObject tempMeta = new MetadataObject.Builder(link).build();
+                            BaseBrowserItem tempItem = new BaseBrowserItem.Builder("file", link,  split[split.length-1]).metadata(tempMeta).build( );
+
+                            serverFileList.add(tempItem);
+                        }
+
+                        addIt(serverFileList);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        toastIt("Failed to decoded server response. WTF");
+                    }
+                }
+            }
+        };
+
+        // Make call
+        OkHttpClient okHttpClient = ((MStreamApplication) getApplicationContext()).getOkHttpClient();
+        okHttpClient.newCall(request).enqueue(loginCallback);
     }
 
     public void getFiles(String directroy){

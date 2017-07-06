@@ -65,6 +65,12 @@ class BaseBrowserAdapter extends ArrayAdapter<BaseBrowserItem, BaseBrowserAdapte
             if (item.getItemType().equals("directory")) {
                 onClickHandler.onDirectoryClick(item);
             }
+            if (item.getItemType().equals("artist")) {
+                onClickHandler.onArtistClick(item);
+            }
+            if (item.getItemType().equals("album")) {
+                onClickHandler.onAlbumClick(item);
+            }
             if (item.getItemType().equals("file")) {
                 onClickHandler.onFileClick(item);
             }
@@ -75,5 +81,10 @@ class BaseBrowserAdapter extends ArrayAdapter<BaseBrowserItem, BaseBrowserAdapte
         void onDirectoryClick(BaseBrowserItem item);
 
         void onFileClick(BaseBrowserItem item);
+
+        void onAlbumClick(BaseBrowserItem item);
+
+        void onArtistClick(BaseBrowserItem item);
+
     }
 }

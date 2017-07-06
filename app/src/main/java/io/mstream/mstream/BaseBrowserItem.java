@@ -11,7 +11,7 @@ public class BaseBrowserItem {
         // album
         // playlist
     private String type;
-    private String typeProp;     // Each type hasa single property that is used on a click event
+    private String typeProp;     // Each type has a single property that is used on a click event
     private String text1;
     private String text2;
     private String image;
