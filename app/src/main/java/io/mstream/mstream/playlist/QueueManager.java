@@ -19,13 +19,13 @@ import io.mstream.mstream.MetadataObject;
  */
 
 // TODO: Should all this be static?  There should only be one queue. Having the ability to make multiple of them seams like come back to bite us
-public class QueueManager {
+public final class QueueManager {
     private static final String TAG = "QueueManager";
 
     private static MetadataUpdateListener listener;
 
     // "Now playing" queue:
-    private static List<MediaSessionCompat.QueueItem> playlistQueue;
+    private static List<MediaSessionCompat.QueueItem> playlistQueue = new ArrayList<>();
     private static int currentIndex;
 
     public QueueManager(@NonNull MetadataUpdateListener listener) {
@@ -58,6 +58,10 @@ public class QueueManager {
 //        return index >= 0;
 //    }
 
+    public static List<MediaSessionCompat.QueueItem> getInstance(){
+        return playlistQueue;
+    }
+
     public boolean skipQueuePosition(int amount) {
         int index = currentIndex + amount;
         if (index < 0) {
@@ -73,6 +77,16 @@ public class QueueManager {
             return false;
         }
         currentIndex = index;
+        return true;
+    }
+
+    public static boolean goToQueuePosition(int pos){
+        if (!MediaUtils.isIndexPlayable(pos, playlistQueue)) {
+            Log.e(TAG, "Cannot go to position. Current=" + currentIndex + " queue length=" + playlistQueue.size());
+            return false;
+        }
+
+        currentIndex = pos;
         return true;
     }
 
@@ -133,7 +147,7 @@ public class QueueManager {
 //        listener.onQueueUpdated(title, newQueue);
 //    }
 
-    public void updateMetadata() {
+    public static void updateMetadata() {
         MediaSessionCompat.QueueItem currentMusic = getCurrentMusic();
         if (currentMusic == null) {
             listener.onMetadataRetrieveError();

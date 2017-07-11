@@ -6,9 +6,13 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.RemoteException;
+import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.media.MediaBrowserCompat;
+import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
+import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -16,14 +20,19 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -59,6 +68,16 @@ public class BaseActivity extends AppCompatActivity {
     private MediaBrowserCompat mediaBrowser;
     // Main browser
     private BaseBrowserAdapter baseBrowserAdapter;
+    // Playlist Adapter
+    private QueueAdapter queueAdapter;
+
+    // Player buttons
+    private ImageButton playPauseButton;
+    private SeekBar seekBar;
+    private ImageButton nextButton;
+    private ImageButton previousButton;
+
+    private TextView timeLeftText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +96,49 @@ public class BaseActivity extends AppCompatActivity {
         // Navigation Menu
         navigationMenu = (RecyclerView) findViewById(R.id.navigation_view);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+
+        // Play/pause button
+        playPauseButton = (ImageButton) findViewById(R.id.play_pause);
+        playPauseButton.setEnabled(true);
+        playPauseButton.setOnClickListener(playPauseButtonListener);
+
+        // Next Button
+        nextButton = (ImageButton) findViewById(R.id.next_song);
+        nextButton.setEnabled(true);
+        nextButton.setOnClickListener(nextButtonListener);
+
+        // Previous Button
+        previousButton = (ImageButton) findViewById(R.id.previous_song);
+        previousButton.setEnabled(true);
+        previousButton.setOnClickListener(previousButtonListener);
+
+        // Time left text
+        // timeLeftText = (TextView) findViewById(R.id.time_left_text);
+
+        // Seekbar
+        seekBar = (SeekBar) findViewById(R.id.seek_bar);
+        seekBar.setPadding(0, 0, 0, 0);
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                //timeLeftText.setText(DateUtils.formatElapsedTime((seekBar.getMax() - progress) / 1000));
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                // TODO: used for trick play, if we're not getting progress events all the time
+//                stopSeekbarUpdate();
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                seekMedia(seekBar.getProgress());
+                // TODO: used for trick play, if we're not getting progress events all the time
+//                scheduleSeekbarUpdate();
+            }
+        });
+        // TODO: remove, used only for testing particular hardcoded track
+        seekBar.setMax(192470);
 
         // Add server button
         findViewById(R.id.button9).setOnClickListener(new View.OnClickListener() {
@@ -139,6 +201,13 @@ public class BaseActivity extends AppCompatActivity {
                         EventBus.getDefault().removeStickyEvent(MediaControllerConnectedEvent.class);
                     }
                 }, null);
+
+        // TODO: What exactly is this?
+        EventBus.getDefault().register(this);
+        MediaControllerCompat controller = getSupportMediaController();
+        if (controller != null) {
+            onConnected();
+        }
     }
 
     @Override
@@ -156,6 +225,25 @@ public class BaseActivity extends AppCompatActivity {
             navigationMenu.setAdapter(adapter);
         }
 
+        // Queue Adapter
+        RecyclerView queueView = (RecyclerView) findViewById(R.id.queue_recycler);
+        queueView.setLayoutManager(new LinearLayoutManager(this));
+        queueAdapter = new QueueAdapter(new ArrayList<MediaSessionCompat.QueueItem>(), new QueueAdapter.OnClickQueueItem() {
+            @Override
+            public void onQueueClick(MediaSessionCompat.QueueItem item, int itemPos){
+                // Go To Song
+                QueueManager.goToQueuePosition(itemPos);
+                QueueManager.updateMetadata();
+
+                // Play
+                playMedia();
+            }
+        });
+        queueView.setAdapter(queueAdapter);
+        queueAdapter.clear();
+        queueAdapter.add(QueueManager.getInstance());
+
+        // Browser Adapter
         RecyclerView filesListView = (RecyclerView) findViewById(R.id.base_recycle_view);
         filesListView.setLayoutManager(new LinearLayoutManager(this));
 
@@ -182,6 +270,8 @@ public class BaseActivity extends AppCompatActivity {
                         MediaControllerCompat controller = getSupportMediaController();
                         if (controller != null) {
                             QueueManager.addToQueue(item.getMetadata());
+                            queueAdapter.clear();
+                            queueAdapter.add(QueueManager.getInstance());
                         }
                     }
 
@@ -216,6 +306,8 @@ public class BaseActivity extends AppCompatActivity {
         filesListView.setAdapter(baseBrowserAdapter);
 
         // TODO: Check if current server has been changed.  Update browser accordingly
+
+        // TODO: Store state so when the user reopens the app it goes to the same state
     }
 
     @Override
@@ -470,7 +562,7 @@ public class BaseActivity extends AppCompatActivity {
                                 link = ""; // TODO: Better exception handling
                             }
 
-                            // TODO: Better handleing of metadata
+                            // TODO: Better handling of metadata
                             String[] split = filepath.split("/");
 
                             MetadataObject tempMeta = new MetadataObject.Builder(link).build();
@@ -602,6 +694,184 @@ public class BaseActivity extends AppCompatActivity {
                 baseBrowserAdapter.add(serverFileList);
             }
         });
+    }
+
+    // Play/pause button listener
+    private final View.OnClickListener nextButtonListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            goToNextSong();
+        }
+    };
+
+    // Play/pause button listener
+    private final View.OnClickListener previousButtonListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            goToPreviousSong();
+        }
+    };
+
+    // Play/pause button listener
+    private final View.OnClickListener playPauseButtonListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            MediaControllerCompat controller = getSupportMediaController();
+            PlaybackStateCompat stateObj = controller.getPlaybackState();
+            final int state = stateObj == null ? PlaybackStateCompat.STATE_NONE : stateObj.getState();
+            Log.d(TAG, "Button pressed, in state " + state);
+            switch (v.getId()) {
+                case R.id.play_pause:
+                    Log.d(TAG, "Play/Pause button pressed, in state " + state);
+                    if (state == PlaybackStateCompat.STATE_PAUSED ||
+                            state == PlaybackStateCompat.STATE_STOPPED ||
+                            state == PlaybackStateCompat.STATE_NONE) {
+                        playMedia();
+                    } else if (state == PlaybackStateCompat.STATE_PLAYING ||
+                            state == PlaybackStateCompat.STATE_BUFFERING ||
+                            state == PlaybackStateCompat.STATE_CONNECTING) {
+                        pauseMedia();
+                    }
+                    break;
+                // TODO: add buttons for skip?
+                default:
+                    break;
+            }
+        }
+    };
+
+    // Receive callbacks from the MediaController. Here we update our state such as which queue
+    // is being shown, the current title and description and the PlaybackState.
+    private final MediaControllerCompat.Callback mediaControllerCallback = new MediaControllerCompat.Callback() {
+//        @Override
+//        public void onPlaybackStateChanged(@NonNull PlaybackStateCompat state) {
+//            Log.d(TAG, "Received playback state change to state " + state.getState());
+//            this.onPlaybackStateChanged(state);
+//        }
+
+        @Override
+        public void onMetadataChanged(MediaMetadataCompat metadata) {
+            if (metadata == null) {
+                return;
+            }
+            Log.d(TAG, "Received metadata state change to mediaId=" + metadata.getDescription().getMediaId() +
+                    " song=" + metadata.getDescription().getTitle());
+            // this.onMetadataChanged(metadata);
+        }
+    };
+
+    private void playMedia() {
+        MediaControllerCompat controller = getSupportMediaController();
+        if (controller != null) {
+            controller.getTransportControls().play();
+        }
+    }
+
+    private void pauseMedia() {
+        MediaControllerCompat controller = getSupportMediaController();
+        if (controller != null) {
+            controller.getTransportControls().pause();
+        }
+    }
+
+    private void seekMedia(int progress) {
+        MediaControllerCompat controller = getSupportMediaController();
+        if (controller != null) {
+            controller.getTransportControls().seekTo(progress);
+        }
+    }
+
+    private void goToNextSong(){
+        MediaControllerCompat controller = getSupportMediaController();
+        if (controller != null) {
+            controller.getTransportControls().skipToNext();
+        }
+    }
+
+    private void goToPreviousSong(){
+        MediaControllerCompat controller = getSupportMediaController();
+        if (controller != null) {
+            controller.getTransportControls().skipToPrevious();
+        }
+    }
+
+    public void onConnected() {
+        MediaControllerCompat controller = getSupportMediaController();
+        Log.d(TAG, "onConnected, mediaController==null? " + (controller == null));
+        if (controller != null) {
+            onMetadataChanged(controller.getMetadata());
+            onPlaybackStateChanged(controller.getPlaybackState());
+            controller.registerCallback(mediaControllerCallback);
+        }
+    }
+
+    @Subscribe(sticky = true)
+    public void onConnectedToMediaController(MediaControllerConnectedEvent e) {
+        Log.d(TAG, "Received an event! " + MediaControllerConnectedEvent.class.getName());
+        // Add MediaController callback so we can redraw the list when metadata changes:
+        MediaControllerCompat controller = getSupportMediaController();
+        if (controller != null) {
+            Log.d(TAG, "Registering callback.");
+            controller.registerCallback(mediaControllerCallback);
+        }
+    }
+
+
+    private void onPlaybackStateChanged(PlaybackStateCompat state) {
+        Log.d(TAG, "onPlaybackStateChanged " + state);
+//        if (getActivity() == null) {
+//            Log.w(TAG, "onPlaybackStateChanged called when getActivity null," +
+//                    "this should not happen if the callback was properly unregistered. Ignoring.");
+//            return;
+//        }
+        if (state == null) {
+            return;
+        }
+        boolean enablePlay = false;
+        switch (state.getState()) {
+            case PlaybackStateCompat.STATE_PAUSED:
+            case PlaybackStateCompat.STATE_STOPPED:
+                enablePlay = true;
+                break;
+            case PlaybackStateCompat.STATE_ERROR:
+                Log.e(TAG, "error playbackstate: " + state.getErrorMessage());
+                Toast.makeText(this, "Playback error: " + state.getErrorMessage(), Toast.LENGTH_LONG).show();
+                break;
+            case PlaybackStateCompat.STATE_BUFFERING:
+            case PlaybackStateCompat.STATE_CONNECTING:
+            case PlaybackStateCompat.STATE_FAST_FORWARDING:
+            case PlaybackStateCompat.STATE_NONE:
+            case PlaybackStateCompat.STATE_PLAYING:
+            case PlaybackStateCompat.STATE_REWINDING:
+            case PlaybackStateCompat.STATE_SKIPPING_TO_NEXT:
+            case PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS:
+            case PlaybackStateCompat.STATE_SKIPPING_TO_QUEUE_ITEM:
+            default:
+                break;
+        }
+
+        if (enablePlay) {
+            playPauseButton.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_play_arrow_black_36dp));
+        } else {
+            playPauseButton.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_pause_black_36dp));
+        }
+
+        // TODO: does this work?
+        Log.d(TAG, "seekbar! state progress is " + state.getPosition() + " and state buffer is " + state.getBufferedPosition());
+        seekBar.setSecondaryProgress((int) state.getBufferedPosition());
+        seekBar.setProgress((int) state.getPosition());
+    }
+
+    private void onMetadataChanged(MediaMetadataCompat metadata) {
+        if (metadata == null) {
+            return;
+        }
+
+        // TODO: have to set this metadata when adding the track. can we get it from the server?
+        // Otherwise, need to set up event system between media player and this view.
+        int duration = (int) metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION);
+        Log.d(TAG, "updating duration to " + duration);
+        seekBar.setMax(duration);
     }
 
 }
