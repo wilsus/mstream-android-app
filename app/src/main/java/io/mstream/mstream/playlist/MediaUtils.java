@@ -52,7 +52,7 @@ class MediaUtils {
                 .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, "this is the display title")
                 .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, "this is the display subtitle")
                 .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION, "this is the display description")
-                .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, "http://darncoyotes.mstream.io/MP3/Darn%20Coyotes%20-%2005%20From%20Athens.mp3")
+                .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, "https://paulserver.mstre.am:5050/6553fd58-c032-401c-ae9d-68eb5d394c26/Feed%20Me/Feed%20Me%20-%20Calamari%20Tuesday%20[V0]/04.%20Ebb%20&%20Flow.mp3?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBhdWwiLCJpYXQiOjE0OTc5NzU5Mzl9.Y4B3kHhExuq0nCPMxZoxfbSibb7HbQ6S2ZDPD8ep6xA")
                 .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, BitmapFactory.decodeResource(res, R.mipmap.ic_launcher))
                 .build();
     }

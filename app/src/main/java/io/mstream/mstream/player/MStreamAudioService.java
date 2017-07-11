@@ -25,6 +25,7 @@ import java.util.List;
 
 import io.mstream.mstream.BaseActivity;
 import io.mstream.mstream.R;
+import io.mstream.mstream.playlist.MstreamQueueObject;
 import io.mstream.mstream.playlist.QueueManager;
 
 import static io.mstream.mstream.R.string.play;
@@ -95,7 +96,7 @@ public class MStreamAudioService extends MediaBrowserServiceCompat implements Pl
         mediaSession.setCallback(playbackManager.getMediaSessionCallback());
 
         startService(new Intent(getApplicationContext(), MStreamAudioService.class));
-        testPlay();
+        // testPlay(); // TODO: SEGFFGWERGRWEG
     }
 
     @Override
@@ -127,13 +128,13 @@ public class MStreamAudioService extends MediaBrowserServiceCompat implements Pl
         result.sendResult(playbackManager.getQueueAsMediaItems());
     }
 
-    private void testPlay() {
-        // Set the queue?
-        playbackManager.setCurrentMediaId("http://darncoyotes.mstream.io/MP3/Darn%20Coyotes%20-%2005%20From%20Athens.mp3");
-
-        // Finally, play the item with the metadata specified above.
-        playbackManager.handlePlayRequest();
-    }
+//    public void testPlay() {
+//        // Set the queue?
+//        playbackManager.setCurrentMediaId("https://paulserver.mstre.am:5050/6553fd58-c032-401c-ae9d-68eb5d394c26/Feed%20Me/Feed%20Me%20-%20Calamari%20Tuesday%20[V0]/04.%20Ebb%20&%20Flow.mp3?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBhdWwiLCJpYXQiOjE0OTc5NzU5Mzl9.Y4B3kHhExuq0nCPMxZoxfbSibb7HbQ6S2ZDPD8ep6xA");
+//
+//        // Finally, play the item with the metadata specified above.
+//        playbackManager.handlePlayRequest();
+//    }
 
     @Override
     public void onDestroy() {
@@ -147,17 +148,18 @@ public class MStreamAudioService extends MediaBrowserServiceCompat implements Pl
     }
 
     private Notification buildNotification() {
-        MediaDescriptionCompat description = mediaSession.getController().getMetadata().getDescription();
+        // TODO: Making things static broke this
+        // MediaDescriptionCompat description = mediaSession.getController().getMetadata().getDescription();
 
         // TODO: any way to get metadata from mStream? Or just the filename?
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
 
         // TODO: figure out a good icon, maybe a custom tiny mstream logo in one channel
         builder.setSmallIcon(R.drawable.ic_notification)
-                .setLargeIcon(description.getIconBitmap())
-                .setContentTitle(description.getTitle())
-                .setContentText(description.getSubtitle())
-                .setSubText(description.getDescription())
+                .setLargeIcon(null)
+                .setContentTitle("LOL")
+                .setContentText("LOL2")
+                .setSubText("LOL3")
                 // when tapped, launch the mstream activity (have to set this elsewhere)
                 .setContentIntent(mediaSession.getController().getSessionActivity())
                 // Media controls should be publicly visible

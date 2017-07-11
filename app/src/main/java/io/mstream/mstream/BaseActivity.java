@@ -1,31 +1,38 @@
 package io.mstream.mstream;
 
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.RemoteException;
-import android.support.design.widget.TabLayout;
+import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.media.MediaBrowserCompat;
+import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
+import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v4.view.GravityCompat;
-import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -36,15 +43,12 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.List;
 
 import io.mstream.mstream.player.MStreamAudioService;
 import io.mstream.mstream.playlist.MediaControllerConnectedEvent;
-import io.mstream.mstream.playlist.PlaylistFragment;
-import io.mstream.mstream.serverlist.ServerItem;
+import io.mstream.mstream.playlist.QueueManager;
 import io.mstream.mstream.serverlist.ServerListAdapter;
 import io.mstream.mstream.serverlist.ServerStore;
-import io.mstream.mstream.ui.ViewPagerAdapter;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -57,13 +61,23 @@ import okhttp3.Response;
 public class BaseActivity extends AppCompatActivity {
     private static final String TAG = "BaseActivity";
 
+    // Left hand nav menu
     private DrawerLayout drawerLayout;
     private RecyclerView navigationMenu;
-
     // Media Controls!
     private MediaBrowserCompat mediaBrowser;
-
+    // Main browser
     private BaseBrowserAdapter baseBrowserAdapter;
+    // Playlist Adapter
+    private QueueAdapter queueAdapter;
+
+    // Player buttons
+    private ImageButton playPauseButton;
+    private SeekBar seekBar;
+    private ImageButton nextButton;
+    private ImageButton previousButton;
+
+    private TextView timeLeftText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,6 +97,48 @@ public class BaseActivity extends AppCompatActivity {
         navigationMenu = (RecyclerView) findViewById(R.id.navigation_view);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 
+        // Play/pause button
+        playPauseButton = (ImageButton) findViewById(R.id.play_pause);
+        playPauseButton.setEnabled(true);
+        playPauseButton.setOnClickListener(playPauseButtonListener);
+
+        // Next Button
+        nextButton = (ImageButton) findViewById(R.id.next_song);
+        nextButton.setEnabled(true);
+        nextButton.setOnClickListener(nextButtonListener);
+
+        // Previous Button
+        previousButton = (ImageButton) findViewById(R.id.previous_song);
+        previousButton.setEnabled(true);
+        previousButton.setOnClickListener(previousButtonListener);
+
+        // Time left text
+        // timeLeftText = (TextView) findViewById(R.id.time_left_text);
+
+        // Seekbar
+        seekBar = (SeekBar) findViewById(R.id.seek_bar);
+        seekBar.setPadding(0, 0, 0, 0);
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                //timeLeftText.setText(DateUtils.formatElapsedTime((seekBar.getMax() - progress) / 1000));
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                // TODO: used for trick play, if we're not getting progress events all the time
+//                stopSeekbarUpdate();
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                seekMedia(seekBar.getProgress());
+                // TODO: used for trick play, if we're not getting progress events all the time
+//                scheduleSeekbarUpdate();
+            }
+        });
+        // TODO: remove, used only for testing particular hardcoded track
+        seekBar.setMax(192470);
 
         // Add server button
         findViewById(R.id.button9).setOnClickListener(new View.OnClickListener() {
@@ -96,8 +152,23 @@ public class BaseActivity extends AppCompatActivity {
         findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // v.getContext().startActivity(new Intent(v.getContext(), AddServerActivity.class));
                 getFiles("");
+            }
+        });
+
+        // Artists Button
+        findViewById(R.id.button2).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getArtists();
+            }
+        });
+
+        // Artists Button
+        findViewById(R.id.button3).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getAlbums();
             }
         });
 
@@ -130,6 +201,13 @@ public class BaseActivity extends AppCompatActivity {
                         EventBus.getDefault().removeStickyEvent(MediaControllerConnectedEvent.class);
                     }
                 }, null);
+
+        // TODO: What exactly is this?
+        EventBus.getDefault().register(this);
+        MediaControllerCompat controller = getSupportMediaController();
+        if (controller != null) {
+            onConnected();
+        }
     }
 
     @Override
@@ -147,6 +225,28 @@ public class BaseActivity extends AppCompatActivity {
             navigationMenu.setAdapter(adapter);
         }
 
+        // Queue Adapter
+        RecyclerView queueView = (RecyclerView) findViewById(R.id.queue_recycler);
+        queueView.setLayoutManager(new LinearLayoutManager(this));
+        queueAdapter = new QueueAdapter(new ArrayList<MediaSessionCompat.QueueItem>(), new QueueAdapter.OnClickQueueItem() {
+            @Override
+            public void onQueueClick(MediaSessionCompat.QueueItem item, int itemPos){
+                // Go To Song
+                QueueManager.goToQueuePosition(itemPos);
+                QueueManager.updateMetadata();
+
+                // Play
+                playMedia();
+
+                // update view
+                queueAdapter.notifyDataSetChanged();
+            }
+        });
+        queueView.setAdapter(queueAdapter);
+        queueAdapter.clear();
+        queueAdapter.add(QueueManager.getInstance());
+
+        // Browser Adapter
         RecyclerView filesListView = (RecyclerView) findViewById(R.id.base_recycle_view);
         filesListView.setLayoutManager(new LinearLayoutManager(this));
 
@@ -155,17 +255,63 @@ public class BaseActivity extends AppCompatActivity {
                     @Override
                     public void onDirectoryClick(BaseBrowserItem item) {
                         //goToDirectory(directory);
+                        View view = getCurrentFocus();
+                        if (view != null) {
+                            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                        }
+                        ((EditText) findViewById(R.id.search_response)).getText().clear();
+                        ((EditText) findViewById(R.id.search_response)).clearFocus();
+
                         getFiles(item.getTypeProp());
                     }
 
                     @Override
                     public void onFileClick(BaseBrowserItem item) {
                         //addTrackToPlaylist(item);
+                        // TODO: Add file to queue and retrieve metadata
+                        MediaControllerCompat controller = getSupportMediaController();
+                        if (controller != null) {
+                            QueueManager.addToQueue(item.getMetadata());
+                            queueAdapter.clear();
+                            queueAdapter.add(QueueManager.getInstance());
+                            // TODO: why doesn't `queueAdapter.notifyDataSetChanged();` work here
+                        }
+                    }
+
+                    @Override
+                    public void onArtistClick(BaseBrowserItem item) {
+                        //addTrackToPlaylist(item);
+                        View view = getCurrentFocus();
+                        if (view != null) {
+                            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                        }
+                        ((EditText) findViewById(R.id.search_response)).getText().clear();
+                        ((EditText) findViewById(R.id.search_response)).clearFocus();
+
+                        getArtistsAlbums(item.getTypeProp());
+                    }
+
+                    @Override
+                    public void onAlbumClick(BaseBrowserItem item) {
+                        //addTrackToPlaylist(item);
+                        View view = getCurrentFocus();
+                        if (view != null) {
+                            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                        }
+                        ((EditText) findViewById(R.id.search_response)).getText().clear();
+                        ((EditText) findViewById(R.id.search_response)).clearFocus();
+
+                        getAlbumSongs(item.getTypeProp());
                     }
                 });
         filesListView.setAdapter(baseBrowserAdapter);
 
         // TODO: Check if current server has been changed.  Update browser accordingly
+
+        // TODO: Store state so when the user reopens the app it goes to the same state
     }
 
     @Override
@@ -198,6 +344,249 @@ public class BaseActivity extends AppCompatActivity {
 
     public MediaBrowserCompat getMediaBrowser() {
         return mediaBrowser;
+    }
+
+    public void getAlbums(){
+        String loginURL = Uri.parse(ServerStore.currentServer.getServerUrl()).buildUpon().appendPath("db").appendPath("albums").build().toString();
+        Request request = new Request.Builder()
+                .url(loginURL)
+                .addHeader("x-access-token", ServerStore.currentServer.getServerJWT())
+                .build();
+
+        // Callback
+        Callback loginCallback = new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                toastIt("Failed To Connect To Server");
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if(response.code() != 200){
+                    toastIt("Files Failed");
+                }else{
+                    toastIt("Files Success");
+
+                    // Get the vPath and JWT
+                    try {
+                        JSONObject responseJson = new JSONObject(response.body().string());
+                        JSONArray contents = responseJson.getJSONArray("albums");
+                        final ArrayList<BaseBrowserItem> serverFileList = new ArrayList<>();
+
+                        for (int i = 0; i < contents.length(); i++) {
+                            String artist = contents.getString(i);
+
+                            // For directories use the relative directory path
+                            serverFileList.add(new BaseBrowserItem.Builder("album", artist, artist).build());
+                        }
+
+                        addIt(serverFileList);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        toastIt("Failed to decoded server response. WTF");
+                    }
+                }
+            }
+        };
+
+        // Make call
+        OkHttpClient okHttpClient = ((MStreamApplication) getApplicationContext()).getOkHttpClient();
+        okHttpClient.newCall(request).enqueue(loginCallback);
+    }
+
+    public void getArtists(){
+        String loginURL = Uri.parse(ServerStore.currentServer.getServerUrl()).buildUpon().appendPath("db").appendPath("artists").build().toString();
+        Request request = new Request.Builder()
+                .url(loginURL)
+                .addHeader("x-access-token", ServerStore.currentServer.getServerJWT())
+                .build();
+
+        // Callback
+        Callback loginCallback = new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                toastIt("Failed To Connect To Server");
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if(response.code() != 200){
+                    toastIt("Files Failed");
+                }else{
+                    toastIt("Files Success");
+
+                    // Get the vPath and JWT
+                    try {
+                        JSONObject responseJson = new JSONObject(response.body().string());
+                        JSONArray contents = responseJson.getJSONArray("artists");
+                        final ArrayList<BaseBrowserItem> serverFileList = new ArrayList<>();
+
+                        for (int i = 0; i < contents.length(); i++) {
+                            String artist = contents.getString(i);
+
+                            // For directories use the relative directory path
+                            serverFileList.add(new BaseBrowserItem.Builder("artist", artist, artist).build());
+                        }
+
+                        addIt(serverFileList);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        toastIt("Failed to decoded server response. WTF");
+                    }
+                }
+            }
+        };
+
+        // Make call
+        OkHttpClient okHttpClient = ((MStreamApplication) getApplicationContext()).getOkHttpClient();
+        okHttpClient.newCall(request).enqueue(loginCallback);
+    }
+
+    public void getArtistsAlbums(String artist){
+        JSONObject jsonObj = new JSONObject();
+        try{
+            jsonObj.put("artist", artist);
+        } catch (JSONException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+        okhttp3.RequestBody body = RequestBody.create(JSON, jsonObj.toString());
+
+        String loginURL = Uri.parse(ServerStore.currentServer.getServerUrl()).buildUpon().appendPath("db").appendPath("artists-albums").build().toString();
+        Request request = new Request.Builder()
+                .url(loginURL)
+                .addHeader("x-access-token", ServerStore.currentServer.getServerJWT())
+                .post(body)
+                .build();
+
+        // Callback
+        Callback loginCallback = new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                toastIt("Failed To Connect To Server");
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if(response.code() != 200){
+                    toastIt("Files Failed");
+                }else{
+                    toastIt("Files Success");
+
+                    // Get the vPath and JWT
+                    try {
+                        JSONObject responseJson = new JSONObject(response.body().string());
+                        JSONArray contents = responseJson.getJSONArray("albums");
+                        final ArrayList<BaseBrowserItem> serverFileList = new ArrayList<>();
+
+                        for (int i = 0; i < contents.length(); i++) {
+                            String artist = contents.getString(i);
+
+                            // For directories use the relative directory path
+                            serverFileList.add(new BaseBrowserItem.Builder("album", artist, artist).build());
+                        }
+
+                        addIt(serverFileList);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        toastIt("Failed to decoded server response. WTF");
+                    }
+                }
+            }
+        };
+
+        // Make call
+        OkHttpClient okHttpClient = ((MStreamApplication) getApplicationContext()).getOkHttpClient();
+        okHttpClient.newCall(request).enqueue(loginCallback);
+    }
+
+    public void getAlbumSongs(String album){
+        JSONObject jsonObj = new JSONObject();
+        try{
+            jsonObj.put("album", album);
+        } catch (JSONException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+        okhttp3.RequestBody body = RequestBody.create(JSON, jsonObj.toString());
+
+        String loginURL = Uri.parse(ServerStore.currentServer.getServerUrl()).buildUpon().appendPath("db").appendPath("album-songs").build().toString();
+        Request request = new Request.Builder()
+                .url(loginURL)
+                .addHeader("x-access-token", ServerStore.currentServer.getServerJWT())
+                .post(body)
+                .build();
+
+        // Callback
+        Callback loginCallback = new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                toastIt("Failed To Connect To Server");
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if(response.code() != 200){
+                    toastIt("Files Failed");
+                }else{
+                    toastIt("Files Success");
+
+                    // Get the vPath and JWT
+                    try {
+                        // JSONObject responseJson = new JSONObject(response.body().string());
+                        JSONArray contents = new JSONArray(response.body().string());
+                        final ArrayList<BaseBrowserItem> serverFileList = new ArrayList<>();
+
+                        for (int i = 0; i < contents.length(); i++) {
+                            JSONObject fileJson = contents.getJSONObject(i);
+                            String filepath = fileJson.getString("filepath");
+                            String link;
+
+                            // For music we provide the whole URL
+                            // This way the playlist can handle files from multiple servers
+                            // String fileUrl = serverUrl + currentPath + fileJson.getString("name");
+                            String fileUrl = Uri.parse(ServerStore.currentServer.getServerUrl()).buildUpon().appendPath(ServerStore.currentServer.getServerVPath()).build().toString();
+                            if(fileUrl.charAt(fileUrl.length() - 1) != '/'){
+                                fileUrl = fileUrl + "/";
+                            }
+                            fileUrl = fileUrl + filepath;
+                            fileUrl = Uri.parse(fileUrl).buildUpon().appendQueryParameter("token", ServerStore.currentServer.getServerJWT()).build().toString();
+
+                            try {
+                                // We need to encode the URL to handle files with special characters
+                                // Thank You stack overflow
+                                URL url = new URL(fileUrl);
+                                URI uri = new URI(url.getProtocol(), url.getUserInfo(), url.getHost(), url.getPort(), url.getPath(), url.getQuery(), url.getRef());
+                                link = uri.toASCIIString();
+                            } catch (MalformedURLException | URISyntaxException e) {
+                                link = ""; // TODO: Better exception handling
+                            }
+
+                            // TODO: Better handling of metadata
+                            String[] split = filepath.split("/");
+
+                            MetadataObject tempMeta = new MetadataObject.Builder(link).build();
+                            BaseBrowserItem tempItem = new BaseBrowserItem.Builder("file", link,  split[split.length-1]).metadata(tempMeta).build( );
+
+                            serverFileList.add(tempItem);
+                        }
+
+                        addIt(serverFileList);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        toastIt("Failed to decoded server response. WTF");
+                    }
+                }
+            }
+        };
+
+        // Make call
+        OkHttpClient okHttpClient = ((MStreamApplication) getApplicationContext()).getOkHttpClient();
+        okHttpClient.newCall(request).enqueue(loginCallback);
     }
 
     public void getFiles(String directroy){
@@ -248,7 +637,6 @@ public class BaseActivity extends AppCompatActivity {
                                 // For directories use the relative directory path
                                 String name = fileJson.getString("name");
                                 link = currentPath + name + "/";
-                                // TODO: Create Proper items
                                 serverFileList.add(new BaseBrowserItem.Builder("directory", link, name).build());
                             } else {
                                 String name = fileJson.getString("name");
@@ -256,8 +644,12 @@ public class BaseActivity extends AppCompatActivity {
                                 // For music we provide the whole URL
                                 // This way the playlist can handle files from multiple servers
                                 // String fileUrl = serverUrl + currentPath + fileJson.getString("name");
-                                // TODO: add vPath
-                                String fileUrl = Uri.parse(ServerStore.currentServer.getServerUrl()).buildUpon().appendPath(currentPath).appendPath(name).build().toString();
+                                String fileUrl = Uri.parse(ServerStore.currentServer.getServerUrl()).buildUpon().appendPath(ServerStore.currentServer.getServerVPath()).build().toString();
+                                if(fileUrl.charAt(fileUrl.length() - 1) != '/'){
+                                    fileUrl = fileUrl + "/";
+                                }
+                                fileUrl = fileUrl + currentPath  + fileJson.getString("name");
+                                fileUrl = Uri.parse(fileUrl).buildUpon().appendQueryParameter("token", ServerStore.currentServer.getServerJWT()).build().toString();
 
                                 try {
                                     // We need to encode the URL to handle files with special characters
@@ -268,8 +660,11 @@ public class BaseActivity extends AppCompatActivity {
                                 } catch (MalformedURLException | URISyntaxException e) {
                                     link = ""; // TODO: Better exception handling
                                 }
-                                serverFileList.add(new BaseBrowserItem.Builder("directory", link, name).build());
 
+                                MetadataObject tempMeta = new MetadataObject.Builder(link).build();
+                                BaseBrowserItem tempItem = new BaseBrowserItem.Builder("file", link, name).metadata(tempMeta).build( );
+
+                                serverFileList.add(tempItem);
                             }
                         }
 
@@ -277,10 +672,7 @@ public class BaseActivity extends AppCompatActivity {
                     } catch (JSONException e) {
                         e.printStackTrace();
                         toastIt("Failed to decoded server response. WTF");
-                        return;
                     }
-
-                    // TODO: Add items to rycler view
                 }
             }
         };
@@ -291,7 +683,6 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     private void toastIt(final String toastText){
-
         runOnUiThread(new Runnable() {
             public void run()
             {
@@ -307,6 +698,188 @@ public class BaseActivity extends AppCompatActivity {
                 baseBrowserAdapter.add(serverFileList);
             }
         });
+    }
+
+    // Play/pause button listener
+    private final View.OnClickListener nextButtonListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            goToNextSong();
+        }
+    };
+
+    // Play/pause button listener
+    private final View.OnClickListener previousButtonListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            goToPreviousSong();
+        }
+    };
+
+    // Play/pause button listener
+    private final View.OnClickListener playPauseButtonListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            MediaControllerCompat controller = getSupportMediaController();
+            PlaybackStateCompat stateObj = controller.getPlaybackState();
+            final int state = stateObj == null ? PlaybackStateCompat.STATE_NONE : stateObj.getState();
+            Log.d(TAG, "Button pressed, in state " + state);
+            switch (v.getId()) {
+                case R.id.play_pause:
+                    Log.d(TAG, "Play/Pause button pressed, in state " + state);
+                    if (state == PlaybackStateCompat.STATE_PAUSED ||
+                            state == PlaybackStateCompat.STATE_STOPPED ||
+                            state == PlaybackStateCompat.STATE_NONE) {
+                        playMedia();
+                    } else if (state == PlaybackStateCompat.STATE_PLAYING ||
+                            state == PlaybackStateCompat.STATE_BUFFERING ||
+                            state == PlaybackStateCompat.STATE_CONNECTING) {
+                        pauseMedia();
+                    }
+                    break;
+                // TODO: add buttons for skip?
+                default:
+                    break;
+            }
+        }
+    };
+
+    // Receive callbacks from the MediaController. Here we update our state such as which queue
+    // is being shown, the current title and description and the PlaybackState.
+    private final MediaControllerCompat.Callback mediaControllerCallback = new MediaControllerCompat.Callback() {
+//        @Override
+//        public void onPlaybackStateChanged(@NonNull PlaybackStateCompat state) {
+//            Log.d(TAG, "Received playback state change to state " + state.getState());
+//            this.onPlaybackStateChanged(state);
+//        }
+
+        @Override
+        public void onMetadataChanged(MediaMetadataCompat metadata) {
+            if (metadata == null) {
+                return;
+            }
+            Log.d(TAG, "Received metadata state change to mediaId=" + metadata.getDescription().getMediaId() +
+                    " song=" + metadata.getDescription().getTitle());
+            // this.onMetadataChanged(metadata);
+        }
+    };
+
+    private void playMedia() {
+        MediaControllerCompat controller = getSupportMediaController();
+        if (controller != null) {
+            controller.getTransportControls().play();
+        }
+    }
+
+    private void pauseMedia() {
+        MediaControllerCompat controller = getSupportMediaController();
+        if (controller != null) {
+            controller.getTransportControls().pause();
+        }
+    }
+
+    private void seekMedia(int progress) {
+        MediaControllerCompat controller = getSupportMediaController();
+        if (controller != null) {
+            controller.getTransportControls().seekTo(progress);
+        }
+    }
+
+    private void goToNextSong(){
+        MediaControllerCompat controller = getSupportMediaController();
+        if (controller != null) {
+            controller.getTransportControls().skipToNext();
+            queueAdapter.notifyDataSetChanged();
+
+        }
+    }
+
+    private void goToPreviousSong(){
+        MediaControllerCompat controller = getSupportMediaController();
+        if (controller != null) {
+            controller.getTransportControls().skipToPrevious();
+            queueAdapter.notifyDataSetChanged();
+
+        }
+    }
+
+    public void onConnected() {
+        MediaControllerCompat controller = getSupportMediaController();
+        Log.d(TAG, "onConnected, mediaController==null? " + (controller == null));
+        if (controller != null) {
+            onMetadataChanged(controller.getMetadata());
+            onPlaybackStateChanged(controller.getPlaybackState());
+            controller.registerCallback(mediaControllerCallback);
+        }
+    }
+
+    @Subscribe(sticky = true)
+    public void onConnectedToMediaController(MediaControllerConnectedEvent e) {
+        Log.d(TAG, "Received an event! " + MediaControllerConnectedEvent.class.getName());
+        // Add MediaController callback so we can redraw the list when metadata changes:
+        MediaControllerCompat controller = getSupportMediaController();
+        if (controller != null) {
+            Log.d(TAG, "Registering callback.");
+            controller.registerCallback(mediaControllerCallback);
+        }
+    }
+
+
+    private void onPlaybackStateChanged(PlaybackStateCompat state) {
+        Log.d(TAG, "onPlaybackStateChanged " + state);
+//        if (getActivity() == null) {
+//            Log.w(TAG, "onPlaybackStateChanged called when getActivity null," +
+//                    "this should not happen if the callback was properly unregistered. Ignoring.");
+//            return;
+//        }
+        if (state == null) {
+            return;
+        }
+        boolean enablePlay = false;
+        switch (state.getState()) {
+            case PlaybackStateCompat.STATE_PAUSED:
+            case PlaybackStateCompat.STATE_STOPPED:
+                enablePlay = true;
+                break;
+            case PlaybackStateCompat.STATE_ERROR:
+                Log.e(TAG, "error playbackstate: " + state.getErrorMessage());
+                Toast.makeText(this, "Playback error: " + state.getErrorMessage(), Toast.LENGTH_LONG).show();
+                break;
+            case PlaybackStateCompat.STATE_BUFFERING:
+            case PlaybackStateCompat.STATE_CONNECTING:
+            case PlaybackStateCompat.STATE_FAST_FORWARDING:
+            case PlaybackStateCompat.STATE_NONE:
+            case PlaybackStateCompat.STATE_PLAYING:
+            case PlaybackStateCompat.STATE_REWINDING:
+            case PlaybackStateCompat.STATE_SKIPPING_TO_NEXT:
+            case PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS:
+            case PlaybackStateCompat.STATE_SKIPPING_TO_QUEUE_ITEM:
+            default:
+                break;
+        }
+
+        if (enablePlay) {
+            playPauseButton.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_play_arrow_black_36dp));
+        } else {
+            playPauseButton.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_pause_black_36dp));
+        }
+
+        // TODO: does this work?
+        Log.d(TAG, "seekbar! state progress is " + state.getPosition() + " and state buffer is " + state.getBufferedPosition());
+        seekBar.setSecondaryProgress((int) state.getBufferedPosition());
+        seekBar.setProgress((int) state.getPosition());
+    }
+
+    private void onMetadataChanged(MediaMetadataCompat metadata) {
+        if (metadata == null) {
+            return;
+        }
+
+        // TODO: have to set this metadata when adding the track. can we get it from the server?
+        // Otherwise, need to set up event system between media player and this view.
+        int duration = (int) metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION);
+        Log.d(TAG, "updating duration to " + duration);
+        seekBar.setMax(duration);
     }
 
 }

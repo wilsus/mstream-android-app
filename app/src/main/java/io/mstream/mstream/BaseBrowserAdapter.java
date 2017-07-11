@@ -34,16 +34,16 @@ class BaseBrowserAdapter extends ArrayAdapter<BaseBrowserItem, BaseBrowserAdapte
     public void onBindViewHolder(BaseBrowserAdapter.BaseBrowserViewHolder holder, int position) {
         BaseBrowserItem item = getItem(position);
         holder.filename.setText(item.getItemText1());
-//        // Show a directory icon or a file icon as appropriate
-//        if (item.getItemType().equals("directory")) {
-//            holder.directoryIcon.setVisibility(View.VISIBLE);
-//            holder.fileIcon.setVisibility(View.GONE);
-//        } else {
-//            holder.fileIcon.setVisibility(View.VISIBLE);
-//            holder.directoryIcon.setVisibility(View.GONE);
-//        }
-        holder.fileIcon.setVisibility(View.VISIBLE);
-        holder.directoryIcon.setVisibility(View.GONE);
+        // Show a directory icon or a file icon as appropriate
+        // TODO: Load in the image another way that we can support album art
+        if (item.getItemType().equals("directory")) {
+            holder.directoryIcon.setVisibility(View.VISIBLE);
+            holder.fileIcon.setVisibility(View.GONE);
+        } else {
+            holder.fileIcon.setVisibility(View.VISIBLE);
+            holder.directoryIcon.setVisibility(View.GONE);
+        }
+
     }
 
     class BaseBrowserViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -65,9 +65,15 @@ class BaseBrowserAdapter extends ArrayAdapter<BaseBrowserItem, BaseBrowserAdapte
             if (item.getItemType().equals("directory")) {
                 onClickHandler.onDirectoryClick(item);
             }
-// else {
-//                onClickHandler.onFileClick(item);
-//            }
+            if (item.getItemType().equals("artist")) {
+                onClickHandler.onArtistClick(item);
+            }
+            if (item.getItemType().equals("album")) {
+                onClickHandler.onAlbumClick(item);
+            }
+            if (item.getItemType().equals("file")) {
+                onClickHandler.onFileClick(item);
+            }
         }
     }
 
@@ -75,5 +81,10 @@ class BaseBrowserAdapter extends ArrayAdapter<BaseBrowserItem, BaseBrowserAdapte
         void onDirectoryClick(BaseBrowserItem item);
 
         void onFileClick(BaseBrowserItem item);
+
+        void onAlbumClick(BaseBrowserItem item);
+
+        void onArtistClick(BaseBrowserItem item);
+
     }
 }

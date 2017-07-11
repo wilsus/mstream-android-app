@@ -38,7 +38,7 @@ public class PlaylistFragment extends Fragment {
             new MediaControllerCompat.Callback() {
                 @Override
                 public void onMetadataChanged(MediaMetadataCompat metadata) {
-                    super.onMetadataChanged(metadata);
+                    // super.onMetadataChanged(metadata);
                     if (metadata == null) {
                         return;
                     }
