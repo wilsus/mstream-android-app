@@ -126,6 +126,10 @@ public final class QueueManager {
         return playlistQueue.get(currentIndex);
     }
 
+    public static int getCurrentIndex(){
+        return currentIndex;
+    }
+
     public int getCurrentQueueSize() {
         if (playlistQueue == null) {
             return 0;

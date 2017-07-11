@@ -237,6 +237,9 @@ public class BaseActivity extends AppCompatActivity {
 
                 // Play
                 playMedia();
+
+                // update view
+                queueAdapter.notifyDataSetChanged();
             }
         });
         queueView.setAdapter(queueAdapter);
@@ -272,6 +275,7 @@ public class BaseActivity extends AppCompatActivity {
                             QueueManager.addToQueue(item.getMetadata());
                             queueAdapter.clear();
                             queueAdapter.add(QueueManager.getInstance());
+                            // TODO: why doesn't `queueAdapter.notifyDataSetChanged();` work here
                         }
                     }
 
@@ -785,6 +789,8 @@ public class BaseActivity extends AppCompatActivity {
         MediaControllerCompat controller = getSupportMediaController();
         if (controller != null) {
             controller.getTransportControls().skipToNext();
+            queueAdapter.notifyDataSetChanged();
+
         }
     }
 
@@ -792,6 +798,8 @@ public class BaseActivity extends AppCompatActivity {
         MediaControllerCompat controller = getSupportMediaController();
         if (controller != null) {
             controller.getTransportControls().skipToPrevious();
+            queueAdapter.notifyDataSetChanged();
+
         }
     }
 

@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import java.util.List;
 
+import io.mstream.mstream.playlist.QueueManager;
 import io.mstream.mstream.ui.ArrayAdapter;
 
 /**
@@ -44,8 +45,15 @@ class QueueAdapter extends ArrayAdapter<MediaSessionCompat.QueueItem, QueueAdapt
 //            holder.directoryIcon.setVisibility(View.GONE);
 //        }
 
-        holder.fileIcon.setVisibility(View.VISIBLE);
-        holder.directoryIcon.setVisibility(View.GONE);
+        // TODO: Change this modify the background color \
+        if(position == QueueManager.getCurrentIndex()){
+            holder.directoryIcon.setVisibility(View.VISIBLE);
+            holder.fileIcon.setVisibility(View.GONE);
+        }else{
+            holder.fileIcon.setVisibility(View.VISIBLE);
+            holder.directoryIcon.setVisibility(View.GONE);
+        }
+
 
     }
 
@@ -68,7 +76,6 @@ class QueueAdapter extends ArrayAdapter<MediaSessionCompat.QueueItem, QueueAdapt
 
             MediaSessionCompat.QueueItem item = getItem(itemPos);
             onClickHandler.onQueueClick(item, itemPos);
-
         }
     }
 
