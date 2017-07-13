@@ -101,7 +101,7 @@ public class MStreamAudioService extends MediaBrowserServiceCompat implements Pl
 
     @Override
     public int onStartCommand(@NonNull Intent intent, int flags, int startId) {
-        Log.d(TAG, "onStartCommand " + intent.getAction());
+        // Log.d(TAG, "onStartCommand " + intent.getAction());
         // Handle the Media Button Receiver automatic intents
         MediaButtonReceiver.handleIntent(mediaSession, intent);
         // Reset the delay handler to enqueue a message to stop the service if

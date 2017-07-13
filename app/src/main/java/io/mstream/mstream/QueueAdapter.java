@@ -46,7 +46,7 @@ class QueueAdapter extends ArrayAdapter<MediaSessionCompat.QueueItem, QueueAdapt
 //        }
 
         // TODO: Change this modify the background color \
-        if(position == QueueManager.getCurrentIndex()){
+        if(position == QueueManager.getIndex()){
             holder.directoryIcon.setVisibility(View.VISIBLE);
             holder.fileIcon.setVisibility(View.GONE);
         }else{

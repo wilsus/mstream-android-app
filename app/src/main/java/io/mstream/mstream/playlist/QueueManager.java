@@ -19,14 +19,23 @@ import io.mstream.mstream.MetadataObject;
  */
 
 // TODO: Should all this be static?  There should only be one queue. Having the ability to make multiple of them seams like come back to bite us
-public final class QueueManager {
+public class QueueManager {
     private static final String TAG = "QueueManager";
 
-    private static MetadataUpdateListener listener;
+    private MetadataUpdateListener listener;
 
     // "Now playing" queue:
     private static List<MediaSessionCompat.QueueItem> playlistQueue = new ArrayList<>();
     private static int currentIndex;
+
+
+    public static List<MediaSessionCompat.QueueItem> getIt(){
+        return playlistQueue;
+    }
+
+    public static int getIndex(){
+        return currentIndex;
+    }
 
     public QueueManager(@NonNull MetadataUpdateListener listener) {
         this.listener = listener;
@@ -58,7 +67,7 @@ public final class QueueManager {
 //        return index >= 0;
 //    }
 
-    public static List<MediaSessionCompat.QueueItem> getInstance(){
+    public List<MediaSessionCompat.QueueItem> getInstance(){
         return playlistQueue;
     }
 
@@ -107,7 +116,7 @@ public final class QueueManager {
 //        updateMetadata();
 //    }
 
-    public static void addToQueue(MetadataObject metadata){
+    public void addToQueue(MetadataObject metadata){
         // Call the server if necessary
         MstreamQueueObject mqo = new MstreamQueueObject();
         mqo.setMetadata(metadata);
@@ -118,15 +127,26 @@ public final class QueueManager {
         listener.onQueueUpdated("lol", playlistQueue);
     }
 
+    public void addToQueue2(MediaSessionCompat.QueueItem q){
+        playlistQueue.add(q);
+        listener.onQueueUpdated("lol", playlistQueue);
+    }
 
-    public static MediaSessionCompat.QueueItem getCurrentMusic() {
+    public static void addToQueue3(MediaSessionCompat.QueueItem q){
+        playlistQueue.add(q);
+
+        // listener.onQueueUpdated("lol", playlistQueue); // TODO: Does not having this break anything
+
+    }
+
+    public MediaSessionCompat.QueueItem getCurrentMusic() {
         if (!MediaUtils.isIndexPlayable(currentIndex, playlistQueue)) {
             return null;
         }
         return playlistQueue.get(currentIndex);
     }
 
-    public static int getCurrentIndex(){
+    public int getCurrentIndex(){
         return currentIndex;
     }
 
@@ -151,7 +171,7 @@ public final class QueueManager {
 //        listener.onQueueUpdated(title, newQueue);
 //    }
 
-    public static void updateMetadata() {
+    public void updateMetadata() {
         MediaSessionCompat.QueueItem currentMusic = getCurrentMusic();
         if (currentMusic == null) {
             listener.onMetadataRetrieveError();

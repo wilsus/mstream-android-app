@@ -1,16 +1,18 @@
 package io.mstream.mstream.player;
 
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.ResultReceiver;
 import android.os.SystemClock;
 import android.support.v4.media.MediaBrowserCompat;
+import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.Log;
 
 import java.util.List;
 
-import io.mstream.mstream.MetadataObject;
-import io.mstream.mstream.playlist.MstreamQueueObject;
+
 import io.mstream.mstream.playlist.QueueManager;
 
 /**
@@ -192,6 +194,28 @@ class PlaybackManager implements Playback.Callback {
             Log.d(TAG, "onSeekTo:" + position);
             playback.seekTo((int) position);
         }
+
+        @Override
+        public void onCustomAction(String command, Bundle extras) {
+            if(command.equals("addToQueue")){
+                String q =  extras.getString("lol");
+                String tempTitle = Uri.decode(q.substring(q.lastIndexOf('/') + 1, q.lastIndexOf('.')));
+                MediaDescriptionCompat description = new MediaDescriptionCompat.Builder()
+                        .setMediaUri(Uri.parse(q))
+                        .setMediaId(q)
+                        // TODO: something a bit less hacky, maybe a Utils method
+                        .setTitle(tempTitle)
+                        .build();
+
+                MediaSessionCompat.QueueItem q2 =  new MediaSessionCompat.QueueItem(description, 0);
+                queueManager.addToQueue2(q2);
+            }
+//            if( COMMAND_EXAMPLE.equalsIgnoreCase(command) ) {
+//                //Custom command here
+//            }
+        }
+
+
 
 //        @Override
 //        public void onPlayFromMediaId(String mediaId, Bundle extras) {

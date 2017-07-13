@@ -46,6 +46,7 @@ import java.util.ArrayList;
 
 import io.mstream.mstream.player.MStreamAudioService;
 import io.mstream.mstream.playlist.MediaControllerConnectedEvent;
+import io.mstream.mstream.playlist.MstreamQueueObject;
 import io.mstream.mstream.playlist.QueueManager;
 import io.mstream.mstream.serverlist.ServerListAdapter;
 import io.mstream.mstream.serverlist.ServerStore;
@@ -232,8 +233,9 @@ public class BaseActivity extends AppCompatActivity {
             @Override
             public void onQueueClick(MediaSessionCompat.QueueItem item, int itemPos){
                 // Go To Song
+                // TODO
                 QueueManager.goToQueuePosition(itemPos);
-                QueueManager.updateMetadata();
+                // QueueManager.updateMetadata();
 
                 // Play
                 playMedia();
@@ -242,9 +244,10 @@ public class BaseActivity extends AppCompatActivity {
                 queueAdapter.notifyDataSetChanged();
             }
         });
-        queueView.setAdapter(queueAdapter);
         queueAdapter.clear();
-        queueAdapter.add(QueueManager.getInstance());
+        queueAdapter.add(QueueManager.getIt()); // TODO
+        queueView.setAdapter(queueAdapter);
+
 
         // Browser Adapter
         RecyclerView filesListView = (RecyclerView) findViewById(R.id.base_recycle_view);
@@ -272,10 +275,18 @@ public class BaseActivity extends AppCompatActivity {
                         // TODO: Add file to queue and retrieve metadata
                         MediaControllerCompat controller = getSupportMediaController();
                         if (controller != null) {
-                            QueueManager.addToQueue(item.getMetadata());
-                            queueAdapter.clear();
-                            queueAdapter.add(QueueManager.getInstance());
+                            // QueueManager.addToQueue(item.getMetadata()); // TODO
+//                            queueAdapter.clear();
+//                            queueAdapter.add(QueueManager.getInstance());
                             // TODO: why doesn't `queueAdapter.notifyDataSetChanged();` work here
+                            MstreamQueueObject mqo = new MstreamQueueObject();
+                            mqo.setMetadata(item.getMetadata());
+                            mqo.constructQueueItem();
+                            // addIt(mqo.getQueueItem());
+                            QueueManager.addToQueue3(mqo.getQueueItem());
+
+                            queueAdapter.clear();
+                            queueAdapter.add(QueueManager.getIt());
                         }
                     }
 
@@ -785,6 +796,17 @@ public class BaseActivity extends AppCompatActivity {
         }
     }
 
+    private void addIt(MediaSessionCompat.QueueItem xxx){
+        MediaControllerCompat controller = getSupportMediaController();
+        Bundle bbb = new Bundle();
+        bbb.putString("lol", xxx.getDescription().getMediaUri().toString());
+
+
+        if (controller != null) {
+            controller.getTransportControls().sendCustomAction("addToQueue", bbb );
+        }
+    }
+
     private void goToNextSong(){
         MediaControllerCompat controller = getSupportMediaController();
         if (controller != null) {
@@ -881,5 +903,18 @@ public class BaseActivity extends AppCompatActivity {
         Log.d(TAG, "updating duration to " + duration);
         seekBar.setMax(duration);
     }
+
+
+
+    // Create Local DB
+        // path, metadata, hash
+
+    // Function that downloads file
+        // Add to mstream directory
+        // add entry to DB
+
+    // Function that checks if hash is in DB
+
+    // Function that grabs metadata from server
 
 }
