@@ -243,7 +243,8 @@ class PlaybackManager implements Playback.Callback {
             if (queueManager.skipQueuePosition(1)) {
                 handlePlayRequest();
             } else {
-                handleStopRequest("Cannot skip");
+                // handleStopRequest("Cannot skip");
+                return;
             }
             queueManager.updateMetadata();
         }
@@ -253,7 +254,8 @@ class PlaybackManager implements Playback.Callback {
             if (queueManager.skipQueuePosition(-1)) {
                 handlePlayRequest();
             } else {
-                handleStopRequest("Cannot skip");
+                // handleStopRequest("Cannot skip");
+                return;
             }
             queueManager.updateMetadata();
         }

@@ -73,7 +73,11 @@ public class QueueManager {
 
     public boolean skipQueuePosition(int amount) {
         int index = currentIndex + amount;
-        if (index < 0) {
+
+        if(playlistQueue.size() == 0){
+            return false;
+        }
+        if (index < 0 || playlistQueue.size() == 0) {
             // skip backwards before the first song will keep you on the first song
             index = 0;
         } else {
@@ -83,7 +87,8 @@ public class QueueManager {
         }
         if (!MediaUtils.isIndexPlayable(index, playlistQueue)) {
             Log.e(TAG, "Cannot increment queue index by " + amount + ". Current=" + currentIndex + " queue length=" + playlistQueue.size());
-            return false;
+            // Go to first song
+            index = 0;
         }
         currentIndex = index;
         return true;
