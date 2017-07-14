@@ -244,6 +244,7 @@ public class BaseActivity extends AppCompatActivity {
             }
         });
 
+        // Playlists button
         findViewById(R.id.button4).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -257,6 +258,25 @@ public class BaseActivity extends AppCompatActivity {
                 getPlaylists();
             }
         });
+
+        // Add all button
+        findViewById(R.id.button6).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Loop through
+                for (int i=0; i<baseBrowserList.size(); i++) {                        // Add to array if match
+                    MstreamQueueObject mqo = new MstreamQueueObject();
+                    mqo.setMetadata(baseBrowserList.get(i).getMetadata());
+                    mqo.constructQueueItem();
+                    // addIt(mqo.getQueueItem());
+                    QueueManager.addToQueue3(mqo.getQueueItem());
+                }
+                // Add all
+                queueAdapter.clear();
+                queueAdapter.add(QueueManager.getIt());
+            }
+        });
+
 
         // Start the Audio Service
         mediaBrowser = new MediaBrowserCompat(this, new ComponentName(this, MStreamAudioService.class),
