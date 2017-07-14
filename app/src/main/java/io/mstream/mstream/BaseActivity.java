@@ -144,7 +144,7 @@ public class BaseActivity extends AppCompatActivity {
 
                     // Loop through
                     for (int i=0; i<backupBrowserList.size(); i++) {                        // Add to array if match
-                        if(backupBrowserList.get(i).getItemText1().toLowerCase().contains(matchString)){
+                        if(backupBrowserList.get(i).getItemText1().toLowerCase().contains(matchString.toLowerCase())){
                             baseBrowserList.add(backupBrowserList.get(i));
                         }
                     }
@@ -477,7 +477,7 @@ public class BaseActivity extends AppCompatActivity {
                             String playlist = contents.getString(i);
                             JSONObject responseJson = new JSONObject(playlist);
                             playlist = responseJson.getString("name");
-                            
+
                             // For directories use the relative directory path
                             baseBrowserList.add(new BaseBrowserItem.Builder("playlist", playlist, playlist).build());
                             backupBrowserList.add(new BaseBrowserItem.Builder("playlist", playlist, playlist).build());
