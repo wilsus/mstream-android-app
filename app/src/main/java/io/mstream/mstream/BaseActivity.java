@@ -20,6 +20,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.MenuItem;
@@ -43,6 +45,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 
 import io.mstream.mstream.player.MStreamAudioService;
 import io.mstream.mstream.playlist.MediaControllerConnectedEvent;
@@ -80,6 +83,13 @@ public class BaseActivity extends AppCompatActivity {
 
     private TextView timeLeftText;
 
+    // Search
+    private  EditText searchBrowser;
+
+    private ArrayList<BaseBrowserItem> baseBrowserList = new ArrayList<>(); // This is what gets plugged into the adapter
+    private ArrayList<BaseBrowserItem> backupBrowserList = new ArrayList<>(); // Stores the full array for searches
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -116,6 +126,39 @@ public class BaseActivity extends AppCompatActivity {
         // Time left text
         // timeLeftText = (TextView) findViewById(R.id.time_left_text);
 
+        // Search
+        searchBrowser = (EditText) findViewById(R.id.search_response);
+        searchBrowser.addTextChangedListener(new TextWatcher() {
+            public void afterTextChanged(Editable s) {
+                // you can call or do what you want with your EditText here
+                String matchString = searchBrowser.getText().toString();
+
+                if(matchString.isEmpty()){
+                    baseBrowserList.clear();
+                    for (int i=0; i<backupBrowserList.size(); i++) {                        // Add to array if match
+                        baseBrowserList.add(backupBrowserList.get(i));
+                    }
+                }else{
+                    //
+                    baseBrowserList.clear();
+
+                    // Loop through
+                    for (int i=0; i<backupBrowserList.size(); i++) {                        // Add to array if match
+                        if(backupBrowserList.get(i).getItemText1().toLowerCase().contains(matchString)){
+                            baseBrowserList.add(backupBrowserList.get(i));
+                        }
+                    }
+
+                    // Add
+                }
+                baseBrowserAdapter.clear();
+                baseBrowserAdapter.add(baseBrowserList);
+            }
+
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+        });
+
         // Seekbar
         seekBar = (SeekBar) findViewById(R.id.seek_bar);
         seekBar.setPadding(0, 0, 0, 0);
@@ -145,6 +188,13 @@ public class BaseActivity extends AppCompatActivity {
         findViewById(R.id.button9).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                View view = getCurrentFocus();
+                if (view != null) {
+                    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                }
+                ((EditText) findViewById(R.id.search_response)).getText().clear();
+                ((EditText) findViewById(R.id.search_response)).clearFocus();
                 v.getContext().startActivity(new Intent(v.getContext(), AddServerActivity.class));
             }
         });
@@ -153,6 +203,13 @@ public class BaseActivity extends AppCompatActivity {
         findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                View view = getCurrentFocus();
+                if (view != null) {
+                    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                }
+                ((EditText) findViewById(R.id.search_response)).getText().clear();
+                ((EditText) findViewById(R.id.search_response)).clearFocus();
                 getFiles("");
             }
         });
@@ -161,6 +218,13 @@ public class BaseActivity extends AppCompatActivity {
         findViewById(R.id.button2).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                View view = getCurrentFocus();
+                if (view != null) {
+                    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                }
+                ((EditText) findViewById(R.id.search_response)).getText().clear();
+                ((EditText) findViewById(R.id.search_response)).clearFocus();
                 getArtists();
             }
         });
@@ -169,7 +233,28 @@ public class BaseActivity extends AppCompatActivity {
         findViewById(R.id.button3).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                View view = getCurrentFocus();
+                if (view != null) {
+                    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                }
+                ((EditText) findViewById(R.id.search_response)).getText().clear();
+                ((EditText) findViewById(R.id.search_response)).clearFocus();
                 getAlbums();
+            }
+        });
+
+        findViewById(R.id.button4).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                View view = getCurrentFocus();
+                if (view != null) {
+                    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                }
+                ((EditText) findViewById(R.id.search_response)).getText().clear();
+                ((EditText) findViewById(R.id.search_response)).clearFocus();
+                getPlaylists();
             }
         });
 
@@ -318,6 +403,8 @@ public class BaseActivity extends AppCompatActivity {
                         getAlbumSongs(item.getTypeProp());
                     }
                 });
+        baseBrowserAdapter.clear();
+        baseBrowserAdapter.add(baseBrowserList); // TODO
         filesListView.setAdapter(baseBrowserAdapter);
 
         // TODO: Check if current server has been changed.  Update browser accordingly
@@ -357,6 +444,59 @@ public class BaseActivity extends AppCompatActivity {
         return mediaBrowser;
     }
 
+    public void getPlaylists(){
+        String loginURL = Uri.parse(ServerStore.currentServer.getServerUrl()).buildUpon().appendPath("playlist").appendPath("getall").build().toString();
+        Request request = new Request.Builder()
+                .url(loginURL)
+                .addHeader("x-access-token", ServerStore.currentServer.getServerJWT())
+                .build();
+
+        // Callback
+        Callback loginCallback = new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                toastIt("Failed To Connect To Server");
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if(response.code() != 200){
+                    toastIt("Files Failed");
+                }else{
+                    toastIt("Files Success");
+
+                    // Get the vPath and JWT
+                    try {
+                        JSONArray contents = new JSONArray(response.body().string());
+                        // JSONArray contents = responseJson.getJSONArray("albums");
+                        // final ArrayList<BaseBrowserItem> serverFileList = new ArrayList<>();
+                        baseBrowserList.clear();
+                        backupBrowserList.clear();
+
+                        for (int i = 0; i < contents.length(); i++) {
+                            String playlist = contents.getString(i);
+                            JSONObject responseJson = new JSONObject(playlist);
+                            playlist = responseJson.getString("name");
+                            
+                            // For directories use the relative directory path
+                            baseBrowserList.add(new BaseBrowserItem.Builder("playlist", playlist, playlist).build());
+                            backupBrowserList.add(new BaseBrowserItem.Builder("playlist", playlist, playlist).build());
+                        }
+
+                        addIt(baseBrowserList);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        toastIt("Failed to decoded server response. WTF");
+                    }
+                }
+            }
+        };
+
+        // Make call
+        OkHttpClient okHttpClient = ((MStreamApplication) getApplicationContext()).getOkHttpClient();
+        okHttpClient.newCall(request).enqueue(loginCallback);
+    }
+
     public void getAlbums(){
         String loginURL = Uri.parse(ServerStore.currentServer.getServerUrl()).buildUpon().appendPath("db").appendPath("albums").build().toString();
         Request request = new Request.Builder()
@@ -382,16 +522,20 @@ public class BaseActivity extends AppCompatActivity {
                     try {
                         JSONObject responseJson = new JSONObject(response.body().string());
                         JSONArray contents = responseJson.getJSONArray("albums");
-                        final ArrayList<BaseBrowserItem> serverFileList = new ArrayList<>();
+                        // final ArrayList<BaseBrowserItem> serverFileList = new ArrayList<>();
+                        baseBrowserList.clear();
+                        backupBrowserList.clear();
+
 
                         for (int i = 0; i < contents.length(); i++) {
                             String artist = contents.getString(i);
 
                             // For directories use the relative directory path
-                            serverFileList.add(new BaseBrowserItem.Builder("album", artist, artist).build());
+                            baseBrowserList.add(new BaseBrowserItem.Builder("album", artist, artist).build());
+                            backupBrowserList.add(new BaseBrowserItem.Builder("album", artist, artist).build());
                         }
 
-                        addIt(serverFileList);
+                        addIt(baseBrowserList);
                     } catch (JSONException e) {
                         e.printStackTrace();
                         toastIt("Failed to decoded server response. WTF");
@@ -430,16 +574,20 @@ public class BaseActivity extends AppCompatActivity {
                     try {
                         JSONObject responseJson = new JSONObject(response.body().string());
                         JSONArray contents = responseJson.getJSONArray("artists");
-                        final ArrayList<BaseBrowserItem> serverFileList = new ArrayList<>();
+                        // final ArrayList<BaseBrowserItem> serverFileList = new ArrayList<>();
+                        baseBrowserList.clear();
+                        backupBrowserList.clear();
+
 
                         for (int i = 0; i < contents.length(); i++) {
                             String artist = contents.getString(i);
 
                             // For directories use the relative directory path
-                            serverFileList.add(new BaseBrowserItem.Builder("artist", artist, artist).build());
+                            baseBrowserList.add(new BaseBrowserItem.Builder("artist", artist, artist).build());
+                            backupBrowserList.add(new BaseBrowserItem.Builder("artist", artist, artist).build());
                         }
 
-                        addIt(serverFileList);
+                        addIt(baseBrowserList);
                     } catch (JSONException e) {
                         e.printStackTrace();
                         toastIt("Failed to decoded server response. WTF");
@@ -490,16 +638,19 @@ public class BaseActivity extends AppCompatActivity {
                     try {
                         JSONObject responseJson = new JSONObject(response.body().string());
                         JSONArray contents = responseJson.getJSONArray("albums");
-                        final ArrayList<BaseBrowserItem> serverFileList = new ArrayList<>();
+                        // final ArrayList<BaseBrowserItem> serverFileList = new ArrayList<>();
+                        baseBrowserList.clear();
+                        backupBrowserList.clear();
 
                         for (int i = 0; i < contents.length(); i++) {
                             String artist = contents.getString(i);
 
                             // For directories use the relative directory path
-                            serverFileList.add(new BaseBrowserItem.Builder("album", artist, artist).build());
+                            baseBrowserList.add(new BaseBrowserItem.Builder("album", artist, artist).build());
+                            backupBrowserList.add(new BaseBrowserItem.Builder("album", artist, artist).build());
                         }
 
-                        addIt(serverFileList);
+                        addIt(baseBrowserList);
                     } catch (JSONException e) {
                         e.printStackTrace();
                         toastIt("Failed to decoded server response. WTF");
@@ -550,7 +701,10 @@ public class BaseActivity extends AppCompatActivity {
                     try {
                         // JSONObject responseJson = new JSONObject(response.body().string());
                         JSONArray contents = new JSONArray(response.body().string());
-                        final ArrayList<BaseBrowserItem> serverFileList = new ArrayList<>();
+                        // final ArrayList<BaseBrowserItem> serverFileList = new ArrayList<>();
+                        baseBrowserList.clear();
+                        backupBrowserList.clear();
+
 
                         for (int i = 0; i < contents.length(); i++) {
                             JSONObject fileJson = contents.getJSONObject(i);
@@ -583,10 +737,11 @@ public class BaseActivity extends AppCompatActivity {
                             MetadataObject tempMeta = new MetadataObject.Builder(link).build();
                             BaseBrowserItem tempItem = new BaseBrowserItem.Builder("file", link,  split[split.length-1]).metadata(tempMeta).build( );
 
-                            serverFileList.add(tempItem);
+                            baseBrowserList.add(tempItem);
+                            backupBrowserList.add(tempItem);
                         }
 
-                        addIt(serverFileList);
+                        addIt(baseBrowserList);
                     } catch (JSONException e) {
                         e.printStackTrace();
                         toastIt("Failed to decoded server response. WTF");
@@ -637,7 +792,10 @@ public class BaseActivity extends AppCompatActivity {
                     try {
                         JSONObject responseJson = new JSONObject(response.body().string());
                         JSONArray contents = responseJson.getJSONArray("contents");
-                        final ArrayList<BaseBrowserItem> serverFileList = new ArrayList<>();
+                        // final ArrayList<BaseBrowserItem> serverFileList = new ArrayList<>();
+                        baseBrowserList.clear();
+                        backupBrowserList.clear();
+
                         String currentPath = responseJson.getString("path");
 
                         for (int i = 0; i < contents.length(); i++) {
@@ -648,7 +806,9 @@ public class BaseActivity extends AppCompatActivity {
                                 // For directories use the relative directory path
                                 String name = fileJson.getString("name");
                                 link = currentPath + name + "/";
-                                serverFileList.add(new BaseBrowserItem.Builder("directory", link, name).build());
+                                baseBrowserList.add(new BaseBrowserItem.Builder("directory", link, name).build());
+                                backupBrowserList.add(new BaseBrowserItem.Builder("directory", link, name).build());
+
                             } else {
                                 String name = fileJson.getString("name");
 
@@ -675,11 +835,12 @@ public class BaseActivity extends AppCompatActivity {
                                 MetadataObject tempMeta = new MetadataObject.Builder(link).build();
                                 BaseBrowserItem tempItem = new BaseBrowserItem.Builder("file", link, name).metadata(tempMeta).build( );
 
-                                serverFileList.add(tempItem);
+                                backupBrowserList.add(tempItem);
+                                baseBrowserList.add(tempItem);
                             }
                         }
 
-                        addIt(serverFileList);
+                        addIt(baseBrowserList);
                     } catch (JSONException e) {
                         e.printStackTrace();
                         toastIt("Failed to decoded server response. WTF");
