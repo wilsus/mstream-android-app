@@ -483,8 +483,6 @@ public class BaseActivity extends AppCompatActivity {
                 if(response.code() != 200){
                     toastIt("Files Failed");
                 }else{
-                    toastIt("Files Success");
-
                     // Get the vPath and JWT
                     try {
                         JSONArray contents = new JSONArray(response.body().string());
@@ -536,8 +534,6 @@ public class BaseActivity extends AppCompatActivity {
                 if(response.code() != 200){
                     toastIt("Files Failed");
                 }else{
-                    toastIt("Files Success");
-
                     // Get the vPath and JWT
                     try {
                         JSONObject responseJson = new JSONObject(response.body().string());
@@ -588,8 +584,6 @@ public class BaseActivity extends AppCompatActivity {
                 if(response.code() != 200){
                     toastIt("Files Failed");
                 }else{
-                    toastIt("Files Success");
-
                     // Get the vPath and JWT
                     try {
                         JSONObject responseJson = new JSONObject(response.body().string());
@@ -652,8 +646,6 @@ public class BaseActivity extends AppCompatActivity {
                 if(response.code() != 200){
                     toastIt("Files Failed");
                 }else{
-                    toastIt("Files Success");
-
                     // Get the vPath and JWT
                     try {
                         JSONObject responseJson = new JSONObject(response.body().string());
@@ -715,8 +707,6 @@ public class BaseActivity extends AppCompatActivity {
                 if(response.code() != 200){
                     toastIt("Files Failed");
                 }else{
-                    toastIt("Files Success");
-
                     // Get the vPath and JWT
                     try {
                         // JSONObject responseJson = new JSONObject(response.body().string());
@@ -806,8 +796,6 @@ public class BaseActivity extends AppCompatActivity {
                 if(response.code() != 200){
                     toastIt("Files Failed");
                 }else{
-                    toastIt("Files Success");
-
                     // Get the vPath and JWT
                     try {
                         JSONObject responseJson = new JSONObject(response.body().string());
