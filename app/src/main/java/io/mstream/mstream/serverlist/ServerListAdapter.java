@@ -1,17 +1,23 @@
 package io.mstream.mstream.serverlist;
 
+import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.LayoutRes;
+import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.List;
 
 import io.mstream.mstream.AddServerActivity;
+import io.mstream.mstream.BaseActivity;
 import io.mstream.mstream.LocalPreferences;
 import io.mstream.mstream.R;
 import io.mstream.mstream.ui.ArrayAdapter;
@@ -57,6 +63,11 @@ public class ServerListAdapter extends ArrayAdapter<ServerItem, ServerListAdapte
         notifyItemRangeChanged(0, getItemCount() );
     }
 
+
+
+
+
+
     class NavDrawerViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         private TextView serverName;
         private ImageView isDefaultIcon;
@@ -68,6 +79,36 @@ public class ServerListAdapter extends ArrayAdapter<ServerItem, ServerListAdapte
             isDefaultIcon = (ImageView) view.findViewById(R.id.icon_is_default);
             notDefaultIcon = (ImageView) view.findViewById(R.id.icon_not_default);
             itemView.setOnClickListener(this);
+
+            final ImageButton btn = (ImageButton)view.findViewById(R.id.server_more_options);
+
+            btn.setOnClickListener(new View.OnClickListener() {
+
+
+                @Override
+                public void onClick(View arg0) {
+                    //Creating the instance of PopupMenu
+                    PopupMenu popup = new PopupMenu(arg0.getContext(), btn);
+                    //Inflating the Popup using xml file
+                    popup.getMenuInflater()
+                            .inflate(R.menu.server_popup_menu, popup.getMenu());
+
+                    //registering popup with OnMenuItemClickListener
+                    popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                        public boolean onMenuItemClick(MenuItem item) {
+//                            Toast.makeText(
+//                                    MainActivity.this,
+//                                    "You Clicked : " + item.getTitle(),
+//                                    Toast.LENGTH_SHORT
+//                            ).show();
+                            return true;
+                        }
+                    });
+
+                    popup.show(); //showing popup menu
+                }
+            });
+
         }
 
         @Override

@@ -77,7 +77,7 @@ public class QueueManager {
         if(playlistQueue.size() == 0){
             return false;
         }
-        if (index < 0 || playlistQueue.size() == 0) {
+        if (index < 0) {
             // skip backwards before the first song will keep you on the first song
             index = 0;
         } else {

@@ -216,7 +216,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_alignParentEnd="true"
-                    android:layout_marginRight="104dp"
+                    android:layout_marginRight="156dp"
                     android:background="@color/dark_grey">
 
                     <Button
@@ -235,7 +235,7 @@
                     android:layout_width="@dimen/controls_height"
                     android:layout_height="match_parent"
                     android:layout_alignParentEnd="true"
-                    android:layout_marginRight="@dimen/controls_height"
+                    android:layout_marginRight="104dp"
                     android:background="@color/dark_grey">
 
                     <ImageButton
@@ -254,6 +254,8 @@
                     android:layout_width="@dimen/controls_height"
                     android:layout_height="match_parent"
                     android:layout_alignParentEnd="true"
+                    android:layout_marginRight="52dp"
+
                     android:background="@color/dark_grey">
 
                     <ImageButton
@@ -265,6 +267,22 @@
                         android:contentDescription="@string/play"
                         android:src="@drawable/ic_shuffle_white_36dp"
                         android:tint="@color/almost_white"/>
+                </FrameLayout>
+
+                <FrameLayout
+                    android:layout_width="@dimen/controls_height"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentEnd="true"
+                    android:background="#ff0000">
+
+                    <ImageButton
+                        android:id="@+id/queue_remove_all"
+                        android:layout_width="@dimen/controls_height"
+                        android:layout_height="@dimen/controls_height"
+                        android:layout_gravity="center_vertical"
+                        android:background="?selectableItemBackgroundBorderless"
+                        android:contentDescription="@string/play"
+                        android:src="@drawable/ic_cancel_black_36dp" />
                 </FrameLayout>
 
             </RelativeLayout>
