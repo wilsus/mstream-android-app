@@ -65,9 +65,6 @@ public class ServerListAdapter extends ArrayAdapter<ServerItem, ServerListAdapte
 
 
 
-
-
-
     class NavDrawerViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         private TextView serverName;
         private ImageView isDefaultIcon;
@@ -86,7 +83,7 @@ public class ServerListAdapter extends ArrayAdapter<ServerItem, ServerListAdapte
 
 
                 @Override
-                public void onClick(View arg0) {
+                public void onClick(final View arg0) {
                     //Creating the instance of PopupMenu
                     PopupMenu popup = new PopupMenu(arg0.getContext(), btn);
                     //Inflating the Popup using xml file
@@ -95,12 +92,16 @@ public class ServerListAdapter extends ArrayAdapter<ServerItem, ServerListAdapte
 
                     //registering popup with OnMenuItemClickListener
                     popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                        @Override
                         public boolean onMenuItemClick(MenuItem item) {
-//                            Toast.makeText(
-//                                    MainActivity.this,
-//                                    "You Clicked : " + item.getTitle(),
-//                                    Toast.LENGTH_SHORT
-//                            ).show();
+                            if(item.getTitleCondensed().equals("make_default")){ServerStore.makeDefault(getItem(getAdapterPosition()));
+
+                            }
+                            if(item.getTitleCondensed().equals("delete_server")){
+                                ServerStore.removeServer(getItem(getAdapterPosition()));
+                                notifyDataSetChanged();
+                            }
+
                             return true;
                         }
                     });

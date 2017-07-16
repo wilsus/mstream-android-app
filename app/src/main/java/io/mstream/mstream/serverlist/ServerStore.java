@@ -3,6 +3,7 @@ package io.mstream.mstream.serverlist;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -71,16 +72,63 @@ public final class ServerStore {
         }
 
         // Add to list
-        serverList.add(serverItem);
-//        if(serverItem.getServerDefaultStatus()){
-//            // Add to top
-//            serverList.add(serverItem);
-//        }else{
-//            // Add to bottom
-//            serverList.add(0, serverItem);
-//        }
+        // serverList.add(serverItem);
+        if(serverItem.getServerDefaultStatus()){
+            // Add to top
+            serverList.add(serverItem);
+        }else{
+            // Add to bottom
+            serverList.add(0, serverItem);
+        }
 
         // Save the new list
+        saveServers();
+    }
+
+
+    public static void removeServer(ServerItem serverItem){
+        // Loop through and remove server
+        for (Iterator<ServerItem> iterator = serverList.iterator(); iterator.hasNext();) {
+            ServerItem thisServer = iterator.next();
+            if (thisServer == serverItem) {
+                // Remove the current element from the iterator and the list.
+                iterator.remove();
+            }
+        }
+
+        // If the user is removing the default server
+        if(serverItem.getServerDefaultStatus() && !serverList.isEmpty()){
+            // Make the first server the default
+            serverList.get(0).setServerDefaultStatus(true);
+        }
+
+        // If the user is removing the current server
+        if(serverItem == currentServer && !serverList.isEmpty()){
+            // Load in th efirst server as the default
+            currentServer = serverList.get(0);
+        }
+
+
+        // If there are no servers left
+        if(serverList.isEmpty()){
+            // TODO: ??? return false and have the base acxtivty pop up the add user form ???
+        }
+
+        // Save Servers
+        saveServers();
+    }
+
+    public static void makeDefault(ServerItem serverItem){
+        // TODO: Check that the serverItem actually exists in the serverList array before editting anything
+
+        for(ServerItem thisServer : serverList){
+            if(serverItem == thisServer){
+                thisServer.setServerDefaultStatus(true);
+            }else{
+                thisServer.setServerDefaultStatus(false);
+            }
+        }
+
         saveServers();
     }
 
@@ -98,7 +146,6 @@ public final class ServerStore {
 
 
 
-    // TODO: Delete Server
 
     // TODO: Edit Server
 

@@ -3,10 +3,19 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/one"
+        android:id="@+id/make_default_menu_item"
         android:icon="@drawable/ic_delete_forever_black_36dp"
-        app:showAsAction="always"
-        android:title="Remove"/>
+        app:showAsAction="ifRoom"
+        android:titleCondensed="make_default"
+        android:title="Make Default"/>
+
+
+    <item
+        android:id="@+id/delete_server_menu_item"
+        android:titleCondensed="delete_server"
+        android:icon="@drawable/ic_delete_forever_black_36dp"
+        app:showAsAction="ifRoom"
+        android:title="Delete"/>
 
 
 

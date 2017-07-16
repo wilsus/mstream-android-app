@@ -75,6 +75,8 @@ public class BaseActivity extends AppCompatActivity {
     // Playlist Adapter
     private QueueAdapter queueAdapter;
 
+    private ServerListAdapter serverListAdapter;
+
     // Player buttons
     private ImageButton playPauseButton;
     private SeekBar seekBar;
@@ -327,8 +329,8 @@ public class BaseActivity extends AppCompatActivity {
         } else {
             // Add the servers to the navigation menu
             navigationMenu.setLayoutManager(new LinearLayoutManager(this));
-            ServerListAdapter adapter = new ServerListAdapter(ServerStore.serverList);
-            navigationMenu.setAdapter(adapter);
+            serverListAdapter = new ServerListAdapter(ServerStore.serverList);
+            navigationMenu.setAdapter(serverListAdapter);
         }
 
         // Queue Adapter
