@@ -19,6 +19,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
@@ -84,8 +85,11 @@ public class BaseActivity extends AppCompatActivity {
     private ImageButton nextButton;
     private ImageButton previousButton;
 
+    // Queue Buttons
     private ImageButton shouldLoop;
+    private ImageButton moreQueueOptions;
 
+    // Time Left // TODO: Find a place for this
     private TextView timeLeftText;
 
     // Search
@@ -132,6 +136,10 @@ public class BaseActivity extends AppCompatActivity {
         shouldLoop = (ImageButton) this.findViewById(R.id.should_loop);
         // TODO: ??? Save user preference for this
         shouldLoop.setOnClickListener(loopButtonListener);
+
+        moreQueueOptions = (ImageButton) this.findViewById(R.id.queue_more_options);
+        moreQueueOptions.setEnabled(true);
+        moreQueueOptions.setOnClickListener(moreQueueOptionsListner);
 
 
         // Time left text
@@ -925,6 +933,33 @@ public class BaseActivity extends AppCompatActivity {
             }else{
                 shouldLoop.setColorFilter(Color.rgb(255, 255, 255));
             }
+        }
+    };
+
+    private final View.OnClickListener moreQueueOptionsListner = new View.OnClickListener(){
+        @Override
+        public void onClick(View v){
+            //Creating the instance of PopupMenu
+            PopupMenu popup = new PopupMenu(v.getContext(), moreQueueOptions);
+            //Inflating the Popup using xml file
+            popup.getMenuInflater()
+                    .inflate(R.menu.more_queue_options_menu, popup.getMenu());
+
+            //registering popup with OnMenuItemClickListener
+            popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem item) {
+                    if(item.getTitleCondensed().equals("clear_queue")){
+                        QueueManager.clearQueue();
+                        queueAdapter.clear();
+                        queueAdapter.add(QueueManager.getIt());
+                    }
+
+                    return true;
+                }
+            });
+
+            popup.show(); //showing popup menu
         }
     };
 

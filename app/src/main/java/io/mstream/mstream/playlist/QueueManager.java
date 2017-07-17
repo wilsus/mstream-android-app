@@ -191,6 +191,15 @@ public class QueueManager {
         return playlistQueue.size();
     }
 
+
+    public static void clearQueue(){
+        // Clear Queue
+        playlistQueue.clear();
+
+        // Reset Index
+        currentIndex = -1; /// hmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm
+    }
+
 //    protected void setCurrentQueue(String title, List<MediaSessionCompat.QueueItem> newQueue) {
 //        setCurrentQueue(title, newQueue, null);
 //    }

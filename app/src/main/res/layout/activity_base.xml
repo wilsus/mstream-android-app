@@ -273,16 +273,16 @@
                     android:layout_width="@dimen/controls_height"
                     android:layout_height="match_parent"
                     android:layout_alignParentEnd="true"
-                    android:background="#ff0000">
+                    android:background="@color/light_grey">
 
                     <ImageButton
-                        android:id="@+id/queue_remove_all"
+                        android:id="@+id/queue_more_options"
                         android:layout_width="@dimen/controls_height"
                         android:layout_height="@dimen/controls_height"
                         android:layout_gravity="center_vertical"
                         android:background="?selectableItemBackgroundBorderless"
                         android:contentDescription="@string/play"
-                        android:src="@drawable/ic_cancel_black_36dp" />
+                        android:src="@drawable/ic_more_vert_black_36dp" />
                 </FrameLayout>
 
             </RelativeLayout>

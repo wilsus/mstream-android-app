@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/save_queue_as_playlist"
+        android:icon="@drawable/ic_delete_forever_black_36dp"
+        app:showAsAction="ifRoom"
+        android:titleCondensed="save_queue"
+        android:title="Save As Playlist"/>
+
+    <!--<item-->
+        <!--android:id="@+id/sync_queue_to_device"-->
+        <!--android:icon="@drawable/ic_delete_forever_black_36dp"-->
+        <!--app:showAsAction="ifRoom"-->
+        <!--android:titleCondensed="sync_queue"-->
+        <!--android:title="Sync To Device"/>-->
+
+    <!--<item-->
+        <!--android:id="@+id/share_queue_as_url"-->
+        <!--android:icon="@drawable/ic_delete_forever_black_36dp"-->
+        <!--app:showAsAction="ifRoom"-->
+        <!--android:titleCondensed="share_queue"-->
+        <!--android:title="Share via URL"/>-->
+
+    <item
+        android:id="@+id/clear_queue"
+        android:titleCondensed="clear_queue"
+        android:icon="@drawable/ic_delete_forever_black_36dp"
+        app:showAsAction="ifRoom"
+        android:title="Clear Queue"/>
+
+
+
+</menu>

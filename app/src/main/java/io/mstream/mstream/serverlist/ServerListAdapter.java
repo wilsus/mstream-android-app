@@ -94,8 +94,8 @@ public class ServerListAdapter extends ArrayAdapter<ServerItem, ServerListAdapte
                     popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                         @Override
                         public boolean onMenuItemClick(MenuItem item) {
-                            if(item.getTitleCondensed().equals("make_default")){ServerStore.makeDefault(getItem(getAdapterPosition()));
-
+                            if(item.getTitleCondensed().equals("make_default")){
+                                ServerStore.makeDefault(getItem(getAdapterPosition()));
                             }
                             if(item.getTitleCondensed().equals("delete_server")){
                                 ServerStore.removeServer(getItem(getAdapterPosition()));

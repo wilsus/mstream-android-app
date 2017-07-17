@@ -48,6 +48,10 @@ class PlaybackManager implements Playback.Callback {
      */
     void handlePlayRequest() {
         Log.d(TAG, "handlePlayRequest: mState=" + playback.getState());
+        // TODO: there's an edge case than needs to be handled here
+            // If the user clears the playlist and pauses the song and then tries to restart it, nothing will happen
+            // Need to make it so the same  song keeps playing
+
         MediaSessionCompat.QueueItem currentMusic = queueManager.getCurrentMusic();
         if (currentMusic != null) {
             serviceCallback.onPlaybackStart();
