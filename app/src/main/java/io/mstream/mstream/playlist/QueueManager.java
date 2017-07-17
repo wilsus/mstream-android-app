@@ -18,16 +18,23 @@ import io.mstream.mstream.MetadataObject;
  * Based on the Universal Android Music Player queue manager.
  */
 
-// TODO: Should all this be static?  There should only be one queue. Having the ability to make multiple of them seams like come back to bite us
 public class QueueManager {
     private static final String TAG = "QueueManager";
 
     private MetadataUpdateListener listener;
 
-    // "Now playing" queue:
+    // "Now playing" queue
     private static List<MediaSessionCompat.QueueItem> playlistQueue = new ArrayList<>();
     private static int currentIndex;
 
+    private static boolean shouldLoop = true;
+    private static boolean shouldShuffle = false;
+
+    private List<MediaSessionCompat.QueueItem> shuffledQueue = new ArrayList<>();
+
+    private static void setShouldShuffle(boolean newVal){
+
+    }
 
     public static List<MediaSessionCompat.QueueItem> getIt(){
         return playlistQueue;
@@ -49,6 +56,19 @@ public class QueueManager {
             currentIndex = index;
             listener.onCurrentQueueIndexUpdated(currentIndex);
         }
+    }
+
+    public void setShouldLoop(boolean newVal){
+        shouldLoop = newVal;
+    }
+
+    public static boolean getShouldLoop(){
+        return shouldLoop;
+    }
+
+    public static boolean toggleShouldLoop(){
+        shouldLoop = !shouldLoop;
+        return shouldLoop;
     }
 
     // TODO: see if we need this
@@ -74,16 +94,25 @@ public class QueueManager {
     public boolean skipQueuePosition(int amount) {
         int index = currentIndex + amount;
 
+        // If there is nothing to skip to, don't do anything
         if(playlistQueue.size() == 0){
             return false;
         }
+
         if (index < 0) {
             // skip backwards before the first song will keep you on the first song
             index = 0;
         } else {
-            // skip forwards when in last song will cycle back to start of the queue
-            // TODO: is this desired behaviour?
-            index %= playlistQueue.size();
+
+            if(shouldLoop) {
+                // skip forwards when in last song will cycle back to start of the queue
+                index %= playlistQueue.size();  // wtf is tis clever shit
+            }else{
+                if(index == playlistQueue.size()){
+                    return false;
+                }
+            }
+
         }
         if (!MediaUtils.isIndexPlayable(index, playlistQueue)) {
             Log.e(TAG, "Cannot increment queue index by " + amount + ". Current=" + currentIndex + " queue length=" + playlistQueue.size());

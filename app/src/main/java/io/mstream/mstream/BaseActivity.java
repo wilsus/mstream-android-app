@@ -3,6 +3,7 @@ package io.mstream.mstream;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.RemoteException;
@@ -83,6 +84,8 @@ public class BaseActivity extends AppCompatActivity {
     private ImageButton nextButton;
     private ImageButton previousButton;
 
+    private ImageButton shouldLoop;
+
     private TextView timeLeftText;
 
     // Search
@@ -124,6 +127,12 @@ public class BaseActivity extends AppCompatActivity {
         previousButton = (ImageButton) findViewById(R.id.previous_song);
         previousButton.setEnabled(true);
         previousButton.setOnClickListener(previousButtonListener);
+
+        // Loop
+        shouldLoop = (ImageButton) this.findViewById(R.id.should_loop);
+        // TODO: ??? Save user preference for this
+        shouldLoop.setOnClickListener(loopButtonListener);
+
 
         // Time left text
         // timeLeftText = (TextView) findViewById(R.id.time_left_text);
@@ -354,6 +363,14 @@ public class BaseActivity extends AppCompatActivity {
         queueAdapter.clear();
         queueAdapter.add(QueueManager.getIt()); // TODO
         queueView.setAdapter(queueAdapter);
+
+        // TODO: Set color for shuffle and repeat button
+        if(QueueManager.getShouldLoop()){
+            shouldLoop.setColorFilter(Color.rgb(102,132,178));
+        }else{
+            shouldLoop.setColorFilter(Color.rgb(255,255,255));
+
+        }
 
 
         // Browser Adapter
@@ -882,7 +899,7 @@ public class BaseActivity extends AppCompatActivity {
         });
     }
 
-    // Play/pause button listener
+    //  Next button listener
     private final View.OnClickListener nextButtonListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -890,11 +907,24 @@ public class BaseActivity extends AppCompatActivity {
         }
     };
 
-    // Play/pause button listener
+    // Previous button listener
     private final View.OnClickListener previousButtonListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             goToPreviousSong();
+        }
+    };
+
+    // Loop button listenr
+    private final View.OnClickListener loopButtonListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            boolean isLoop = QueueManager.toggleShouldLoop();
+            if(isLoop){
+                shouldLoop.setColorFilter(Color.rgb(102,132,178));
+            }else{
+                shouldLoop.setColorFilter(Color.rgb(255, 255, 255));
+            }
         }
     };
 

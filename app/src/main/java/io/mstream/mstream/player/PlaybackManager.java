@@ -145,7 +145,7 @@ class PlaybackManager implements Playback.Callback {
             queueManager.updateMetadata();
         } else {
             // If skipping was not possible, we stop and release the resources:
-            handleStopRequest(null);
+            // handleStopRequest(null);
         }
     }
 

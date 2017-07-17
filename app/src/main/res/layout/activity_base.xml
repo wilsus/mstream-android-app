@@ -239,7 +239,7 @@
                     android:background="@color/dark_grey">
 
                     <ImageButton
-                        android:id="@+id/repeat"
+                        android:id="@+id/should_loop"
                         android:layout_width="@dimen/controls_height"
                         android:layout_height="@dimen/controls_height"
                         android:layout_gravity="center_vertical"
