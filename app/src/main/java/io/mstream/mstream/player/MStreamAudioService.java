@@ -187,6 +187,7 @@ public class MStreamAudioService extends MediaBrowserServiceCompat implements Pl
                 .setColor(getResources().getColor(R.color.colorPrimaryDark));
         // Add some actions
         // ...
+        // TODO: Need to update queueAdapter so the correct song gets highlighted
         builder.addAction(new NotificationCompat.Action(R.drawable.ic_skip_previous_white_36dp, "Previous", getActionIntent(KeyEvent.KEYCODE_MEDIA_PREVIOUS)));
         // Then add a play/pause action
         addPlayPauseAction(builder);
