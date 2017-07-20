@@ -22,6 +22,12 @@ public class MstreamQueueObject {
         return queueItem;
     }
 
+    public MstreamQueueObject(MetadataObject mo) {
+        if(mo != null){
+            metadata = mo;
+        }
+    }
+
     public void setQueueItem(MediaSessionCompat.QueueItem q){
         this.queueItem = q;
     }

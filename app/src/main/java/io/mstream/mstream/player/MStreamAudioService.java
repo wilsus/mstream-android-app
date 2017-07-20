@@ -148,10 +148,6 @@ public class MStreamAudioService extends MediaBrowserServiceCompat implements Pl
     }
 
     private Notification buildNotification() {
-        // TODO: Making things static broke this
-        // MediaDescriptionCompat description = mediaSession.getController().getMetadata().getDescription();
-
-        // TODO: any way to get metadata from mStream? Or just the filename?
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
 
         // TODO: figure out a good icon, maybe a custom tiny mstream logo in one channel
@@ -170,8 +166,10 @@ public class MStreamAudioService extends MediaBrowserServiceCompat implements Pl
                 .setColor(getResources().getColor(R.color.colorPrimaryDark));
         // Add some actions
         // ...
+        builder.addAction(new NotificationCompat.Action(R.drawable.ic_skip_previous_white_36dp, "Previous", getActionIntent(KeyEvent.KEYCODE_MEDIA_PREVIOUS)));
         // Then add a play/pause action
         addPlayPauseAction(builder);
+        builder.addAction(new NotificationCompat.Action(R.drawable.ic_skip_next_white_36dp, "Previous", getActionIntent(KeyEvent.KEYCODE_MEDIA_NEXT)));
         // Set the style and configure the action buttons
         builder.setStyle(new NotificationCompat.MediaStyle()
                 // Show the first button we added, in this cause, pause

@@ -214,6 +214,10 @@ class PlaybackManager implements Playback.Callback {
                 MediaSessionCompat.QueueItem q2 =  new MediaSessionCompat.QueueItem(description, 0);
                 queueManager.addToQueue2(q2);
             }
+
+            if(command.equals("pingQueueListener")){
+                queueManager.callListener();
+            }
 //            if( COMMAND_EXAMPLE.equalsIgnoreCase(command) ) {
 //                //Custom command here
 //            }

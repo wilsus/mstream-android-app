@@ -1,37 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="48dp"
     android:background="?attr/selectableItemBackground"
     android:orientation="horizontal"
-    android:paddingEnd="24dp"
+    android:paddingEnd="0dp"
     android:paddingStart="24dp">
 
-    <ImageView
-        android:id="@+id/directory_icon"
+    <LinearLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:layout_marginEnd="24dp"
-        android:contentDescription="@string/folder"
-        android:src="@drawable/ic_folder_black_24dp"
-        android:tint="@color/medium_blue"/>
+        android:layout_height="match_parent">
 
-    <ImageView
-        android:id="@+id/file_icon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:layout_marginEnd="24dp"
-        android:contentDescription="@string/track"
-        android:src="@drawable/ic_audiotrack_black_24dp"
-        android:tint="@color/medium_blue"
-        android:visibility="gone"/>
+        <ImageView
+            android:id="@+id/directory_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginEnd="24dp"
+            android:contentDescription="@string/folder"
+            android:src="@drawable/ic_folder_black_24dp"
+            android:tint="@color/medium_blue"/>
+
+        <ImageView
+            android:id="@+id/file_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginEnd="24dp"
+            android:contentDescription="@string/track"
+            android:src="@drawable/ic_audiotrack_black_24dp"
+            android:tint="@color/medium_blue"
+            android:visibility="gone"/>
+    </LinearLayout>
 
     <TextView
         android:id="@+id/filename"
-        android:layout_width="wrap_content"
+        android:layout_width="fill_parent"
         android:layout_height="match_parent"
-        android:gravity="center_vertical"/>
-</LinearLayout>
+        android:gravity="center_vertical"
+        android:textColor="@android:color/black"
+        android:layout_marginEnd="36dp"
+        android:layout_marginStart="56dp"
+        android:layout_alignParentStart="true"/>
+
+    <FrameLayout
+        android:layout_width="36dp"
+        android:layout_height="match_parent"
+        android:layout_alignParentEnd="true">
+        <ImageButton
+            android:id="@+id/browser_more_options"
+            android:layout_width="36dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical"
+            android:background="?selectableItemBackgroundBorderless"
+            android:contentDescription="@string/play"
+            android:src="@drawable/ic_expand_more_black_24dp" />
+    </FrameLayout>
+</RelativeLayout>

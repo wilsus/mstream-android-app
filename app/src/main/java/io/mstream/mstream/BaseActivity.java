@@ -284,15 +284,19 @@ public class BaseActivity extends AppCompatActivity {
             public void onClick(View v) {
                 // Loop through
                 for (int i=0; i<baseBrowserList.size(); i++) {                        // Add to array if match
-                    MstreamQueueObject mqo = new MstreamQueueObject();
-                    mqo.setMetadata(baseBrowserList.get(i).getMetadata());
-                    mqo.constructQueueItem();
+//                    MstreamQueueObject mqo = new MstreamQueueObject(baseBrowserList.get(i).getMetadata());
+//                    // mqo.setMetadata(baseBrowserList.get(i).getMetadata());
+//                    mqo.constructQueueItem();
                     // addIt(mqo.getQueueItem());
-                    QueueManager.addToQueue3(mqo.getQueueItem());
+//                    QueueManager.addToQueue3(mqo.getQueueItem());
+//                    QueueManager.addToQueue4(mqo);
+                    getMetadataAndAddToQueue(baseBrowserList.get(i).getMetadata());
                 }
                 // Add all
                 queueAdapter.clear();
                 queueAdapter.add(QueueManager.getIt());
+
+                pingQueueListener();
             }
         });
 
@@ -353,7 +357,7 @@ public class BaseActivity extends AppCompatActivity {
         // Queue Adapter
         RecyclerView queueView = (RecyclerView) findViewById(R.id.queue_recycler);
         queueView.setLayoutManager(new LinearLayoutManager(this));
-        queueAdapter = new QueueAdapter(new ArrayList<MediaSessionCompat.QueueItem>(), new QueueAdapter.OnClickQueueItem() {
+        queueAdapter = new QueueAdapter(new ArrayList<MstreamQueueObject>(), new QueueAdapter.OnClickQueueItem() {
             @Override
             public void onQueueClick(MediaSessionCompat.QueueItem item, int itemPos){
                 // Go To Song
@@ -411,14 +415,19 @@ public class BaseActivity extends AppCompatActivity {
 //                            queueAdapter.clear();
 //                            queueAdapter.add(QueueManager.getInstance());
                             // TODO: why doesn't `queueAdapter.notifyDataSetChanged();` work here
-                            MstreamQueueObject mqo = new MstreamQueueObject();
-                            mqo.setMetadata(item.getMetadata());
-                            mqo.constructQueueItem();
-                            // addIt(mqo.getQueueItem());
-                            QueueManager.addToQueue3(mqo.getQueueItem());
 
-                            queueAdapter.clear();
-                            queueAdapter.add(QueueManager.getIt());
+                            getMetadataAndAddToQueue(item.getMetadata());
+//                            MstreamQueueObject mqo = new MstreamQueueObject();
+//                            mqo.setMetadata(item.getMetadata());
+//                            mqo.constructQueueItem();
+//                            // addIt(mqo.getQueueItem());
+////                            QueueManager.addToQueue3(mqo.getQueueItem());
+//                            QueueManager.addToQueue4(mqo);
+//
+//                            queueAdapter.clear();
+//                            queueAdapter.add(QueueManager.getIt());
+//
+//                            pingQueueListener();
                         }
                     }
 
@@ -747,6 +756,7 @@ public class BaseActivity extends AppCompatActivity {
                             JSONObject fileJson = contents.getJSONObject(i);
                             String filepath = fileJson.getString("filepath");
                             String link;
+                            JSONObject metadata = fileJson.getJSONObject("metadata");
 
                             // For music we provide the whole URL
                             // This way the playlist can handle files from multiple servers
@@ -768,11 +778,20 @@ public class BaseActivity extends AppCompatActivity {
                                 link = ""; // TODO: Better exception handling
                             }
 
-                            // TODO: Better handling of metadata
-                            String[] split = filepath.split("/");
 
-                            MetadataObject tempMeta = new MetadataObject.Builder(link).build();
-                            BaseBrowserItem tempItem = new BaseBrowserItem.Builder("file", link,  split[split.length-1]).metadata(tempMeta).build( );
+                            MetadataObject tempMeta = new MetadataObject.Builder(link).filepath(filepath).build();
+
+                            String filename = metadata.getString("filename");
+                            tempMeta.setArtist(metadata.getString("artist"));
+                            tempMeta.setAlbum(metadata.getString("album"));
+                            tempMeta.setTitle(metadata.getString("title"));
+                            tempMeta.setSha256Hash(metadata.getString("hash"));
+                            tempMeta.setYear(metadata.getInt("year"));
+                            tempMeta.setTrack(metadata.getInt("track"));
+                            tempMeta.setAlbumArtUrlViaHash(metadata.getString("album-art"));
+                            tempMeta.setFilename(filename);
+
+                            BaseBrowserItem tempItem = new BaseBrowserItem.Builder("file", link, filename).metadata(tempMeta).build( );
 
                             baseBrowserList.add(tempItem);
                             backupBrowserList.add(tempItem);
@@ -854,7 +873,7 @@ public class BaseActivity extends AppCompatActivity {
                                 if(fileUrl.charAt(fileUrl.length() - 1) != '/'){
                                     fileUrl = fileUrl + "/";
                                 }
-                                fileUrl = fileUrl + currentPath  + fileJson.getString("name");
+                                fileUrl = fileUrl + currentPath  + name;
                                 fileUrl = Uri.parse(fileUrl).buildUpon().appendQueryParameter("token", ServerStore.currentServer.getServerJWT()).build().toString();
 
                                 try {
@@ -867,7 +886,7 @@ public class BaseActivity extends AppCompatActivity {
                                     link = ""; // TODO: Better exception handling
                                 }
 
-                                MetadataObject tempMeta = new MetadataObject.Builder(link).build();
+                                MetadataObject tempMeta = new MetadataObject.Builder(link).filename(name).filepath(currentPath + name).build();
                                 BaseBrowserItem tempItem = new BaseBrowserItem.Builder("file", link, name).metadata(tempMeta).build( );
 
                                 backupBrowserList.add(tempItem);
@@ -889,11 +908,101 @@ public class BaseActivity extends AppCompatActivity {
         okHttpClient.newCall(request).enqueue(loginCallback);
     }
 
+    private void getMetadataAndAddToQueue(MetadataObject moo){
+        final MstreamQueueObject mqo = new MstreamQueueObject(moo);
+        // mqo.setMetadata(moo);
+        mqo.constructQueueItem();
+
+        QueueManager.addToQueue4(mqo);
+
+        queueAdapter.clear();
+        queueAdapter.add(QueueManager.getIt());
+
+        pingQueueListener();
+
+        // If the hash is set, it means we got the metadata already. No need to run this again
+        if(mqo.getMetadata().getSha256Hash() !=null && !mqo.getMetadata().getSha256Hash().isEmpty()){
+            return;
+        }
+
+
+        // TODO: Before making call, check that the metadata hasb't been passed in already
+
+        JSONObject jsonObj = new JSONObject();
+        try{
+            jsonObj.put("filepath", moo.getFilepath());
+        } catch (JSONException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+        okhttp3.RequestBody body = RequestBody.create(JSON, jsonObj.toString());
+
+        String loginURL = Uri.parse(ServerStore.currentServer.getServerUrl()).buildUpon().appendPath("db").appendPath("metadata").build().toString();
+        Request request = new Request.Builder()
+                .url(loginURL)
+                .addHeader("x-access-token", ServerStore.currentServer.getServerJWT())
+                .post(body)
+                .build();
+
+        // Callback
+        Callback loginCallback = new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                toastIt("Failed To Connect To Server");
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if(response.code() != 200){
+                    toastIt("Files Failed");
+                }else{
+                    // Get the vPath and JWT
+                    try {
+                        JSONObject responseJson = new JSONObject(response.body().string());
+                        JSONObject contents = responseJson.getJSONObject("metadata");
+                        // final ArrayList<BaseBrowserItem> serverFileList = new ArrayList<>();
+                        final MetadataObject mqoMeta = mqo.getMetadata();
+                        mqoMeta.setArtist(contents.getString("artist"));
+                        mqoMeta.setAlbum(contents.getString("album"));
+                        mqoMeta.setTitle(contents.getString("title"));
+                        mqoMeta.setSha256Hash(contents.getString("hash"));
+                        mqoMeta.setYear(contents.getInt("year"));
+                        mqoMeta.setTrack(contents.getInt("track"));
+                        mqoMeta.setAlbumArtUrlViaHash(contents.getString("album-art"));
+
+                        mqo.constructQueueItem(); // TODO
+                        updateQueueView();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        toastIt("Failed to decoded server response. WTF");
+                    }
+
+                    // TODO: lookup if local copy is available here
+                }
+            }
+        };
+
+        // Make call
+        OkHttpClient okHttpClient = ((MStreamApplication) getApplicationContext()).getOkHttpClient();
+        okHttpClient.newCall(request).enqueue(loginCallback);
+    }
+
     private void toastIt(final String toastText){
         runOnUiThread(new Runnable() {
             public void run()
             {
                 Toast.makeText(BaseActivity.this, toastText, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void updateQueueView(){
+        runOnUiThread(new Runnable() {
+            public void run()
+            {
+                queueAdapter.notifyDataSetChanged();
             }
         });
     }
@@ -923,7 +1032,7 @@ public class BaseActivity extends AppCompatActivity {
         }
     };
 
-    // Loop button listenr
+    // Loop button listener
     private final View.OnClickListener loopButtonListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -1037,9 +1146,16 @@ public class BaseActivity extends AppCompatActivity {
         Bundle bbb = new Bundle();
         bbb.putString("lol", xxx.getDescription().getMediaUri().toString());
 
-
         if (controller != null) {
             controller.getTransportControls().sendCustomAction("addToQueue", bbb );
+        }
+    }
+
+    private void pingQueueListener(){
+        MediaControllerCompat controller = getSupportMediaController();
+
+        if (controller != null) {
+            controller.getTransportControls().sendCustomAction("pingQueueListener", null );
         }
     }
 

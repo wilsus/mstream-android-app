@@ -18,7 +18,7 @@ import io.mstream.mstream.R;
 
 class MediaUtils {
 
-    static boolean isIndexPlayable(int index, List<MediaSessionCompat.QueueItem> queue) {
+    static boolean isIndexPlayable(int index, List<MstreamQueueObject> queue) {
         return (queue != null && index >= 0 && index < queue.size());
     }
 

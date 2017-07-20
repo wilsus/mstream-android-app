@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.List;
 
 import io.mstream.mstream.MetadataObject;
+import io.mstream.mstream.R;
 
 /**
  * Based on the Universal Android Music Player queue manager.
@@ -24,19 +25,19 @@ public class QueueManager {
     private MetadataUpdateListener listener;
 
     // "Now playing" queue
-    private static List<MediaSessionCompat.QueueItem> playlistQueue = new ArrayList<>();
+    private static List<MstreamQueueObject> playlistQueue = new ArrayList<>();
     private static int currentIndex;
 
     private static boolean shouldLoop = true;
-    private static boolean shouldShuffle = false;
+    // private static boolean shouldShuffle = false;
 
-    private List<MediaSessionCompat.QueueItem> shuffledQueue = new ArrayList<>();
+    // private List<MediaSessionCompat.QueueItem> shuffledQueue = new ArrayList<>();
 
-    private static void setShouldShuffle(boolean newVal){
+//    private static void setShouldShuffle(boolean newVal){
+//
+//    }
 
-    }
-
-    public static List<MediaSessionCompat.QueueItem> getIt(){
+    public static List<MstreamQueueObject> getIt(){
         return playlistQueue;
     }
 
@@ -47,8 +48,19 @@ public class QueueManager {
     public QueueManager(@NonNull MetadataUpdateListener listener) {
         this.listener = listener;
 
-        playlistQueue = Collections.synchronizedList(new ArrayList<MediaSessionCompat.QueueItem>());
+        playlistQueue = Collections.synchronizedList(new ArrayList<MstreamQueueObject>());
         currentIndex = 0;
+    }
+
+    public void callListener(){
+        // TODO/ Get Playlist Queue
+        List<MediaSessionCompat.QueueItem> pQ = new ArrayList<>();
+        for( MstreamQueueObject mqo : playlistQueue){
+            pQ.add(mqo.getQueueItem());
+        }
+
+        // Call listenr
+        // listener.onQueueUpdated("lol", pQ);
     }
 
     private void setCurrentQueueIndex(int index) {
@@ -87,7 +99,7 @@ public class QueueManager {
 //        return index >= 0;
 //    }
 
-    public List<MediaSessionCompat.QueueItem> getInstance(){
+    public List<MstreamQueueObject> getInstance(){
         return playlistQueue;
     }
 
@@ -150,34 +162,41 @@ public class QueueManager {
 //        updateMetadata();
 //    }
 
-    public void addToQueue(MetadataObject metadata){
-        // Call the server if necessary
-        MstreamQueueObject mqo = new MstreamQueueObject();
-        mqo.setMetadata(metadata);
-        mqo.constructQueueItem();
-
-        playlistQueue.add(mqo.getQueueItem());
-
-        listener.onQueueUpdated("lol", playlistQueue);
-    }
+//    public void addToQueue(MetadataObject metadata){
+//        // Call the server if necessary
+//        MstreamQueueObject mqo = new MstreamQueueObject();
+//        mqo.setMetadata(metadata);
+//        mqo.constructQueueItem();
+//
+//        playlistQueue.add(mqo.getQueueItem());
+//
+//        listener.onQueueUpdated("lol", playlistQueue);
+//    }
 
     public void addToQueue2(MediaSessionCompat.QueueItem q){
-        playlistQueue.add(q);
-        listener.onQueueUpdated("lol", playlistQueue);
+        MstreamQueueObject mqo = new MstreamQueueObject(null);
+        mqo.setQueueItem(q);
+        playlistQueue.add(mqo);
+        // listener.onQueueUpdated("lol", playlistQueue);
     }
 
     public static void addToQueue3(MediaSessionCompat.QueueItem q){
-        playlistQueue.add(q);
-
+        MstreamQueueObject mqo = new MstreamQueueObject(null);
+        mqo.setQueueItem(q);
+        playlistQueue.add(mqo);
         // listener.onQueueUpdated("lol", playlistQueue); // TODO: Does not having this break anything
+    }
 
+    public static void addToQueue4(MstreamQueueObject mqo){
+        mqo.constructQueueItem();
+        playlistQueue.add(mqo);
     }
 
     public MediaSessionCompat.QueueItem getCurrentMusic() {
         if (!MediaUtils.isIndexPlayable(currentIndex, playlistQueue)) {
             return null;
         }
-        return playlistQueue.get(currentIndex);
+        return playlistQueue.get(currentIndex).getQueueItem();
     }
 
     public int getCurrentIndex(){
@@ -227,8 +246,8 @@ public class QueueManager {
     public List<MediaBrowserCompat.MediaItem> getQueueAsMediaItems() {
         Log.d(TAG, "Playlist queue has size " + playlistQueue.size());
         ArrayList<MediaBrowserCompat.MediaItem> mediaItems = new ArrayList<>(playlistQueue.size());
-        for (MediaSessionCompat.QueueItem queueItem : playlistQueue) {
-            mediaItems.add(MediaUtils.getMediaItemFromQueueItem(queueItem));
+        for (MstreamQueueObject queueItem : playlistQueue) {
+            mediaItems.add(MediaUtils.getMediaItemFromQueueItem(queueItem.getQueueItem()));
         }
         return mediaItems;
     }

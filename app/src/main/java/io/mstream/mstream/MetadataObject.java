@@ -16,6 +16,9 @@ public class MetadataObject {
     private int track;
     private int year;
 
+    private String filename;
+    private String filepath;
+
     private String url;
     private String localFile;
     private String sha256Hash;
@@ -33,6 +36,8 @@ public class MetadataObject {
         this.localFile = builder.localFile;
         this.sha256Hash = builder.sha256Hash;
         this.albumArtURL = builder.albumArtURL;
+        this.filename = builder.filename;
+        this.filepath = builder.filepath;
     }
 
     public String getAlbum() {
@@ -62,8 +67,12 @@ public class MetadataObject {
     public String getAlbumArtURL() {
         return this.albumArtURL;
     }
-
-
+    public String getFilename() {
+        return this.filename;
+    }
+    public String getFilepath() {
+        return this.filepath;
+    }
 
 
 
@@ -91,8 +100,16 @@ public class MetadataObject {
     public void setAlbumArtURL(String albumArtURL) {
         this.albumArtURL = albumArtURL;
     }
+    public void setFilename(String filename) {
+        this.filename = filename;
+    }
+    public void setFilepath(String filepath) {
+        this.filepath = filepath;
+    }
 
-
+    public void setAlbumArtUrlViaHash(String hash) {
+        this.albumArtURL = "album-art/" + hash;
+    }
 
 
     public static class Builder {
@@ -108,6 +125,9 @@ public class MetadataObject {
         private String localFile;
         private String sha256Hash;
         private String albumArtURL;
+
+        private String filename;
+        private String filepath;
 
 
 
@@ -147,6 +167,16 @@ public class MetadataObject {
 
         public Builder year(int year){
             this.year = year;
+            return this;
+        }
+
+        public Builder filename(String filename){
+            this.filename = filename;
+            return this;
+        }
+
+        public Builder filepath(String filepath){
+            this.filepath = filepath;
             return this;
         }
 
