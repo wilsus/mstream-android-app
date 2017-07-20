@@ -24,6 +24,7 @@ import java.lang.ref.WeakReference;
 import java.util.List;
 
 import io.mstream.mstream.BaseActivity;
+import io.mstream.mstream.MetadataObject;
 import io.mstream.mstream.R;
 import io.mstream.mstream.playlist.MstreamQueueObject;
 import io.mstream.mstream.playlist.QueueManager;
@@ -150,12 +151,32 @@ public class MStreamAudioService extends MediaBrowserServiceCompat implements Pl
     private Notification buildNotification() {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
 
+        MetadataObject moo = QueueManager.getIt().get(QueueManager.getIndex()).getMetadata();
+
+        String p1 = "";
+        String p2 = "";
+
+        String artist = moo.getArtist();
+        String title = moo.getTitle();
+        String filename = moo.getFilename();
+
+        if(artist != null && !artist.isEmpty()){
+            p1 = artist;
+            if(title != null && !title.isEmpty()){
+                p2 = title;
+            }else{
+                p2 = filename;
+            }
+        }else{
+            p1 = filename;
+        }
+
         // TODO: figure out a good icon, maybe a custom tiny mstream logo in one channel
         builder.setSmallIcon(R.drawable.ic_notification)
                 .setLargeIcon(null)
-                .setContentTitle("LOL")
-                .setContentText("LOL2")
-                .setSubText("LOL3")
+                .setContentTitle(p1)
+                .setContentText(p2)
+//                .setSubText("LOL3")
                 // when tapped, launch the mstream activity (have to set this elsewhere)
                 .setContentIntent(mediaSession.getController().getSessionActivity())
                 // Media controls should be publicly visible
