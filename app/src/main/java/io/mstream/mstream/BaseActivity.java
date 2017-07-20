@@ -1217,7 +1217,7 @@ public class BaseActivity extends AppCompatActivity {
                 break;
             case PlaybackStateCompat.STATE_ERROR:
                 Log.e(TAG, "error playbackstate: " + state.getErrorMessage());
-                // Toast.makeText(this, "Playback error: " + state.getErrorMessage(), Toast.LENGTH_LONG).show(); // TODO: Why does this keep getting called 
+                // Toast.makeText(this, "Playback error: " + state.getErrorMessage(), Toast.LENGTH_LONG).show(); // TODO: Why does this keep getting called
                 break;
             case PlaybackStateCompat.STATE_BUFFERING:
             case PlaybackStateCompat.STATE_CONNECTING:
