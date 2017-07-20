@@ -1103,11 +1103,11 @@ public class BaseActivity extends AppCompatActivity {
     // Receive callbacks from the MediaController. Here we update our state such as which queue
     // is being shown, the current title and description and the PlaybackState.
     private final MediaControllerCompat.Callback mediaControllerCallback = new MediaControllerCompat.Callback() {
-//        @Override
-//        public void onPlaybackStateChanged(@NonNull PlaybackStateCompat state) {
-//            Log.d(TAG, "Received playback state change to state " + state.getState());
-//            this.onPlaybackStateChanged(state);
-//        }
+        @Override
+        public void onPlaybackStateChanged(@NonNull PlaybackStateCompat state) {
+            Log.d(TAG, "Received playback state change to state " + state.getState());
+            onPlaybackStateChanged2(state);
+        }
 
         @Override
         public void onMetadataChanged(MediaMetadataCompat metadata) {
@@ -1182,7 +1182,7 @@ public class BaseActivity extends AppCompatActivity {
         Log.d(TAG, "onConnected, mediaController==null? " + (controller == null));
         if (controller != null) {
             onMetadataChanged(controller.getMetadata());
-            onPlaybackStateChanged(controller.getPlaybackState());
+            onPlaybackStateChanged2(controller.getPlaybackState());
             controller.registerCallback(mediaControllerCallback);
         }
     }
@@ -1199,7 +1199,7 @@ public class BaseActivity extends AppCompatActivity {
     }
 
 
-    private void onPlaybackStateChanged(PlaybackStateCompat state) {
+    private void onPlaybackStateChanged2(PlaybackStateCompat state) {
         Log.d(TAG, "onPlaybackStateChanged " + state);
 //        if (getActivity() == null) {
 //            Log.w(TAG, "onPlaybackStateChanged called when getActivity null," +
@@ -1217,7 +1217,7 @@ public class BaseActivity extends AppCompatActivity {
                 break;
             case PlaybackStateCompat.STATE_ERROR:
                 Log.e(TAG, "error playbackstate: " + state.getErrorMessage());
-                Toast.makeText(this, "Playback error: " + state.getErrorMessage(), Toast.LENGTH_LONG).show();
+                // Toast.makeText(this, "Playback error: " + state.getErrorMessage(), Toast.LENGTH_LONG).show(); // TODO: Why does this keep getting called 
                 break;
             case PlaybackStateCompat.STATE_BUFFERING:
             case PlaybackStateCompat.STATE_CONNECTING:
