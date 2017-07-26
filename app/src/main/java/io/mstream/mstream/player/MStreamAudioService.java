@@ -97,7 +97,6 @@ public class MStreamAudioService extends MediaBrowserServiceCompat implements Pl
         mediaSession.setCallback(playbackManager.getMediaSessionCallback());
 
         startService(new Intent(getApplicationContext(), MStreamAudioService.class));
-        // testPlay(); // TODO: SEGFFGWERGRWEG
     }
 
     @Override

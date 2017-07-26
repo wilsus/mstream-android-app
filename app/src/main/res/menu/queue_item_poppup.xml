@@ -3,6 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/sync_queue_item"
+        android:icon="@drawable/ic_delete_forever_black_36dp"
+        app:showAsAction="ifRoom"
+        android:titleCondensed="sync_queue_item"
+        android:title="Sync File"/>
+
+    <item
         android:id="@+id/remove_queue_item"
         android:icon="@drawable/ic_delete_forever_black_36dp"
         app:showAsAction="ifRoom"

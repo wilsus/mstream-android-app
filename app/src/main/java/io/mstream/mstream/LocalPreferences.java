@@ -16,8 +16,8 @@ public final class LocalPreferences {
     private static final String FILE_NAME = LocalPreferences.class.getPackage().getName();
 
     // Preference names
-    private static final String DEFAULT_SERVER_URL = FILE_NAME + ".a";
     private static final String SERVER_JSON_STRINGS = FILE_NAME + ".b";
+    private static final String SYNC_PATH = FILE_NAME + ".c";
 
     // Singleton instance of this class
     private static LocalPreferences instance;
@@ -57,14 +57,12 @@ public final class LocalPreferences {
         return prefs.getStringSet(SERVER_JSON_STRINGS, new HashSet<String>());
     }
 
-    /**
-     * The default server URL
-     */
-    public void setDefaultServerUrl(String defaultServerUrl) {
-        prefs.edit().putString(DEFAULT_SERVER_URL, defaultServerUrl).apply();
+    public String getSyncPath(){
+        return prefs.getString(SYNC_PATH, null);
     }
 
-    public String getDefaultServerUrl() {
-        return prefs.getString(DEFAULT_SERVER_URL, null);
+    public void setSyncPath(String path){
+        prefs.edit().putString(SYNC_PATH, path).apply();
     }
+
 }

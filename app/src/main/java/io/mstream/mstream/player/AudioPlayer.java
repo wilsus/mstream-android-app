@@ -13,6 +13,8 @@ import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.TextUtils;
 import android.util.Log;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 
 /**
@@ -155,7 +157,24 @@ class AudioPlayer implements Playback, AudioManager.OnAudioFocusChangeListener,
                 state = PlaybackStateCompat.STATE_BUFFERING;
 
                 mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-                mediaPlayer.setDataSource(source);
+
+                String fff = item.getDescription().getDescription().toString();
+                if(fff.equals("file")){
+                    File file = new File(source);
+                    if(file.exists()){
+                        String lol = "lol";
+                    }
+
+                    FileInputStream inputStream = new FileInputStream(file);
+                    mediaPlayer.setDataSource(fff);
+                    inputStream.close();
+
+                }else{
+                    mediaPlayer.setDataSource(item.getDescription().getMediaUri().toString());
+
+                }
+
+
 
                 // Starts preparing the media player in the background. When
                 // it's done, it will call our OnPreparedListener (that is,

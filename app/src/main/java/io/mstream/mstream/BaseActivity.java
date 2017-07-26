@@ -1,11 +1,15 @@
 package io.mstream.mstream;
 
+import android.app.DownloadManager;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.RemoteException;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
@@ -41,13 +45,16 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import io.mstream.mstream.player.MStreamAudioService;
 import io.mstream.mstream.playlist.MediaControllerConnectedEvent;
@@ -55,6 +62,8 @@ import io.mstream.mstream.playlist.MstreamQueueObject;
 import io.mstream.mstream.playlist.QueueManager;
 import io.mstream.mstream.serverlist.ServerListAdapter;
 import io.mstream.mstream.serverlist.ServerStore;
+import io.mstream.mstream.syncer.DatabaseHelper;
+import io.mstream.mstream.syncer.SyncSettingsStore;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -66,6 +75,15 @@ import okhttp3.Response;
 
 public class BaseActivity extends AppCompatActivity {
     private static final String TAG = "BaseActivity";
+
+    // SQLite DB
+    private DatabaseHelper mstreamDB;
+
+    private BroadcastReceiver syncReceiver;
+
+    // This feels dirty.  Its a place to store metadata objects for asynchronous retrieval
+    Map<Long, MetadataObject> downloadQueue = new HashMap<Long, MetadataObject>();
+
 
     // Left hand nav menu
     private DrawerLayout drawerLayout;
@@ -102,9 +120,28 @@ public class BaseActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_base);
+
+        // Database
+        mstreamDB = new DatabaseHelper(this);
+
+        // Servers
         ServerStore.loadServers();
+
+        // Sync Settings
+        SyncSettingsStore.loadSyncSettings();
+
+        // if sync settings are not set up
+        if(SyncSettingsStore.storagePath == null || SyncSettingsStore.storagePath.isEmpty()){
+            String externalStorageDir =   Environment.getExternalStorageDirectory().getAbsolutePath();
+            File mStreamDir = new File( this.getExternalFilesDir("mstream-storage").toString() );
+            // Check if dir exists
+            if(!mStreamDir.exists()){
+                mStreamDir.mkdirs();
+            }
+
+            SyncSettingsStore.setSyncPath( mStreamDir.toString());
+        }
 
         // Toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -144,6 +181,39 @@ public class BaseActivity extends AppCompatActivity {
 
         // Time left text
         // timeLeftText = (TextView) findViewById(R.id.time_left_text);
+
+        // Sync callback
+        syncReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                //check if the broadcast message is for our enqueued download
+                Long referenceId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
+
+                // Check if id is in downloadQueueManager
+                MetadataObject moo = downloadQueue.get(referenceId);
+
+                if(moo == null){
+                    // TODO:
+                    return;
+                }
+
+
+
+                // Set the local file path
+                moo.setLocalFile(moo.getDownloadingToPath());
+                moo.setSyncing(false);
+                moo.setDownloadingToPath(null);
+
+                // update DB
+                mstreamDB.addFileToDataBase(moo);
+
+                // Remove from queue
+                downloadQueue.remove(referenceId);
+            }
+        };
+
+        IntentFilter filter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
+        registerReceiver(syncReceiver, filter);
 
         // Search
         searchBrowser = (EditText) findViewById(R.id.search_response);
@@ -910,24 +980,28 @@ public class BaseActivity extends AppCompatActivity {
 
     private void getMetadataAndAddToQueue(MetadataObject moo){
         final MstreamQueueObject mqo = new MstreamQueueObject(moo);
-        // mqo.setMetadata(moo);
         mqo.constructQueueItem();
 
+        // Addd to the queue
         QueueManager.addToQueue4(mqo);
 
+        // Redraw the queue // TODO: There's got to be a better way
         queueAdapter.clear();
         queueAdapter.add(QueueManager.getIt());
 
+        // TODO: Is this necessary ???
         pingQueueListener();
 
         // If the hash is set, it means we got the metadata already. No need to run this again
-        if(mqo.getMetadata().getSha256Hash() !=null && !mqo.getMetadata().getSha256Hash().isEmpty()){
+        if(mqo.getMetadata().getSha256Hash() != null && !mqo.getMetadata().getSha256Hash().isEmpty()){
+            // Double check that the file is synced though
+            syncFile(mqo.getMetadata(), false);
+            mqo.constructQueueItem();
             return;
         }
 
 
-        // TODO: Before making call, check that the metadata hasb't been passed in already
-
+        // Prepare a the metadata request
         JSONObject jsonObj = new JSONObject();
         try{
             jsonObj.put("filepath", moo.getFilepath());
@@ -939,15 +1013,15 @@ public class BaseActivity extends AppCompatActivity {
         MediaType JSON = MediaType.parse("application/json; charset=utf-8");
         okhttp3.RequestBody body = RequestBody.create(JSON, jsonObj.toString());
 
-        String loginURL = Uri.parse(ServerStore.currentServer.getServerUrl()).buildUpon().appendPath("db").appendPath("metadata").build().toString();
+        String metadataURL = Uri.parse(ServerStore.currentServer.getServerUrl()).buildUpon().appendPath("db").appendPath("metadata").build().toString();
         Request request = new Request.Builder()
-                .url(loginURL)
+                .url(metadataURL)
                 .addHeader("x-access-token", ServerStore.currentServer.getServerJWT())
                 .post(body)
                 .build();
 
         // Callback
-        Callback loginCallback = new Callback() {
+        Callback metadataCallback = new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
                 toastIt("Failed To Connect To Server");
@@ -971,8 +1045,9 @@ public class BaseActivity extends AppCompatActivity {
                         mqoMeta.setYear(contents.getInt("year"));
                         mqoMeta.setTrack(contents.getInt("track"));
                         mqoMeta.setAlbumArtUrlViaHash(contents.getString("album-art"));
+                        syncFile(mqo.getMetadata(), false);
 
-                        mqo.constructQueueItem(); // TODO
+                        mqo.constructQueueItem();
                         updateQueueView();
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -986,7 +1061,7 @@ public class BaseActivity extends AppCompatActivity {
 
         // Make call
         OkHttpClient okHttpClient = ((MStreamApplication) getApplicationContext()).getOkHttpClient();
-        okHttpClient.newCall(request).enqueue(loginCallback);
+        okHttpClient.newCall(request).enqueue(metadataCallback);
     }
 
     private void toastIt(final String toastText){
@@ -1257,16 +1332,92 @@ public class BaseActivity extends AppCompatActivity {
     }
 
 
+    private boolean checkIfSynced(MetadataObject moo){
+        // Check for hash in moo
+        if(moo.getSha256Hash() == null || moo.getSha256Hash().isEmpty()){
+            return false;
+        }
+        // TODO: If no hash, ping server for hash
 
-    // Create Local DB
-        // path, metadata, hash
+        String hashPath = mstreamDB.checkForHash(moo.getSha256Hash());
+
+        //Check for hash in local DB
+        if(hashPath != null && !hashPath.isEmpty() ){
+            moo.setLocalFile(hashPath);
+            return true;
+        }
+
+        return false;
+    }
 
     // Function that downloads file
-        // Add to mstream directory
-        // add entry to DB
+    public void syncFile(MetadataObject moo, boolean autoSync){
+        // Get Sync Path
+        String syncPath = SyncSettingsStore.storagePath;
+        if(syncPath == null || syncPath.isEmpty()){
+            // TODO: Warn user sync is not configured
+            return;
+        }
 
-    // Function that checks if hash is in DB
 
-    // Function that grabs metadata from server
+        boolean isSynced = checkIfSynced(moo);
+
+        // TODO: Verify file actually exists
+            // isSynced = false; // if so
+
+        if(isSynced){
+            return;
+        }
+
+
+        // If  not synced and autoSync = true
+        if(autoSync){
+            long downloadReference;
+
+
+            // TODO: Verify the download path exists
+
+
+            Uri androidUri = android.net.Uri.parse(moo.getUrl());
+
+            // Create request for android download manager
+            DownloadManager downloadManager = (DownloadManager)getSystemService(DOWNLOAD_SERVICE);
+            DownloadManager.Request request = new DownloadManager.Request(androidUri);
+
+            // Set Destination
+            File tempFile = new File(SyncSettingsStore.storagePath, moo.getFilepath());
+            File tempFile2 = new File("mstream-storage", moo.getFilepath());
+
+
+            //Setting title of request
+            request.setTitle(tempFile.getName());
+
+            // TODO: Should  downloaded files to be scanned byu the media manager
+            // Or should we hide them and be selfish so users can only get to them via mSream
+            // request.allowScanningByMediaScanner();
+
+            //Setting description of request
+            request.setDescription("Android Data download using DownloadManager.");
+            // Set Notification Visibility
+            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED); // TODO: Make invisible and put some kind of UI
+
+
+
+            request.setDestinationInExternalFilesDir(BaseActivity.this, tempFile2.getParent(), tempFile.getName());
+
+
+
+            //Enqueue download and save into referenceId
+            downloadReference = downloadManager.enqueue(request);
+
+            moo.setDownloadingToPath(tempFile.toString());
+            moo.setSyncing(true);
+            downloadQueue.put(downloadReference, moo);
+
+
+            // TODO: Check for album art and sync that too
+        }
+
+    }
 
 }
