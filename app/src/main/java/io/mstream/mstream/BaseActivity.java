@@ -131,14 +131,16 @@ public class BaseActivity extends AppCompatActivity {
         // Sync Settings
         SyncSettingsStore.loadSyncSettings();
 
+
         // if sync settings are not set up
         if(SyncSettingsStore.storagePath == null || SyncSettingsStore.storagePath.isEmpty()){
-            String externalStorageDir =   Environment.getExternalStorageDirectory().getAbsolutePath();
             File mStreamDir = new File( this.getExternalFilesDir("mstream-storage").toString() );
+
             // Check if dir exists
-            if(!mStreamDir.exists()){
+            if(! mStreamDir.exists()){
                 mStreamDir.mkdirs();
             }
+
 
             SyncSettingsStore.setSyncPath( mStreamDir.toString());
         }
@@ -196,7 +198,6 @@ public class BaseActivity extends AppCompatActivity {
                     // TODO:
                     return;
                 }
-
 
 
                 // Set the local file path
@@ -1343,6 +1344,7 @@ public class BaseActivity extends AppCompatActivity {
 
         //Check for hash in local DB
         if(hashPath != null && !hashPath.isEmpty() ){
+            toastIt(hashPath);
             moo.setLocalFile(hashPath);
             return true;
         }

@@ -16,6 +16,7 @@ import android.util.Log;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URLDecoder;
 
 /**
  * A class that implements local media playback using {@link android.media.MediaPlayer}
@@ -160,13 +161,19 @@ class AudioPlayer implements Playback, AudioManager.OnAudioFocusChangeListener,
 
                 String fff = item.getDescription().getDescription().toString();
                 if(fff.equals("file")){
-                    File file = new File(source);
-                    if(file.exists()){
+                    source = item.getDescription().getMediaUri().toString();
+                    source = URLDecoder.decode(source, "UTF-8");
+
+                    // File file = new File("/storage/emulated/0/Android/data/io.mstream.mstream/files/mstream-storage/311/Grassroots/06 - Applied Science.mp3");
+                    File file = new File(source.substring(6));
+
+                    boolean exists = file.exists();
+                    if(exists){
                         String lol = "lol";
                     }
 
                     FileInputStream inputStream = new FileInputStream(file);
-                    mediaPlayer.setDataSource(fff);
+                    mediaPlayer.setDataSource(inputStream.getFD());
                     inputStream.close();
 
                 }else{

@@ -44,16 +44,16 @@ public class MstreamQueueObject {
         // TODO: Check for local file and use that over a url
         String finalPath;
         Uri MediaURI;
-        String ddd;
+        String mediaDescription;
 
         if(metadata.getLocalFile() != null && !metadata.getLocalFile().isEmpty()){
             finalPath = metadata.getLocalFile();
             MediaURI = Uri.fromFile(new File(finalPath));
-            ddd = "file";
+            mediaDescription = "file";
         }else{
             finalPath = metadata.getUrl();
             MediaURI = Uri.parse(finalPath);
-            ddd = "network";
+            mediaDescription = "network";
         }
 
 
@@ -62,7 +62,7 @@ public class MstreamQueueObject {
         MediaDescriptionCompat description = new MediaDescriptionCompat.Builder()
                 .setMediaUri(MediaURI)
                 .setMediaId(finalPath)
-                .setDescription(ddd)
+                .setDescription(mediaDescription)
                 // TODO: something a bit less hacky, maybe a Utils method
                 .setTitle(MediaUtils.titleFromFilename(metadata.getUrl()))
                 .build();
