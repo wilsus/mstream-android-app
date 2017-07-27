@@ -210,6 +210,8 @@ public class BaseActivity extends AppCompatActivity {
 
                 // Remove from queue
                 downloadQueue.remove(referenceId);
+
+                updateQueueView();
             }
         };
 
