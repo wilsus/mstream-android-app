@@ -1041,23 +1041,28 @@ public class BaseActivity extends AppCompatActivity {
                         JSONObject contents = responseJson.getJSONObject("metadata");
                         // final ArrayList<BaseBrowserItem> serverFileList = new ArrayList<>();
                         final MetadataObject mqoMeta = mqo.getMetadata();
+
+                        // TODO: Double check all returned values exist
+
+                        mqoMeta.setSha256Hash(contents.getString("hash"));
                         mqoMeta.setArtist(contents.getString("artist"));
                         mqoMeta.setAlbum(contents.getString("album"));
                         mqoMeta.setTitle(contents.getString("title"));
-                        mqoMeta.setSha256Hash(contents.getString("hash"));
+                        mqoMeta.setAlbumArtUrlViaHash(contents.getString("album-art"));
+
                         mqoMeta.setYear(contents.getInt("year"));
                         mqoMeta.setTrack(contents.getInt("track"));
-                        mqoMeta.setAlbumArtUrlViaHash(contents.getString("album-art"));
-                        syncFile(mqo.getMetadata(), false);
 
-                        mqo.constructQueueItem();
-                        updateQueueView();
                     } catch (JSONException e) {
                         e.printStackTrace();
                         toastIt("Failed to decoded server response. WTF");
                     }
 
-                    // TODO: lookup if local copy is available here
+                    // lookup if local copy is available here
+                    syncFile(mqo.getMetadata(), false);
+
+                    mqo.constructQueueItem();
+                    updateQueueView();
                 }
             }
         };
