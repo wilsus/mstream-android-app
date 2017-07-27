@@ -96,6 +96,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public boolean addFileToDataBase(MetadataObject moo){
         SQLiteDatabase db = this.getWritableDatabase();
 
+        // TODO: If hash doesn't exist, just hash it here
+
         ContentValues contentValues = new ContentValues();
         contentValues.put(COL_HASH,moo.getSha256Hash());
         contentValues.put(COL_PATH,moo.getLocalFile());

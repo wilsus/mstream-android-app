@@ -154,31 +154,25 @@ class AudioPlayer implements Playback, AudioManager.OnAudioFocusChangeListener,
 
             try {
                 createMediaPlayerIfNeeded();
-
                 state = PlaybackStateCompat.STATE_BUFFERING;
-
                 mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 
-                String fff = item.getDescription().getDescription().toString();
-                if(fff.equals("file")){
-                    source = item.getDescription().getMediaUri().toString();
+                // Check if we have a file or a URL
+                String type = item.getDescription().getDescription().toString();
+                if(type.equals("file")){
+                    // Android forices us to code this as a URI, so now we have to do some hacky bullshit to decode this
                     source = URLDecoder.decode(source, "UTF-8");
-
-                    // File file = new File("/storage/emulated/0/Android/data/io.mstream.mstream/files/mstream-storage/311/Grassroots/06 - Applied Science.mp3");
                     File file = new File(source.substring(6));
 
-                    boolean exists = file.exists();
-                    if(exists){
-                        String lol = "lol";
+                    if(!file.exists()){
+                        // TODO:
                     }
 
                     FileInputStream inputStream = new FileInputStream(file);
                     mediaPlayer.setDataSource(inputStream.getFD());
                     inputStream.close();
-
                 }else{
-                    mediaPlayer.setDataSource(item.getDescription().getMediaUri().toString());
-
+                    mediaPlayer.setDataSource(source);
                 }
 
 

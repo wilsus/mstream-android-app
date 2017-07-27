@@ -243,6 +243,19 @@ public class QueueManager {
         listener.onMetadataChanged(MediaUtils.getMetadataFromDescription(currentMusic.getDescription()));
     }
 
+    public static void updateHashToLocalFile(String hash, String filepath){
+        // Loop through Queue
+        for(MstreamQueueObject mqo: playlistQueue){
+            if(mqo.getMetadata().getSha256Hash().equals(hash)){
+                mqo.getMetadata().setLocalFile(filepath);
+                mqo.constructQueueItem();
+            }
+        }
+
+
+        // If the hash matches, update the filepath and rebuild it
+    }
+
     public List<MediaBrowserCompat.MediaItem> getQueueAsMediaItems() {
         Log.d(TAG, "Playlist queue has size " + playlistQueue.size());
         ArrayList<MediaBrowserCompat.MediaItem> mediaItems = new ArrayList<>(playlistQueue.size());

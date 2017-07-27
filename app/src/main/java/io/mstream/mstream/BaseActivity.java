@@ -141,7 +141,6 @@ public class BaseActivity extends AppCompatActivity {
                 mStreamDir.mkdirs();
             }
 
-
             SyncSettingsStore.setSyncPath( mStreamDir.toString());
         }
 
@@ -199,11 +198,12 @@ public class BaseActivity extends AppCompatActivity {
                     return;
                 }
 
-
                 // Set the local file path
                 moo.setLocalFile(moo.getDownloadingToPath());
                 moo.setSyncing(false);
                 moo.setDownloadingToPath(null);
+
+                QueueManager.updateHashToLocalFile(moo.getSha256Hash(), moo.getLocalFile());
 
                 // update DB
                 mstreamDB.addFileToDataBase(moo);
@@ -1336,15 +1336,14 @@ public class BaseActivity extends AppCompatActivity {
     private boolean checkIfSynced(MetadataObject moo){
         // Check for hash in moo
         if(moo.getSha256Hash() == null || moo.getSha256Hash().isEmpty()){
+            // TODO: If no hash, ping server for hash
             return false;
         }
-        // TODO: If no hash, ping server for hash
-
-        String hashPath = mstreamDB.checkForHash(moo.getSha256Hash());
 
         //Check for hash in local DB
+        String hashPath = mstreamDB.checkForHash(moo.getSha256Hash());
         if(hashPath != null && !hashPath.isEmpty() ){
-            toastIt(hashPath);
+            toastIt("Synced File!");
             moo.setLocalFile(hashPath);
             return true;
         }
@@ -1361,37 +1360,39 @@ public class BaseActivity extends AppCompatActivity {
             return;
         }
 
-
+        // Check if synced
         boolean isSynced = checkIfSynced(moo);
-
-        // TODO: Verify file actually exists
-            // isSynced = false; // if so
-
         if(isSynced){
             return;
         }
+
+        // TODO: Check if file  exists
+            // Should we overwrite or just let it rip
+
+
+        // TODO: Block users from syncing non-hashed files for now
+        // Work out a way to sync non-hashed files
+        if(moo.getSha256Hash() == null || moo.getSha256Hash().isEmpty()){
+            toastIt("Cannot sync non-hashed files. For now...");
+            return;
+        }
+
 
 
         // If  not synced and autoSync = true
         if(autoSync){
             long downloadReference;
 
-
-            // TODO: Verify the download path exists
-
-
-            Uri androidUri = android.net.Uri.parse(moo.getUrl());
-
             // Create request for android download manager
             DownloadManager downloadManager = (DownloadManager)getSystemService(DOWNLOAD_SERVICE);
+            Uri androidUri = android.net.Uri.parse(moo.getUrl());
             DownloadManager.Request request = new DownloadManager.Request(androidUri);
 
             // Set Destination
             File tempFile = new File(SyncSettingsStore.storagePath, moo.getFilepath());
             File tempFile2 = new File("mstream-storage", moo.getFilepath());
 
-
-            //Setting title of request
+            // Set title of request
             request.setTitle(tempFile.getName());
 
             // TODO: Should  downloaded files to be scanned byu the media manager
@@ -1404,9 +1405,7 @@ public class BaseActivity extends AppCompatActivity {
             request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED); // TODO: Make invisible and put some kind of UI
 
 
-
             request.setDestinationInExternalFilesDir(BaseActivity.this, tempFile2.getParent(), tempFile.getName());
-
 
 
             //Enqueue download and save into referenceId
@@ -1415,7 +1414,6 @@ public class BaseActivity extends AppCompatActivity {
             moo.setDownloadingToPath(tempFile.toString());
             moo.setSyncing(true);
             downloadQueue.put(downloadReference, moo);
-
 
             // TODO: Check for album art and sync that too
         }
