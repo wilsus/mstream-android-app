@@ -219,6 +219,10 @@ public class QueueManager {
         currentIndex = -1; /// hmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm
     }
 
+    public static void removeFromQueue(MstreamQueueObject mqo){
+        playlistQueue.remove(mqo);
+    }
+
 //    protected void setCurrentQueue(String title, List<MediaSessionCompat.QueueItem> newQueue) {
 //        setCurrentQueue(title, newQueue, null);
 //    }

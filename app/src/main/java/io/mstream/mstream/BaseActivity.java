@@ -10,6 +10,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.RemoteException;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
@@ -28,7 +29,6 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -53,8 +53,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Timer;
 
 import io.mstream.mstream.player.MStreamAudioService;
 import io.mstream.mstream.playlist.MediaControllerConnectedEvent;
@@ -99,7 +99,6 @@ public class BaseActivity extends AppCompatActivity {
 
     // Player buttons
     private ImageButton playPauseButton;
-    private SeekBar seekBar;
     private ImageButton nextButton;
     private ImageButton previousButton;
 
@@ -116,6 +115,11 @@ public class BaseActivity extends AppCompatActivity {
     private ArrayList<BaseBrowserItem> baseBrowserList = new ArrayList<>(); // This is what gets plugged into the adapter
     private ArrayList<BaseBrowserItem> backupBrowserList = new ArrayList<>(); // Stores the full array for searches
 
+    // Seek bar
+    private SeekBar seekBar;
+    private int currentPosition;
+    private Handler seekHAndler = new Handler();
+    private boolean handledLock = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -1199,7 +1203,7 @@ public class BaseActivity extends AppCompatActivity {
             }
             Log.d(TAG, "Received metadata state change to mediaId=" + metadata.getDescription().getMediaId() +
                     " song=" + metadata.getDescription().getTitle());
-            // this.onMetadataChanged(metadata);
+            onMetadataChanged2(metadata);
         }
     };
 
@@ -1264,7 +1268,7 @@ public class BaseActivity extends AppCompatActivity {
         MediaControllerCompat controller = getSupportMediaController();
         Log.d(TAG, "onConnected, mediaController==null? " + (controller == null));
         if (controller != null) {
-            onMetadataChanged(controller.getMetadata());
+            onMetadataChanged2(controller.getMetadata());
             onPlaybackStateChanged2(controller.getPlaybackState());
             controller.registerCallback(mediaControllerCallback);
         }
@@ -1281,17 +1285,33 @@ public class BaseActivity extends AppCompatActivity {
         }
     }
 
+    public void removeQueueItem(MstreamQueueObject mqo){
+        QueueManager.removeFromQueue(mqo);
+        // TODO: Need to update the queue without causing the thing to flash
+        queueAdapter.clear();
+        queueAdapter.add(QueueManager.getIt());
+    }
+
 
     private void onPlaybackStateChanged2(PlaybackStateCompat state) {
         Log.d(TAG, "onPlaybackStateChanged " + state);
+        if (state == null) {
+            return;
+        }
+
+        // This is a dirty hack to get around google's shitty callback structure
+        // Since we can't pass in the max length, we just pass it in as the state as a negative number
+        // This works because no state has a number less than -1
+        if(state.getState() < -1){
+            seekBar.setMax(state.getState() * -1);
+            return;
+        }
+
 //        if (getActivity() == null) {
 //            Log.w(TAG, "onPlaybackStateChanged called when getActivity null," +
 //                    "this should not happen if the callback was properly unregistered. Ignoring.");
 //            return;
 //        }
-        if (state == null) {
-            return;
-        }
         boolean enablePlay = false;
         switch (state.getState()) {
             case PlaybackStateCompat.STATE_PAUSED:
@@ -1315,28 +1335,50 @@ public class BaseActivity extends AppCompatActivity {
                 break;
         }
 
+        currentPosition = (int) state.getPosition();
+
+        Log.d(TAG, "seekbar! state progress is " + currentPosition + " and state buffer is " + state.getBufferedPosition());
+        seekBar.setSecondaryProgress((int) state.getBufferedPosition());
+        seekBar.setProgress(currentPosition);
+
         if (enablePlay) {
             playPauseButton.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_play_arrow_black_36dp));
+            seekHAndler.removeCallbacks(myRunnable);
+            handledLock = false;
+
         } else {
             playPauseButton.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_pause_black_36dp));
+
+            if(!handledLock){
+                handledLock = true;
+                seekHAndler.post(myRunnable);
+            }
         }
 
-        // TODO: does this work?
-        Log.d(TAG, "seekbar! state progress is " + state.getPosition() + " and state buffer is " + state.getBufferedPosition());
-        seekBar.setSecondaryProgress((int) state.getBufferedPosition());
-        seekBar.setProgress((int) state.getPosition());
+        // Update playlist here?
+        updateQueueView();
     }
 
-    private void onMetadataChanged(MediaMetadataCompat metadata) {
+    private Runnable myRunnable = new Runnable() {
+        @Override
+        public void run() {
+            currentPosition = currentPosition + 100;
+            seekBar.setProgress(currentPosition );
+            seekHAndler.postDelayed(this, 100);
+        }
+    };
+
+    private void onMetadataChanged2(MediaMetadataCompat metadata) {
         if (metadata == null) {
             return;
         }
+
 
         // TODO: have to set this metadata when adding the track. can we get it from the server?
         // Otherwise, need to set up event system between media player and this view.
         int duration = (int) metadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION);
         Log.d(TAG, "updating duration to " + duration);
-        seekBar.setMax(duration);
+        // seekBar.setMax(duration);
     }
 
 

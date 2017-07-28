@@ -58,7 +58,6 @@ class QueueAdapter extends ArrayAdapter<MstreamQueueObject, QueueAdapter.QueueAd
             displayString = item.getMetadata().getFilename();
         }
 
-        holder.filename.setText(displayString);
 
         // Show a directory icon or a file icon as appropriate
         // TODO: Load in the image another way that we can support album art
@@ -74,10 +73,10 @@ class QueueAdapter extends ArrayAdapter<MstreamQueueObject, QueueAdapter.QueueAd
 
         // Check if synced
         if(localFile != null && !localFile.isEmpty()){
-            holder.filename.setBackgroundColor(Color.GREEN);
+            displayString = displayString + "*";
         }
 
-
+        holder.filename.setText(displayString);
     }
 
     class QueueAdapterViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -104,19 +103,22 @@ class QueueAdapter extends ArrayAdapter<MstreamQueueObject, QueueAdapter.QueueAd
                     popup.getMenuInflater()
                             .inflate(R.menu.queue_item_poppup, popup.getMenu());
 
+                    // Check if file is synced
                     int itemPos = getAdapterPosition();
                     String localFile = getItem(itemPos).getMetadata().getLocalFile();
                     if(localFile!= null && !localFile.isEmpty()){
-                        // TODO: Hide entry
+                        // Hide entry
+                        MenuItem item = popup.getMenu().findItem(R.id.sync_queue_item);
+                        item.setVisible(false);
                     }
-
 
                     //registering popup with OnMenuItemClickListener
                     popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                         @Override
                         public boolean onMenuItemClick(MenuItem item) {
                             if(item.getTitleCondensed().equals("remove_queue_item")){
-                                // TODO: Remove from queue
+                                // Remove from queue
+                                ((BaseActivity) arg0.getContext()).removeQueueItem(getItem(getAdapterPosition()));
                             }
 
                             if(item.getTitleCondensed().equals("sync_queue_item")){

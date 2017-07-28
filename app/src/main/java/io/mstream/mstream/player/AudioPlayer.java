@@ -164,8 +164,11 @@ class AudioPlayer implements Playback, AudioManager.OnAudioFocusChangeListener,
                     source = URLDecoder.decode(source, "UTF-8");
                     File file = new File(source.substring(6));
 
+                    // Assure file is available
                     if(!file.exists()){
-                        // TODO:
+                        //  TODO: Log error and update DB
+                        // Use the url
+                        mediaPlayer.setDataSource(item.getDescription().getMediaUri().toString());
                     }
 
                     FileInputStream inputStream = new FileInputStream(file);
@@ -413,6 +416,19 @@ class AudioPlayer implements Playback, AudioManager.OnAudioFocusChangeListener,
         Log.d(TAG, "onPrepared from MediaPlayer");
         // The media player is done preparing. That means we can start playing if we
         // have audio focus.
+
+        // Time for some hacky bullshit lol
+        // Since the state does not allow us to duration (becasue who needs that, right?)
+        // We just send the duration over as a negative number
+        // Since no state has a negative quantity less than -1
+        // We just check for that on the other side, and carry out a special action if so
+        // Fucking hell google, everyone of your frameworks suckssssssss
+        int duration = player.getDuration();
+
+        if (callback != null) {
+            callback.onDur(duration * -1);
+        }
+
         configMediaPlayerState();
     }
 

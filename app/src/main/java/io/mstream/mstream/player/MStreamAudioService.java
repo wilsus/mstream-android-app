@@ -265,6 +265,16 @@ public class MStreamAudioService extends MediaBrowserServiceCompat implements Pl
         mediaSession.setPlaybackState(newState);
     }
 
+    @Override
+    public void onExtrasChanged(Bundle extras){
+
+    }
+
+    @Override
+    public void onDur(int dur){
+
+    }
+
     /**
      * A simple handler that stops the service if playback is not active (playing)
      */
