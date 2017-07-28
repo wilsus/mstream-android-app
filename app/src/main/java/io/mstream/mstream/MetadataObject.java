@@ -21,6 +21,10 @@ public class MetadataObject {
 
     private String url;
     private String localFile;
+
+    private boolean isSyncing = false;
+    private String downloadingToPath;
+
     private String sha256Hash;
 
     private String albumArtURL;
@@ -73,6 +77,12 @@ public class MetadataObject {
     public String getFilepath() {
         return this.filepath;
     }
+    public boolean isSyncing() {
+        return this.isSyncing;
+    }
+    public String getDownloadingToPath(){
+        return this.downloadingToPath;
+    }
 
 
 
@@ -106,9 +116,14 @@ public class MetadataObject {
     public void setFilepath(String filepath) {
         this.filepath = filepath;
     }
-
+    public void setSyncing(boolean syncStat){
+        this.isSyncing = syncStat;
+    }
     public void setAlbumArtUrlViaHash(String hash) {
         this.albumArtURL = "album-art/" + hash;
+    }
+    public void setDownloadingToPath(String path){
+        this.downloadingToPath = path;
     }
 
 

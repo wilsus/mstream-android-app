@@ -1,5 +1,6 @@
 package io.mstream.mstream;
 
+import android.graphics.Color;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
@@ -17,6 +18,8 @@ import io.mstream.mstream.playlist.MstreamQueueObject;
 import io.mstream.mstream.playlist.QueueManager;
 import io.mstream.mstream.serverlist.ServerStore;
 import io.mstream.mstream.ui.ArrayAdapter;
+
+import static java.security.AccessController.getContext;
 
 /**
  * Created by paul on 7/10/2017.
@@ -43,6 +46,7 @@ class QueueAdapter extends ArrayAdapter<MstreamQueueObject, QueueAdapter.QueueAd
         String artist = item.getMetadata().getArtist();
         String album = item.getMetadata().getAlbum();
         String title = item.getMetadata().getTitle();
+        String localFile = item.getMetadata().getLocalFile();
 
         String displayString;
         if(title == null || !title.isEmpty()){
@@ -54,7 +58,6 @@ class QueueAdapter extends ArrayAdapter<MstreamQueueObject, QueueAdapter.QueueAd
             displayString = item.getMetadata().getFilename();
         }
 
-        holder.filename.setText(displayString);
 
         // Show a directory icon or a file icon as appropriate
         // TODO: Load in the image another way that we can support album art
@@ -68,7 +71,12 @@ class QueueAdapter extends ArrayAdapter<MstreamQueueObject, QueueAdapter.QueueAd
             holder.directoryIcon.setVisibility(View.GONE);
         }
 
+        // Check if synced
+        if(localFile != null && !localFile.isEmpty()){
+            displayString = displayString + "*";
+        }
 
+        holder.filename.setText(displayString);
     }
 
     class QueueAdapterViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -95,12 +103,29 @@ class QueueAdapter extends ArrayAdapter<MstreamQueueObject, QueueAdapter.QueueAd
                     popup.getMenuInflater()
                             .inflate(R.menu.queue_item_poppup, popup.getMenu());
 
+                    // Check if file is synced
+                    int itemPos = getAdapterPosition();
+                    String localFile = getItem(itemPos).getMetadata().getLocalFile();
+                    if(localFile!= null && !localFile.isEmpty()){
+                        // Hide entry
+                        MenuItem item = popup.getMenu().findItem(R.id.sync_queue_item);
+                        item.setVisible(false);
+                    }
+
                     //registering popup with OnMenuItemClickListener
                     popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                         @Override
                         public boolean onMenuItemClick(MenuItem item) {
                             if(item.getTitleCondensed().equals("remove_queue_item")){
-                                // TODO: Remove from queue
+                                // Remove from queue
+                                ((BaseActivity) arg0.getContext()).removeQueueItem(getItem(getAdapterPosition()));
+                            }
+
+                            if(item.getTitleCondensed().equals("sync_queue_item")){
+                                int itemPos = getAdapterPosition();
+                                MetadataObject moo = getItem(itemPos).getMetadata();
+
+                                ((BaseActivity) arg0.getContext()).syncFile(moo, true);
                             }
                             return true;
                         }

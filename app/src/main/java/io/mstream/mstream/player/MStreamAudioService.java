@@ -97,7 +97,6 @@ public class MStreamAudioService extends MediaBrowserServiceCompat implements Pl
         mediaSession.setCallback(playbackManager.getMediaSessionCallback());
 
         startService(new Intent(getApplicationContext(), MStreamAudioService.class));
-        // testPlay(); // TODO: SEGFFGWERGRWEG
     }
 
     @Override
@@ -264,6 +263,16 @@ public class MStreamAudioService extends MediaBrowserServiceCompat implements Pl
     @Override
     public void onPlaybackStateUpdated(PlaybackStateCompat newState) {
         mediaSession.setPlaybackState(newState);
+    }
+
+    @Override
+    public void onExtrasChanged(Bundle extras){
+
+    }
+
+    @Override
+    public void onDur(int dur){
+
     }
 
     /**

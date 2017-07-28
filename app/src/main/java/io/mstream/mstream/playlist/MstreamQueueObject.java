@@ -4,6 +4,8 @@ import android.net.Uri;
 import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 
+import java.io.File;
+
 import io.mstream.mstream.MetadataObject;
 
 /**
@@ -39,10 +41,28 @@ public class MstreamQueueObject {
 
 
     public void constructQueueItem(){
+        // TODO: Check for local file and use that over a url
+        String finalPath;
+        Uri MediaURI;
+        String mediaDescription;
+
+        if(metadata.getLocalFile() != null && !metadata.getLocalFile().isEmpty()){
+            finalPath = metadata.getLocalFile();
+            MediaURI = Uri.fromFile(new File(finalPath));
+            mediaDescription = "file";
+        }else{
+            finalPath = metadata.getUrl();
+            MediaURI = Uri.parse(finalPath);
+            mediaDescription = "network";
+        }
+
+
+
         // TODO: Construct queueItem based on metadata
         MediaDescriptionCompat description = new MediaDescriptionCompat.Builder()
-                .setMediaUri(Uri.parse(metadata.getUrl()))
-                .setMediaId(metadata.getUrl())
+                .setMediaUri(MediaURI)
+                .setMediaId(finalPath)
+                .setDescription(mediaDescription)
                 // TODO: something a bit less hacky, maybe a Utils method
                 .setTitle(MediaUtils.titleFromFilename(metadata.getUrl()))
                 .build();

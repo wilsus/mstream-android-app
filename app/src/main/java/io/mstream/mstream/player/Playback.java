@@ -15,6 +15,7 @@ package io.mstream.mstream.player;
  * limitations under the License.
  */
 
+import android.os.Bundle;
 import android.support.v4.media.session.MediaSessionCompat;
 
 /**
@@ -126,6 +127,10 @@ public interface Playback {
          * @param mediaId being currently played
          */
         void setCurrentMediaId(String mediaId);
+
+        void onExtrasChanged( Bundle extras);
+
+        void onDur(int dur);
     }
 
     /**

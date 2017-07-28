@@ -124,6 +124,39 @@ class PlaybackManager implements Playback.Callback {
         }
     }
 
+    // Hack function to get song duration to the Base Activity
+    // Need to clean this mess up at some point
+    void updatePlaybackStateHack(int dur) {
+        Log.d(TAG, "updatePlaybackState, playback state=" + playback.getState());
+        long position = PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN;
+        if (playback != null && playback.isConnected()) {
+            position = playback.getCurrentStreamPosition();
+        }
+
+        //noinspection ResourceType
+        PlaybackStateCompat.Builder stateBuilder = new PlaybackStateCompat.Builder().setActions(getAvailableActions());
+        int state = dur;
+
+
+        //noinspection ResourceType
+        stateBuilder.setState(state, position, 1.0f, SystemClock.elapsedRealtime());
+
+        stateBuilder.setBufferedPosition(playback.getBufferedPosition());
+
+        // Set the activeQueueItemId if the current index is valid.
+        MediaSessionCompat.QueueItem currentMusic = queueManager.getCurrentMusic();
+        if (currentMusic != null) {
+            stateBuilder.setActiveQueueItemId(currentMusic.getQueueId());
+        }
+
+        serviceCallback.onPlaybackStateUpdated(stateBuilder.build());
+
+        if (state == PlaybackStateCompat.STATE_PLAYING ||
+                state == PlaybackStateCompat.STATE_PAUSED) {
+            serviceCallback.onNotificationRequired();
+        }
+    }
+
     private long getAvailableActions() {
         long actions =
                 PlaybackStateCompat.ACTION_PLAY |
@@ -161,6 +194,16 @@ class PlaybackManager implements Playback.Callback {
     @Override
     public void onError(String error) {
         updatePlaybackState(error);
+    }
+
+    @Override
+    public void onExtrasChanged( Bundle extras){
+        serviceCallback.onExtrasChanged(extras);
+    }
+
+    @Override
+    public void onDur(int dur){
+        updatePlaybackStateHack(dur);
     }
 
     @Override
@@ -277,5 +320,9 @@ class PlaybackManager implements Playback.Callback {
         void onPlaybackStop();
 
         void onPlaybackStateUpdated(PlaybackStateCompat newState);
+
+        void onExtrasChanged( Bundle extras);
+
+        void onDur(int dur);
     }
 }

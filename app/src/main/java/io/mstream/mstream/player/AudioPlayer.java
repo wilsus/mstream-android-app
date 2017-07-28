@@ -13,7 +13,10 @@ import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.TextUtils;
 import android.util.Log;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URLDecoder;
 
 /**
  * A class that implements local media playback using {@link android.media.MediaPlayer}
@@ -151,11 +154,31 @@ class AudioPlayer implements Playback, AudioManager.OnAudioFocusChangeListener,
 
             try {
                 createMediaPlayerIfNeeded();
-
                 state = PlaybackStateCompat.STATE_BUFFERING;
-
                 mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-                mediaPlayer.setDataSource(source);
+
+                // Check if we have a file or a URL
+                String type = item.getDescription().getDescription().toString();
+                if(type.equals("file")){
+                    // Android forices us to code this as a URI, so now we have to do some hacky bullshit to decode this
+                    source = URLDecoder.decode(source, "UTF-8");
+                    File file = new File(source.substring(6));
+
+                    // Assure file is available
+                    if(!file.exists()){
+                        //  TODO: Log error and update DB
+                        // Use the url
+                        mediaPlayer.setDataSource(item.getDescription().getMediaUri().toString());
+                    }
+
+                    FileInputStream inputStream = new FileInputStream(file);
+                    mediaPlayer.setDataSource(inputStream.getFD());
+                    inputStream.close();
+                }else{
+                    mediaPlayer.setDataSource(source);
+                }
+
+
 
                 // Starts preparing the media player in the background. When
                 // it's done, it will call our OnPreparedListener (that is,
@@ -393,6 +416,19 @@ class AudioPlayer implements Playback, AudioManager.OnAudioFocusChangeListener,
         Log.d(TAG, "onPrepared from MediaPlayer");
         // The media player is done preparing. That means we can start playing if we
         // have audio focus.
+
+        // Time for some hacky bullshit lol
+        // Since the state does not allow us to duration (becasue who needs that, right?)
+        // We just send the duration over as a negative number
+        // Since no state has a negative quantity less than -1
+        // We just check for that on the other side, and carry out a special action if so
+        // Fucking hell google, everyone of your frameworks suckssssssss
+        int duration = player.getDuration();
+
+        if (callback != null) {
+            callback.onDur(duration * -1);
+        }
+
         configMediaPlayerState();
     }
 
