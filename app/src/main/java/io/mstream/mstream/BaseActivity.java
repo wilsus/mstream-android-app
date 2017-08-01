@@ -1251,7 +1251,6 @@ public class BaseActivity extends AppCompatActivity {
         if (controller != null) {
             controller.getTransportControls().skipToNext();
             queueAdapter.notifyDataSetChanged();
-
         }
     }
 
@@ -1286,10 +1285,15 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     public void removeQueueItem(MstreamQueueObject mqo){
-        QueueManager.removeFromQueue(mqo);
+        int status = QueueManager.removeFromQueue(mqo);
         // TODO: Need to update the queue without causing the thing to flash
         queueAdapter.clear();
         queueAdapter.add(QueueManager.getIt());
+
+        if(status == 1){
+            // Play
+            playMedia();
+        }
     }
 
 

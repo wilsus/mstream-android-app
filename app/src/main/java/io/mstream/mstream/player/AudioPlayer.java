@@ -18,6 +18,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URLDecoder;
 
+import io.mstream.mstream.playlist.QueueManager;
+
 /**
  * A class that implements local media playback using {@link android.media.MediaPlayer}
  */
@@ -178,6 +180,7 @@ class AudioPlayer implements Playback, AudioManager.OnAudioFocusChangeListener,
                     mediaPlayer.setDataSource(source);
                 }
 
+                QueueManager.setCurrentSong();
 
 
                 // Starts preparing the media player in the background. When

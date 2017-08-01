@@ -150,9 +150,10 @@ public class MStreamAudioService extends MediaBrowserServiceCompat implements Pl
     private Notification buildNotification() {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
 
-        MetadataObject moo = QueueManager.getIt().get(QueueManager.getIndex()).getMetadata();
+        // MetadataObject moo = QueueManager.getIt().get(QueueManager.getIndex()).getMetadata();
+        MetadataObject moo = QueueManager.getCurrentSong().getMetadata();
 
-        String p1 = "";
+        String p1;
         String p2 = "";
 
         String artist = moo.getArtist();

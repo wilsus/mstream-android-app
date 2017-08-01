@@ -31,6 +31,20 @@ public class QueueManager {
     private static boolean shouldLoop = true;
     // private static boolean shouldShuffle = false;
 
+    // In some situations the currentIndex + playlistQueue don't reflect whats playing
+    // For example: when the queue is cleared, the audio keep playing
+    // The UI functions should use this as the standard for what's playing, NOT the queue + index
+    private static MstreamQueueObject currentSong;
+
+    // This is called in the audio manager
+    public static void setCurrentSong(){
+        currentSong = playlistQueue.get(currentIndex);
+    }
+
+    public static MstreamQueueObject getCurrentSong(){
+        return currentSong;
+    }
+
     // private List<MediaSessionCompat.QueueItem> shuffledQueue = new ArrayList<>();
 
 //    private static void setShouldShuffle(boolean newVal){
@@ -219,8 +233,37 @@ public class QueueManager {
         currentIndex = -1; /// hmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm
     }
 
-    public static void removeFromQueue(MstreamQueueObject mqo){
+    public static int removeFromQueue(MstreamQueueObject mqo){
+        // TODO: Adjust the current index if necessary
+
+        // Store the current song
+        MstreamQueueObject currentSong = playlistQueue.get(currentIndex);
+
+        // Remove song
         playlistQueue.remove(mqo);
+
+        // Queue is now empty
+        if(playlistQueue.size() == 0){
+            currentIndex = -1;
+            return 0;
+        }
+
+        // If the user removed the currently playing song
+        if(mqo == currentSong){
+            // TODO: What if this is the last song on the list, or the only song
+            if(playlistQueue.indexOf(currentSong) > playlistQueue.size()){
+                goToQueuePosition(-1);
+                return 0;
+
+            }
+
+            goToQueuePosition(currentIndex);
+            return 1;
+        }
+
+        // Update the current index if necessary
+        currentIndex = playlistQueue.indexOf(currentSong);
+        return 0;
     }
 
 //    protected void setCurrentQueue(String title, List<MediaSessionCompat.QueueItem> newQueue) {
