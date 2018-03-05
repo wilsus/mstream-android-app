@@ -80,8 +80,6 @@ public class ServerListAdapter extends ArrayAdapter<ServerItem, ServerListAdapte
             final ImageButton btn = (ImageButton)view.findViewById(R.id.server_more_options);
 
             btn.setOnClickListener(new View.OnClickListener() {
-
-
                 @Override
                 public void onClick(final View arg0) {
                     //Creating the instance of PopupMenu

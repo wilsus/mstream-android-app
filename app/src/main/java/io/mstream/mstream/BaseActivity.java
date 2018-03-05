@@ -9,7 +9,6 @@ import android.content.IntentFilter;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.RemoteException;
 import android.support.annotation.NonNull;
@@ -54,7 +53,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Timer;
 
 import io.mstream.mstream.player.MStreamAudioService;
 import io.mstream.mstream.playlist.MediaControllerConnectedEvent;
@@ -188,7 +186,7 @@ public class BaseActivity extends AppCompatActivity {
         // timeLeftText = (TextView) findViewById(R.id.time_left_text);
 
         // Sync callback
-        syncReceiver = new BroadcastReceiver() {
+        BroadcastReceiver syncReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 //check if the broadcast message is for our enqueued download
@@ -226,26 +224,20 @@ public class BaseActivity extends AppCompatActivity {
         searchBrowser = (EditText) findViewById(R.id.search_response);
         searchBrowser.addTextChangedListener(new TextWatcher() {
             public void afterTextChanged(Editable s) {
-                // you can call or do what you want with your EditText here
                 String matchString = searchBrowser.getText().toString();
 
                 if(matchString.isEmpty()){
                     baseBrowserList.clear();
-                    for (int i=0; i<backupBrowserList.size(); i++) {                        // Add to array if match
+                    for (int i=0; i<backupBrowserList.size(); i++) {
                         baseBrowserList.add(backupBrowserList.get(i));
                     }
                 }else{
-                    //
                     baseBrowserList.clear();
-
-                    // Loop through
-                    for (int i=0; i<backupBrowserList.size(); i++) {                        // Add to array if match
+                    for (int i=0; i<backupBrowserList.size(); i++) {
                         if(backupBrowserList.get(i).getItemText1().toLowerCase().contains(matchString.toLowerCase())){
                             baseBrowserList.add(backupBrowserList.get(i));
                         }
                     }
-
-                    // Add
                 }
                 baseBrowserAdapter.clear();
                 baseBrowserAdapter.add(baseBrowserList);
@@ -360,13 +352,7 @@ public class BaseActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // Loop through
-                for (int i=0; i<baseBrowserList.size(); i++) {                        // Add to array if match
-//                    MstreamQueueObject mqo = new MstreamQueueObject(baseBrowserList.get(i).getMetadata());
-//                    // mqo.setMetadata(baseBrowserList.get(i).getMetadata());
-//                    mqo.constructQueueItem();
-                    // addIt(mqo.getQueueItem());
-//                    QueueManager.addToQueue3(mqo.getQueueItem());
-//                    QueueManager.addToQueue4(mqo);
+                for (int i=0; i<baseBrowserList.size(); i++) {
                     getMetadataAndAddToQueue(baseBrowserList.get(i).getMetadata());
                 }
                 // Add all
@@ -380,33 +366,33 @@ public class BaseActivity extends AppCompatActivity {
 
         // Start the Audio Service
         mediaBrowser = new MediaBrowserCompat(this, new ComponentName(this, MStreamAudioService.class),
-                new MediaBrowserCompat.ConnectionCallback() {
-                    @Override
-                    public void onConnected() {
-                        try {
-                            Log.d(TAG, "MediaBrowser onConnected");
-                            MediaSessionCompat.Token token = mediaBrowser.getSessionToken();
-                            // This is what gives us access to everything!
-                            MediaControllerCompat controller = new MediaControllerCompat(BaseActivity.this, token);
-                            setSupportMediaController(controller);
-                            EventBus.getDefault().postSticky(new MediaControllerConnectedEvent());
-                        } catch (RemoteException e) {
-                            Log.e(BaseActivity.class.getSimpleName(), "Error creating controller", e);
-                        }
+            new MediaBrowserCompat.ConnectionCallback() {
+                @Override
+                public void onConnected() {
+                    try {
+                        Log.d(TAG, "MediaBrowser onConnected");
+                        MediaSessionCompat.Token token = mediaBrowser.getSessionToken();
+                        // This is what gives us access to everything!
+                        MediaControllerCompat controller = new MediaControllerCompat(BaseActivity.this, token);
+                        setSupportMediaController(controller);
+                        EventBus.getDefault().postSticky(new MediaControllerConnectedEvent());
+                    } catch (RemoteException e) {
+                        Log.e(BaseActivity.class.getSimpleName(), "Error creating controller", e);
                     }
+                }
 
-                    @Override
-                    public void onConnectionSuspended() {
-                        Log.d(TAG, "MediaBrowser connection suspended");
-                        EventBus.getDefault().removeStickyEvent(MediaControllerConnectedEvent.class);
-                    }
+                @Override
+                public void onConnectionSuspended() {
+                    Log.d(TAG, "MediaBrowser connection suspended");
+                    EventBus.getDefault().removeStickyEvent(MediaControllerConnectedEvent.class);
+                }
 
-                    @Override
-                    public void onConnectionFailed() {
-                        Log.d(TAG, "MediaBrowser failed!!!");
-                        EventBus.getDefault().removeStickyEvent(MediaControllerConnectedEvent.class);
-                    }
-                }, null);
+                @Override
+                public void onConnectionFailed() {
+                    Log.d(TAG, "MediaBrowser failed!!!");
+                    EventBus.getDefault().removeStickyEvent(MediaControllerConnectedEvent.class);
+                }
+            }, null);
 
         // TODO: What exactly is this?
         EventBus.getDefault().register(this);
@@ -458,7 +444,6 @@ public class BaseActivity extends AppCompatActivity {
             shouldLoop.setColorFilter(Color.rgb(102,132,178));
         }else{
             shouldLoop.setColorFilter(Color.rgb(255,255,255));
-
         }
 
 
@@ -467,75 +452,64 @@ public class BaseActivity extends AppCompatActivity {
         filesListView.setLayoutManager(new LinearLayoutManager(this));
 
         baseBrowserAdapter = new BaseBrowserAdapter(new ArrayList<BaseBrowserItem>(),
-                new BaseBrowserAdapter.OnClickFileItem() {
-                    @Override
-                    public void onDirectoryClick(BaseBrowserItem item) {
-                        //goToDirectory(directory);
-                        View view = getCurrentFocus();
-                        if (view != null) {
-                            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-                            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-                        }
-                        ((EditText) findViewById(R.id.search_response)).getText().clear();
-                        ((EditText) findViewById(R.id.search_response)).clearFocus();
-
-                        getFiles(item.getTypeProp());
+            new BaseBrowserAdapter.OnClickFileItem() {
+                @Override
+                public void onDirectoryClick(BaseBrowserItem item) {
+                    //goToDirectory(directory);
+                    View view = getCurrentFocus();
+                    if (view != null) {
+                        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
                     }
+                    ((EditText) findViewById(R.id.search_response)).getText().clear();
+                    ((EditText) findViewById(R.id.search_response)).clearFocus();
 
-                    @Override
-                    public void onFileClick(BaseBrowserItem item) {
-                        //addTrackToPlaylist(item);
-                        // TODO: Add file to queue and retrieve metadata
-                        MediaControllerCompat controller = getSupportMediaController();
-                        if (controller != null) {
-                            // QueueManager.addToQueue(item.getMetadata()); // TODO
+                    getFiles(item.getTypeProp());
+                }
+
+                @Override
+                public void onFileClick(BaseBrowserItem item) {
+                    //addTrackToPlaylist(item);
+                    // TODO: Add file to queue and retrieve metadata
+                    MediaControllerCompat controller = getSupportMediaController();
+                    if (controller != null) {
+                        // QueueManager.addToQueue(item.getMetadata()); // TODO
 //                            queueAdapter.clear();
 //                            queueAdapter.add(QueueManager.getInstance());
-                            // TODO: why doesn't `queueAdapter.notifyDataSetChanged();` work here
+                        // TODO: why doesn't `queueAdapter.notifyDataSetChanged();` work here
 
-                            getMetadataAndAddToQueue(item.getMetadata());
-//                            MstreamQueueObject mqo = new MstreamQueueObject();
-//                            mqo.setMetadata(item.getMetadata());
-//                            mqo.constructQueueItem();
-//                            // addIt(mqo.getQueueItem());
-////                            QueueManager.addToQueue3(mqo.getQueueItem());
-//                            QueueManager.addToQueue4(mqo);
-//
-//                            queueAdapter.clear();
-//                            queueAdapter.add(QueueManager.getIt());
-//
-//                            pingQueueListener();
-                        }
+                        getMetadataAndAddToQueue(item.getMetadata());
                     }
+                }
 
-                    @Override
-                    public void onArtistClick(BaseBrowserItem item) {
-                        //addTrackToPlaylist(item);
-                        View view = getCurrentFocus();
-                        if (view != null) {
-                            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-                            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-                        }
-                        ((EditText) findViewById(R.id.search_response)).getText().clear();
-                        ((EditText) findViewById(R.id.search_response)).clearFocus();
-
-                        getArtistsAlbums(item.getTypeProp());
+                @Override
+                public void onArtistClick(BaseBrowserItem item) {
+                    //addTrackToPlaylist(item);
+                    View view = getCurrentFocus();
+                    if (view != null) {
+                        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
                     }
+                    ((EditText) findViewById(R.id.search_response)).getText().clear();
+                    ((EditText) findViewById(R.id.search_response)).clearFocus();
 
-                    @Override
-                    public void onAlbumClick(BaseBrowserItem item) {
-                        //addTrackToPlaylist(item);
-                        View view = getCurrentFocus();
-                        if (view != null) {
-                            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-                            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-                        }
-                        ((EditText) findViewById(R.id.search_response)).getText().clear();
-                        ((EditText) findViewById(R.id.search_response)).clearFocus();
+                    getArtistsAlbums(item.getTypeProp());
+                }
 
-                        getAlbumSongs(item.getTypeProp());
+                @Override
+                public void onAlbumClick(BaseBrowserItem item) {
+                    //addTrackToPlaylist(item);
+                    View view = getCurrentFocus();
+                    if (view != null) {
+                        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
                     }
-                });
+                    ((EditText) findViewById(R.id.search_response)).getText().clear();
+                    ((EditText) findViewById(R.id.search_response)).clearFocus();
+
+                    getAlbumSongs(item.getTypeProp());
+                }
+            });
         baseBrowserAdapter.clear();
         baseBrowserAdapter.add(baseBrowserList); // TODO
         filesListView.setAdapter(baseBrowserAdapter);
@@ -657,11 +631,11 @@ public class BaseActivity extends AppCompatActivity {
 
 
                         for (int i = 0; i < contents.length(); i++) {
-                            String artist = contents.getString(i);
+                            String albumName = contents.getJSONObject(i).getString("name");
 
                             // For directories use the relative directory path
-                            baseBrowserList.add(new BaseBrowserItem.Builder("album", artist, artist).build());
-                            backupBrowserList.add(new BaseBrowserItem.Builder("album", artist, artist).build());
+                            baseBrowserList.add(new BaseBrowserItem.Builder("album", albumName, albumName).build());
+                            backupBrowserList.add(new BaseBrowserItem.Builder("album", albumName, albumName).build());
                         }
 
                         addIt(baseBrowserList);
@@ -838,7 +812,7 @@ public class BaseActivity extends AppCompatActivity {
                             // For music we provide the whole URL
                             // This way the playlist can handle files from multiple servers
                             // String fileUrl = serverUrl + currentPath + fileJson.getString("name");
-                            String fileUrl = Uri.parse(ServerStore.currentServer.getServerUrl()).buildUpon().appendPath(ServerStore.currentServer.getServerVPath()).build().toString();
+                            String fileUrl = Uri.parse(ServerStore.currentServer.getServerUrl()).toString();
                             if(fileUrl.charAt(fileUrl.length() - 1) != '/'){
                                 fileUrl = fileUrl + "/";
                             }
@@ -888,27 +862,28 @@ public class BaseActivity extends AppCompatActivity {
         okHttpClient.newCall(request).enqueue(loginCallback);
     }
 
-    public void getFiles(String directroy){
+    public void getFiles(String directory){
         JSONObject jsonObj = new JSONObject();
         try{
-            jsonObj.put("dir", directroy);
+            jsonObj.put("dir", directory);
         } catch (JSONException e) {
-            // TODO Auto-generated catch block
+            // TODO: Warn user
             e.printStackTrace();
+            return;
         }
 
         MediaType JSON = MediaType.parse("application/json; charset=utf-8");
         okhttp3.RequestBody body = RequestBody.create(JSON, jsonObj.toString());
 
-        String loginURL = Uri.parse(ServerStore.currentServer.getServerUrl()).buildUpon().appendPath("dirparser").build().toString();
+        String fileBrowserURL = Uri.parse(ServerStore.currentServer.getServerUrl()).buildUpon().appendPath("dirparser").build().toString();
         Request request = new Request.Builder()
-                .url(loginURL)
+                .url(fileBrowserURL)
                 .addHeader("x-access-token", ServerStore.currentServer.getServerJWT())
                 .post(body)
                 .build();
 
         // Callback
-        Callback loginCallback = new Callback() {
+        Callback fileBrowserCallback = new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
                 toastIt("Failed To Connect To Server");
@@ -945,12 +920,11 @@ public class BaseActivity extends AppCompatActivity {
 
                                 // For music we provide the whole URL
                                 // This way the playlist can handle files from multiple servers
-                                // String fileUrl = serverUrl + currentPath + fileJson.getString("name");
-                                String fileUrl = Uri.parse(ServerStore.currentServer.getServerUrl()).buildUpon().appendPath(ServerStore.currentServer.getServerVPath()).build().toString();
+                                String fileUrl = Uri.parse( ServerStore.currentServer.getServerUrl() ).toString();
                                 if(fileUrl.charAt(fileUrl.length() - 1) != '/'){
                                     fileUrl = fileUrl + "/";
                                 }
-                                fileUrl = fileUrl + currentPath  + name;
+                                fileUrl = fileUrl + "media" + currentPath  + name;
                                 fileUrl = Uri.parse(fileUrl).buildUpon().appendQueryParameter("token", ServerStore.currentServer.getServerJWT()).build().toString();
 
                                 try {
@@ -982,14 +956,14 @@ public class BaseActivity extends AppCompatActivity {
 
         // Make call
         OkHttpClient okHttpClient = ((MStreamApplication) getApplicationContext()).getOkHttpClient();
-        okHttpClient.newCall(request).enqueue(loginCallback);
+        okHttpClient.newCall(request).enqueue(fileBrowserCallback);
     }
 
     private void getMetadataAndAddToQueue(MetadataObject moo){
         final MstreamQueueObject mqo = new MstreamQueueObject(moo);
         mqo.constructQueueItem();
 
-        // Addd to the queue
+        // Add to the queue
         QueueManager.addToQueue4(mqo);
 
         // Redraw the queue // TODO: There's got to be a better way
@@ -1225,16 +1199,6 @@ public class BaseActivity extends AppCompatActivity {
         MediaControllerCompat controller = getSupportMediaController();
         if (controller != null) {
             controller.getTransportControls().seekTo(progress);
-        }
-    }
-
-    private void addIt(MediaSessionCompat.QueueItem xxx){
-        MediaControllerCompat controller = getSupportMediaController();
-        Bundle bbb = new Bundle();
-        bbb.putString("lol", xxx.getDescription().getMediaUri().toString());
-
-        if (controller != null) {
-            controller.getTransportControls().sendCustomAction("addToQueue", bbb );
         }
     }
 

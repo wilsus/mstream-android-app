@@ -3,8 +3,11 @@ package io.mstream.mstream.serverlist;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 /**
  * POJO representing an mStream server
@@ -14,7 +17,7 @@ public class ServerItem {
     private static final String KEY_URL = "url";
     private static final String KEY_USERNAME = "username";
     private static final String KEY_PASSWORD = "password";
-    private static  String KEY_VPATH = "vpath";
+    private static  String KEY_VPATHS = "vpaths";
     private static  String KEY_JWT = "jwt";  // JSON Web Token
     private static  String KEY_ISDEFAULT = "isDefault";
 
@@ -23,8 +26,8 @@ public class ServerItem {
     private final String url;
     private final String username;
     private final String password;
-    private String vPath;
-    private String jwt;
+    private ArrayList<String> vPaths;
+    private String jwt = "";
     private boolean isDefault = false;
 
     private ServerItem(Builder builder) {
@@ -32,7 +35,7 @@ public class ServerItem {
         this.url = builder.url;
         this.username = builder.username;
         this.password = builder.password;
-        this.vPath = builder.vPath;
+        this.vPaths = builder.vPaths;
         this.jwt = builder.jwt;
         this.isDefault = builder.isDefault;
     }
@@ -53,11 +56,15 @@ public class ServerItem {
         return this.password;
     }
 
-    public String getServerVPath() {
-        return this.vPath;
+    // TODO: Change Name to getServerVPaths
+    public ArrayList<String> getServerVPaths() {
+        return this.vPaths;
     }
 
     public String getServerJWT() {
+        if(this.jwt == null){
+            return "";
+        }
         return this.jwt;
     }
 
@@ -69,8 +76,9 @@ public class ServerItem {
         this.jwt = jwt;
     }
 
-    public void setServerVPath(String vPath) {
-        this.vPath = vPath;
+    // TODO:
+    public void setServerVPaths(ArrayList vPaths) {
+        this.vPaths = vPaths;
     }
 
     public void setServerDefaultStatus(boolean isDefault) {
@@ -85,7 +93,7 @@ public class ServerItem {
             obj.put(KEY_URL, url);
             obj.put(KEY_USERNAME, username);
             obj.put(KEY_PASSWORD, password);
-            obj.put(KEY_VPATH, vPath);
+            obj.put(KEY_VPATHS, vPaths); // TODO:
             obj.put(KEY_JWT, jwt);
             obj.put(KEY_ISDEFAULT, isDefault);
         } catch (JSONException e) {
@@ -102,11 +110,20 @@ public class ServerItem {
                 if (obj.has(KEY_USERNAME) && obj.has(KEY_PASSWORD)) {
                     builder = builder.username(obj.getString(KEY_USERNAME)).password(obj.getString(KEY_PASSWORD));
                 }
-                if (obj.has(KEY_VPATH)) {
-                    builder = builder.vPath(obj.getString(KEY_VPATH));
+                if (obj.has(KEY_VPATHS)) {
+                    ArrayList<String> listdata = new ArrayList<>();
+                    JSONArray jArray = obj.getJSONArray(KEY_VPATHS);
+                    if (jArray != null) {
+                        for (int i=0;i<jArray.length();i++){
+                            listdata.add(jArray.getString(i));
+                        }
+                    }
+                    builder = builder.vPaths(listdata);
                 }
                 if (obj.has(KEY_JWT)) {
                     builder = builder.jwt(obj.getString(KEY_JWT));
+                }else{
+                    builder = builder.jwt("");
                 }
                 if (obj.has(KEY_ISDEFAULT)) {
                     builder = builder.isDefault(obj.getBoolean(KEY_ISDEFAULT));
@@ -125,7 +142,7 @@ public class ServerItem {
         private final String url;
         private String username;
         private String password;
-        private String vPath;
+        private ArrayList vPaths;
         private String jwt;
         private boolean isDefault;
 
@@ -145,8 +162,9 @@ public class ServerItem {
             return this;
         }
 
-        public Builder vPath(String vPath) {
-            this.vPath = vPath;
+        // TODO
+        public Builder vPaths(ArrayList vPaths) {
+            this.vPaths = vPaths;
             return this;
         }
 

@@ -16,6 +16,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import io.mstream.mstream.serverlist.ServerItem;
 import io.mstream.mstream.serverlist.ServerStore;
@@ -60,114 +61,117 @@ public class AddServerActivity extends AppCompatActivity {
         findViewById(R.id.add_server).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (validate()) {
-                    final String name = nameText.getText().toString();
-                    final String url = urlText.getText().toString();
-                    final String password = passwordText.getText().toString();
-                    final String username = usernameText.getText().toString();
-                    final boolean isDefault = makeDefault.isChecked();
-
-                    // Check for valid url
-                    if (url.isEmpty() || !Patterns.WEB_URL.matcher(url).matches()) {
-                        toastIt("Invalid URL");
-                        return;
-                    }
-
-                    // Initialize vars
-                    Request request;
-                    // v.setEnabled(false);
-                    final boolean loginFlag;
-
-                    // Handle login if necessary
-                    if(username.isEmpty() && password.isEmpty()){
-                        loginFlag = false;
-
-                        String loginURL = Uri.parse(url).buildUpon().appendPath("ping").build().toString();
-                        request = new Request.Builder()
-                                .url(loginURL)
-                                .build();
-                    }else{
-                        loginFlag = true;
-                        JSONObject jsonObj = new JSONObject();
-                        try{
-                            jsonObj.put("username", username);
-                            jsonObj.put("password", password);
-                        } catch (JSONException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                        }
-
-                        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-                        okhttp3.RequestBody body = RequestBody.create(JSON, jsonObj.toString());
-
-                        String loginURL = Uri.parse(url).buildUpon().appendPath("login").build().toString();
-                        request = new Request.Builder()
-                                .url(loginURL)
-                                .post(body)
-                                .build();
-                    }
-
-                    // Callback
-                    Callback loginCallback = new Callback() {
-                        @Override
-                        public void onFailure(Call call, IOException e) {
-                            toastIt("Failed To Connect To Server");
-                        }
-
-                        @Override
-                        public void onResponse(Call call, Response response) throws IOException {
-                            if(response.code() != 200){
-                                toastIt("Login Failed");
-                            }else{
-                                JSONObject responseObj;
-                                String jwt = "";
-                                String vPath = "";
-
-                                // Get the vPath and JWT
-                                try {
-                                    responseObj = new JSONObject(response.body().string());
-                                    if (responseObj.has("vPath")) {
-                                        vPath = responseObj.getString("vPath");
-                                    }
-                                    if (responseObj.has("token")) {
-                                        jwt = responseObj.getString("token");
-                                    }
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                    toastIt("Failed to decoded server response. WTF");
-                                    return;
-                                }
-
-                                toastIt("Login Success");
-
-                                ServerItem newServerItem;
-
-                                if(loginFlag){
-                                    // Create new server Item
-                                    newServerItem = new ServerItem.Builder(name, url)
-                                            .username(username)
-                                            .password(password)
-                                            .vPath(vPath)
-                                            .jwt(jwt)
-                                            .isDefault(isDefault)
-                                            .build();
-                                }else{
-                                    // Create new server Item
-                                    newServerItem = new ServerItem.Builder(name, url).vPath(vPath).isDefault(isDefault).build();
-                                }
-
-                                // Add the server
-                                ServerStore.addServer(newServerItem);
-                                finish();
-                            }
-                        }
-                    };
-
-                    // Make call
-                    OkHttpClient okHttpClient = ((MStreamApplication) getApplicationContext()).getOkHttpClient();
-                    okHttpClient.newCall(request).enqueue(loginCallback);
-
+                if (!validate()) {
+                    return;
                 }
+
+                final String name = nameText.getText().toString();
+                final String url = urlText.getText().toString();
+                final String password = passwordText.getText().toString();
+                final String username = usernameText.getText().toString();
+                final boolean isDefault = makeDefault.isChecked();
+
+                // Check for valid url
+                if (url.isEmpty() || !Patterns.WEB_URL.matcher(url).matches()) {
+                    toastIt("Invalid URL");
+                    return;
+                }
+
+                // Initialize vars
+                Request request;
+                // v.setEnabled(false);
+                final boolean loginFlag;
+
+                // Handle login if necessary
+                if(username.isEmpty() && password.isEmpty()){
+                    loginFlag = false;
+
+                    String loginURL = Uri.parse(url).buildUpon().appendPath("ping").build().toString();
+                    request = new Request.Builder()
+                            .url(loginURL)
+                            .build();
+                }else{
+                    loginFlag = true;
+                    JSONObject jsonObj = new JSONObject();
+                    try{
+                        jsonObj.put("username", username);
+                        jsonObj.put("password", password);
+                    } catch (JSONException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+
+                    MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+                    okhttp3.RequestBody body = RequestBody.create(JSON, jsonObj.toString());
+
+                    String loginURL = Uri.parse(url).buildUpon().appendPath("login").build().toString();
+                    request = new Request.Builder()
+                            .url(loginURL)
+                            .post(body)
+                            .build();
+                }
+
+                // Callback
+                Callback loginCallback = new Callback() {
+                    @Override
+                    public void onFailure(Call call, IOException e) {
+                        toastIt("Failed To Connect To Server");
+                    }
+
+                    @Override
+                    public void onResponse(Call call, Response response) throws IOException {
+                        if(response.code() != 200){
+                            toastIt("Login Failed");
+                        }else{
+                            JSONObject responseObj;
+                            String jwt = "";
+                            // String vPath = "";
+                            ArrayList<String> vPaths = new ArrayList<>();
+
+                            // Get the vPath and JWT
+                            try {
+                                responseObj = new JSONObject(response.body().string());
+                                if (responseObj.has("vPath")) {
+                                    // vPath = responseObj.getString("vPath");
+                                    vPaths.add(""); // TODO:
+                                }
+                                if (responseObj.has("token")) {
+                                    jwt = responseObj.getString("token");
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                                toastIt("Failed to decoded server response. WTF");
+                                return;
+                            }
+
+                            toastIt("Login Success");
+
+                            ServerItem newServerItem;
+
+                            if(loginFlag){
+                                // Create new server Item
+                                newServerItem = new ServerItem.Builder(name, url)
+                                        .username(username)
+                                        .password(password)
+                                        .vPaths(vPaths)
+                                        .jwt(jwt)
+                                        .isDefault(isDefault)
+                                        .build();
+                            }else{
+                                // Create new server Item
+                                newServerItem = new ServerItem.Builder(name, url).vPaths(vPaths).isDefault(isDefault).build();
+                            }
+
+                            // Add the server
+                            ServerStore.addServer(newServerItem);
+                            finish();
+                        }
+                    }
+                };
+
+                // Make call
+                OkHttpClient okHttpClient = ((MStreamApplication) getApplicationContext()).getOkHttpClient();
+                okHttpClient.newCall(request).enqueue(loginCallback);
             }
         });
 
