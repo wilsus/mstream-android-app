@@ -353,7 +353,9 @@ public class BaseActivity extends AppCompatActivity {
             public void onClick(View v) {
                 // Loop through
                 for (int i=0; i<baseBrowserList.size(); i++) {
-                    getMetadataAndAddToQueue(baseBrowserList.get(i).getMetadata());
+                    if(baseBrowserList.get(i).getItemType().equalsIgnoreCase("file")){
+                        getMetadataAndAddToQueue(baseBrowserList.get(i).getMetadata());
+                    }
                 }
                 // Add all
                 queueAdapter.clear();
@@ -742,7 +744,7 @@ public class BaseActivity extends AppCompatActivity {
                         backupBrowserList.clear();
 
                         for (int i = 0; i < contents.length(); i++) {
-                            String artist = contents.getString(i);
+                            String artist = contents.getJSONObject(i).getString("name");
 
                             // For directories use the relative directory path
                             baseBrowserList.add(new BaseBrowserItem.Builder("album", artist, artist).build());
