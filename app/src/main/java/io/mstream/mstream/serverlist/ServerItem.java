@@ -110,16 +110,16 @@ public class ServerItem {
                 if (obj.has(KEY_USERNAME) && obj.has(KEY_PASSWORD)) {
                     builder = builder.username(obj.getString(KEY_USERNAME)).password(obj.getString(KEY_PASSWORD));
                 }
-                if (obj.has(KEY_VPATHS)) {
-                    ArrayList<String> listdata = new ArrayList<>();
-                    JSONArray jArray = obj.getJSONArray(KEY_VPATHS);
-                    if (jArray != null) {
-                        for (int i=0;i<jArray.length();i++){
-                            listdata.add(jArray.getString(i));
-                        }
-                    }
-                    builder = builder.vPaths(listdata);
-                }
+//                if (obj.has(KEY_VPATHS)) {
+//                    ArrayList<String> listdata = new ArrayList<>();
+//                    JSONArray jArray = obj.getJSONArray(KEY_VPATHS);
+//                    if (jArray != null) {
+//                        for (int i=0;i<jArray.length();i++){
+//                            listdata.add(jArray.getString(i));
+//                        }
+//                    }
+//                    builder = builder.vPaths(listdata);
+//                }
                 if (obj.has(KEY_JWT)) {
                     builder = builder.jwt(obj.getString(KEY_JWT));
                 }else{
